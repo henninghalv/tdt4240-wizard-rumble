@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.progark.group2.wizardrumble.entities.Spell;
 import com.progark.group2.wizardrumble.network.NetworkController;
 
+import java.io.IOException;
 import java.util.List;
 
 public class Application extends ApplicationAdapter {
@@ -30,6 +31,18 @@ public class Application extends ApplicationAdapter {
 	public void create () {
 		batch = new SpriteBatch();
 		img = new Texture("badlogic.jpg");
+
+		// Used to test server connection.
+		// Not necessarily the right way to do it.
+		nc = new NetworkController();
+
+		try {
+			nc.init();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		// =====
 	}
 
 
