@@ -11,12 +11,7 @@ import java.io.IOException;
 
 public class GameServer {
 
-    public static void main(String[] args) throws IOException {
-
-        // Example server startup
-        // Gets ExampleRequest from NetworkController in core
-        // Responds with ExampleResponse
-
+    public GameServer() throws IOException {
         Server server = new Server();
         server.start();
         server.bind(54555, 54777);
@@ -37,7 +32,20 @@ public class GameServer {
                 }
             }
         });
+    }
+
+    public static void main(String[] args) throws IOException {
+
+        // Example server startup
+        // Gets ExampleRequest from NetworkController in core
+        // Responds with ExampleResponse
+
+        // Examples of multiple servers
+        GameServer server1 = new GameServer();
+        //GameServer server2 = new GameServer(); // Need to change IP or port
 
     }
+
+
 
 }
