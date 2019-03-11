@@ -43,9 +43,11 @@ public class MasterServer {
 
         // Register response and request classes for
         // creating lobby etc.
+        // NOTE: CLIENT AND SERVER MUST HAVE SAME ORDER OF CLASSES REGISTERED!
         Kryo kryo = server.getKryo();
         kryo.register(CreateGameRequest.class);
         kryo.register(CreateGameResponse.class);
+        kryo.register(HashMap.class);
 
         // Add a receiver listener to server
         server.addListener(new Listener() {
@@ -137,6 +139,7 @@ public class MasterServer {
         } else {
             // Create a response with the new Gameserver ports
             CreateGameResponse response = new CreateGameResponse();
+            response.map = new HashMap<String, String>();
             response.map.put("tcpPort", tcpPort + "");
             response.map.put("udpPort", udpPort + "");
 

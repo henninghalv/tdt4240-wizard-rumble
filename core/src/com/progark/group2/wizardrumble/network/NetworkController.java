@@ -25,6 +25,7 @@ public class NetworkController {
         Kryo kryo = client.getKryo();
         kryo.register(CreateGameRequest.class);
         kryo.register(CreateGameResponse.class);
+        kryo.register(HashMap.class);
 
         CreateGameRequest request = new CreateGameRequest();
         request.playerID = 0; // TODO: ID is generated through name registering
