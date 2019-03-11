@@ -4,39 +4,65 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
-import com.progark.group2.wizardrumble.network.ExampleRequest;
-import com.progark.group2.wizardrumble.network.ExampleResponse;
+
+import com.progark.group2.wizardrumble.network.PlayerDeadRequest;
+import com.progark.group2.wizardrumble.network.PlayerStatisticsResponse;
+import com.progark.group2.wizardrumble.network.ServerErrorResponse;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Dictionary;
-import java.util.HashMap;
 import java.util.List;
 
 public class GameServer {
 
-    // List of all server instances. 1 server = 1 game
-    private List<Server> servers = new ArrayList<Server>();
-    private int initServerCount = 1;
+    private Server server;
+
+    // List of all joinedPlayerIDs joined the game
+    private List<Integer> joinedPlayerIDs = new ArrayList<Integer>();
+
+    // List of all joinedPlayerIDs that are dead in the game
+    private List<Integer> deadPlayerIDs = new ArrayList<Integer>();
 
     // This is the master server
-    public GameServer() throws IOException {
-
-        // TODO: Consider initializing some server beforehand. = KEEP
-        // TODO: Or only when requested. == REMOVE (and initServerCount)
-        // Its used under debbugging
-        for (int i = 0; i < initServerCount; i++) {
-            addServer(createNewServer(-1, -1));
-        }
-
+    protected GameServer(int tcpPort, int udpPort) throws IOException {
+        server = createNewServer(tcpPort, udpPort);
     }
 
     /**
-     * Add server to the list of all servers
-     * @param server    Kryo Server object
+     * Add a new player to list when joining or creating a new game.
+     * @param playerID  (int) player id
      */
-    public void addServer(Server server) {
-        this.servers.add(server);
+    protected void addJoinedPlayer(int playerID) {
+        this.joinedPlayerIDs.add(playerID);
+    }
+
+    /**
+     * Removes a player when the player is leaving the game or disconnects.
+     * @param playerID  (int) player id
+     */
+    protected void removeJoinedPlayer(int playerID) {
+        for (int i = 0; i < joinedPlayerIDs.size(); i++) {
+            if (joinedPlayerIDs.get(i) == playerID) {
+                joinedPlayerIDs.remove(i);
+                break;
+            }
+        }
+    }
+
+    /**
+     * Adds a player to the list of dead players.
+     * @param playerID  (int) player id
+     */
+    private void addDeadPlayer(int playerID) {
+        deadPlayerIDs.add(playerID);
+    }
+
+    /**
+     * Return whether all players are dead and the game has ended.
+     * @return  Boolean     True if all players have died
+     */
+    private boolean hasGameEnded() {
+        return deadPlayerIDs.size() == joinedPlayerIDs.size();
     }
 
     /**
@@ -44,32 +70,31 @@ public class GameServer {
      * response classes.
      * @return      Kryo Server object
      */
-    public Server createNewServer(int tcpPort, int udpPort) throws IOException {
+    private Server createNewServer(int tcpPort, int udpPort) throws IOException {
         Server server = new Server();
         server.start();
-
-        // TODO: Give a random port or fix duplicate/wrong input
-        // TODO: Handle param exeptions
-        if (tcpPort >= 65535 || tcpPort <= 0) tcpPort = 54555;
-        if (udpPort >= 65535 || udpPort <= 0) udpPort = 54777;
-
         server.bind(tcpPort, udpPort);
 
         // Register response and request classes
         Kryo kryo = server.getKryo();
-        kryo.register(ExampleRequest.class);
-        kryo.register(ExampleResponse.class);
+        kryo.register(ServerErrorResponse.class);
+        kryo.register(PlayerDeadRequest.class);
+        kryo.register(PlayerStatisticsResponse.class);
 
         // Add a receiver listener to server
         server.addListener(new Listener() {
             public void received (Connection connection, Object object) {
-                if (object instanceof ExampleRequest) {
-                    ExampleRequest request = (ExampleRequest)object;
-                    System.out.println(request.text);
+                if (object instanceof PlayerDeadRequest) {
+                    // If a player is dead.
+                    PlayerDeadRequest request = (PlayerDeadRequest)object;
 
-                    ExampleResponse response = new ExampleResponse();
+                    // Add player to list of dead player
+                    addDeadPlayer(request.playerID);
+                    System.out.println("Player ID: " + request.playerID + " Has been moved to deadPlayerIDs list");
+
+                    /*CreateGameResponse response = new CreateGameResponse();
                     response.text = "Thanks";
-                    connection.sendTCP(response);
+                    connection.sendTCP(response);*/
                 }
             }
         });
@@ -77,43 +102,17 @@ public class GameServer {
         return server;
     }
 
-    // TODO this is the method for responding to clientRequest when creating lobby
-    public ExampleResponse clientResponse(ExampleRequest request) {
+    /**
+     * When the game has ended and all joinedPlayerIDs has left the game,
+     * the server stops and removes itself from the MasterServer.
+     * @throws IOException      Failed to initialize MasterServer
+     */
+    public void endGame() throws IOException {
+        if (!hasGameEnded()) return;
 
-        // Conditional for the request. Create a response accordingly.
+        // TODO: send request with metadata (scoreboard data) to all clients
 
-
-        // If the server shall give the client a new server:
-        HashMap<String, String> map = new HashMap<String, String>();
-
-        // Instanciate a server here that
-        // runs on 127.0.0.1 and ports: 54555 and 54777
-
-        // Example if the response is containing a hashmap
-        map.put("host", "127.0.0.1");
-        map.put("tcpPort", "54555");
-        map.put("udpPort", "54777");
-
-        // GOAL: Give the client host and ports for communicating with the
-        // Server instance instead of the masterserver when playing a game
-
-        // Instansiate a response and add the hashmap to it.
-
-        // Return the response/Send the response back to the client.
-        return new ExampleResponse();
-
-    }
-
-    public static void main(String[] args) throws IOException {
-
-        // Example server startup
-        // Gets ExampleRequest from NetworkController in core
-        // Responds with ExampleResponse
-
-        // Examples of multiple servers
-        GameServer masterServer = new GameServer();
-        // After request from client - exampleRequest
-        masterServer.clientResponse(new ExampleRequest());
-
+        server.stop();
+        MasterServer.getInstance().removeGameServer(this);
     }
 }
