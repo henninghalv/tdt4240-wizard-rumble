@@ -1,6 +1,8 @@
-package com.progark.group2.wizardrumble.entities;
+package com.progark.group2.wizardrumble.entities.spells;
 
-public class FireBall extends Entity {
+import com.progark.group2.wizardrumble.entities.Spell;
+
+public class FireBall extends Spell {
 
 
     @Override
