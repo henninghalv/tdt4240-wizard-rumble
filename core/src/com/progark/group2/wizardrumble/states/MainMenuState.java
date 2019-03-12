@@ -1,5 +1,7 @@
 package com.progark.group2.wizardrumble.states;
 
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+
 public class MainMenuState extends State {
 
     public void startGame(){
@@ -15,12 +17,12 @@ public class MainMenuState extends State {
     }
 
     @Override
-    public void update() {
+    public void update(float dt) {
 
     }
 
     @Override
-    public void render() {
+    public void render(SpriteBatch spriteBatch) {
 
     }
 
