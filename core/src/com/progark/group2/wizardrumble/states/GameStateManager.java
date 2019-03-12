@@ -8,24 +8,30 @@ public class GameStateManager {
 
     private Stack<State> states;
 
-    public void push(State state){
+    public GameStateManager(){
+        states = new Stack<State>();
+    }
 
+    public void push(State state){
+        states.push(state);
     }
 
     public void pop(){
-
+        states.pop();
     }
 
     public void set(State state){
         //pop and push
+        states.pop();
+        states.push(state);
     }
 
-    public void update(/* deltaTime */){
-
+    public void update(float dt){
+        states.peek().update(dt);
     }
 
     public void render(SpriteBatch sb){
-
+        states.peek().render(sb);
     }
 
 
