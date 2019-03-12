@@ -15,8 +15,6 @@ public class InGameState extends State {
     private Texture wizardSprite;
     private TextureRegion region;
 
-    public InGameState(){
-  
     public InGameState(GameStateManager gameStateManager){
         super(gameStateManager);
         wizard = new Wizard(new Vector2(200,200));
