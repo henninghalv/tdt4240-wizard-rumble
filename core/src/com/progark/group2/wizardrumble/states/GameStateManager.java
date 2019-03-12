@@ -12,7 +12,7 @@ public class GameStateManager {
 
     private Stack<State> states;
 
-    public void GameStateManager(){
+    public GameStateManager(){
         this.states = new Stack<State>();
     }
 

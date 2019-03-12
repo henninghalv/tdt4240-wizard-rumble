@@ -4,6 +4,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class MainMenuState extends State {
 
+    public MainMenuState(GameStateManager gameStateManager){
+        super(gameStateManager);
+    }
+
     public void startGame(){
 
     }
