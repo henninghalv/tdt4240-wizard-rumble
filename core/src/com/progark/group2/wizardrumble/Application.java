@@ -20,8 +20,8 @@ import java.util.List;
 public class Application extends ApplicationAdapter {
 
 	// Window parameters
-	public static final int WIDTH = 480;
-	public static final int HEIGHT = 800;
+	public static final int WIDTH = 800;
+	public static final int HEIGHT = 480;
 	public static final float SCALE = 0.5f;
 	public static final String TITLE = "WizardRumble";
 
