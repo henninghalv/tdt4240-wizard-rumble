@@ -7,6 +7,9 @@ import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 import com.progark.group2.wizardrumble.network.CreateGameRequest;
 import com.progark.group2.wizardrumble.network.CreateGameResponse;
+import com.progark.group2.wizardrumble.network.PlayerDeadRequest;
+import com.progark.group2.wizardrumble.network.PlayerJoinedRequest;
+import com.progark.group2.wizardrumble.network.PlayerStatisticsResponse;
 import com.progark.group2.wizardrumble.network.ServerErrorResponse;
 import com.progark.group2.wizardrumble.network.ServerIsFullResponse;
 
@@ -36,7 +39,10 @@ public class MasterServer {
             new HashMap<Integer, String>();
 
     public MasterServer(int tcpPort, int udpPort) throws IOException {
+        // Create a list of TCP and UDP ports that are available
         populateTCPAndUDPPorts();
+
+        // Init server
         server = new Server();
         server.start();
         server.bind(tcpPort, udpPort);
@@ -45,6 +51,10 @@ public class MasterServer {
         // creating lobby etc.
         // NOTE: CLIENT AND SERVER MUST HAVE SAME ORDER OF CLASSES REGISTERED!
         Kryo kryo = server.getKryo();
+        kryo.register(PlayerJoinedRequest.class);
+        kryo.register(PlayerDeadRequest.class);
+        kryo.register(PlayerStatisticsResponse.class);
+        kryo.register(ServerErrorResponse.class);
         kryo.register(CreateGameRequest.class);
         kryo.register(CreateGameResponse.class);
         kryo.register(HashMap.class);
@@ -55,11 +65,18 @@ public class MasterServer {
                 // If the client wants to create a new game lobby
                 if (object instanceof CreateGameRequest) {
                     sendGameCreatedResponse(connection);
+                } else if (object instanceof PlayerJoinedRequest) {
+                    System.out.println("THIS IS MASTER SERVER DONT GIVE ME THIS CRAP");
                 }
             }
         });
     }
 
+    /**
+     * Singleton class - This will get MasterServer instance unless it's defined
+     * @return  Returns the MasterServer instance
+     * @throws IOException      Exception upon creation of master server
+     */
     public static MasterServer getInstance() throws IOException {
         if (instance == null) {
             instance = new MasterServer(DEFAULT_MASTERSERVER_TCP_PORT, DEFAULT_MASTERSERVER_UDP_PORT);
@@ -67,6 +84,10 @@ public class MasterServer {
         return instance;
     }
 
+    /**
+     * Populates a hashmap for TCP and UDP ports so the master server knows
+     * which ports that are open.
+     */
     private void populateTCPAndUDPPorts() {
         // Populate tcp
         for (int i = DEFAULT_GAMESERVER_TCP_PORT; i <  DEFAULT_GAMESERVER_TCP_PORT + GAMESERVER_COUNT; i++) {
@@ -79,6 +100,10 @@ public class MasterServer {
         }
     }
 
+    /**
+     * Finds an available TCP port from hashmap
+     * @return  (int)  The first open port number for TCP
+     */
     private int findTCPPort() {
         for (int port : TCP_PORTS.keySet()) {
             if ("open".equals(TCP_PORTS.get(port))) {
@@ -89,6 +114,10 @@ public class MasterServer {
         return -1;
     }
 
+    /**
+     * Finds an available UDP port from hashmap
+     * @return  (int)   The first open port number for UDP
+     */
     private int findUDPPort() {
         for (int port : UDP_PORTS.keySet()) {
             if ("open".equals(UDP_PORTS.get(port))) {
@@ -112,6 +141,8 @@ public class MasterServer {
      * updates which ports that are now open
      */
     protected void removeGameServer(GameServer server) {
+        TCP_PORTS.put(server.getTCPPort(), "open");
+        UDP_PORTS.put(server.getUDPPort(), "open");
         this.servers.remove(server);
     }
 
@@ -139,9 +170,9 @@ public class MasterServer {
         } else {
             // Create a response with the new Gameserver ports
             CreateGameResponse response = new CreateGameResponse();
-            response.map = new HashMap<String, String>();
-            response.map.put("tcpPort", tcpPort + "");
-            response.map.put("udpPort", udpPort + "");
+            response.map = new HashMap<String, Integer>();
+            response.map.put("tcpPort", tcpPort);
+            response.map.put("udpPort", udpPort);
 
             // Init a new server
             try {
@@ -159,11 +190,8 @@ public class MasterServer {
 
 
     public static void main(String[] args) throws IOException {
-
-        // Example server startup
-        // Gets CreateGameRequest from NetworkController in core
-        // Responds with CreateGameResponse
-        MasterServer ms = new MasterServer(DEFAULT_MASTERSERVER_TCP_PORT, DEFAULT_MASTERSERVER_UDP_PORT);
+        // Example master server startup
+        MasterServer ms = MasterServer.getInstance();
 
     }
 }
