@@ -3,6 +3,10 @@ package com.progark.group2.wizardrumble.states;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class MainMenuSettings extends SettingsState {
+
+    public MainMenuSettings(GameStateManager gameStateManager){
+        super(gameStateManager);
+    }
     @Override
     public void update(float dt) {
 
@@ -14,7 +18,7 @@ public class MainMenuSettings extends SettingsState {
     }
 
     @Override
-    public void render(SpriteBatch sb) {
+    public void render(SpriteBatch spriteBatch) {
 
     }
 

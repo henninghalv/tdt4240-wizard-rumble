@@ -16,6 +16,9 @@ public class InGameState extends State {
     private TextureRegion region;
 
     public InGameState(){
+  
+    public InGameState(GameStateManager gameStateManager){
+        super(gameStateManager);
         wizard = new Wizard(new Vector2(200,200));
         wizardSprite = new Texture("wizard.jpg");
         region = new TextureRegion(wizardSprite);
@@ -32,6 +35,7 @@ public class InGameState extends State {
             position.y += movement.y;
         }
         */
+
 
         if(Gdx.input.isKeyPressed(Keys.UP)){
             wizard.move(new Vector2(0,2));

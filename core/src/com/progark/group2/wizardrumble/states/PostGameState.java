@@ -7,6 +7,10 @@ import java.util.Map;
 public class PostGameState extends State {
     private Map stats;
 
+    public PostGameState(GameStateManager gameStateManager){
+        super(gameStateManager);
+    }
+
     public void updateDB(){
 
     }
@@ -17,7 +21,7 @@ public class PostGameState extends State {
     }
 
     @Override
-    public void render(SpriteBatch sb) {
+    public void render(SpriteBatch spriteBatch) {
 
     }
 

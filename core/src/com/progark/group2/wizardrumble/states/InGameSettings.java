@@ -4,6 +4,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class InGameSettings extends SettingsState {
 
+    public InGameSettings(GameStateManager gameStateManager){
+        super(gameStateManager);
+    }
+
     @Override
     public void applyChanges() {
 
@@ -15,7 +19,7 @@ public class InGameSettings extends SettingsState {
     }
 
     @Override
-    public void render(SpriteBatch sb) {
+    public void render(SpriteBatch spriteBatch) {
 
     }
 

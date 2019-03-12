@@ -1,10 +1,13 @@
 package com.progark.group2.wizardrumble.states;
 
-import com.badlogic.gdx.graphics.Texture;
+
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class MainMenuState extends State {
+
+    public MainMenuState(GameStateManager gameStateManager){
+        super(gameStateManager);
+    }
 
     public void startGame(){
 
@@ -24,12 +27,9 @@ public class MainMenuState extends State {
     }
 
     @Override
-    public void render(SpriteBatch sb) {
-        Texture img = new Texture("wizard.jpg");
-        TextureRegion region = new TextureRegion(img);
-        sb.begin();
-        sb.draw(region, 200,200, 0,0, img.getWidth(),img.getHeight(),1,1,0);
-        sb.end();
+
+    public void render(SpriteBatch spriteBatch) {
+
     }
 
     @Override
