@@ -1,15 +1,12 @@
 package com.progark.group2.gameserver;
 
 
-import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 import com.progark.group2.wizardrumble.network.CreateGameRequest;
 import com.progark.group2.wizardrumble.network.CreateGameResponse;
-import com.progark.group2.wizardrumble.network.PlayerDeadRequest;
 import com.progark.group2.wizardrumble.network.PlayerJoinedRequest;
-import com.progark.group2.wizardrumble.network.PlayerStatisticsResponse;
 import com.progark.group2.wizardrumble.network.ServerErrorResponse;
 import com.progark.group2.wizardrumble.network.ServerIsFullResponse;
 
@@ -47,17 +44,8 @@ public class MasterServer {
         server.start();
         server.bind(tcpPort, udpPort);
 
-        // Register response and request classes for
-        // creating lobby etc.
-        // NOTE: CLIENT AND SERVER MUST HAVE SAME ORDER OF CLASSES REGISTERED!
-        Kryo kryo = server.getKryo();
-        kryo.register(PlayerJoinedRequest.class);
-        kryo.register(PlayerDeadRequest.class);
-        kryo.register(PlayerStatisticsResponse.class);
-        kryo.register(ServerErrorResponse.class);
-        kryo.register(CreateGameRequest.class);
-        kryo.register(CreateGameResponse.class);
-        kryo.register(HashMap.class);
+        // Register response and request classes for kryonet serialize
+        KryoServerRegister.registerKryoClasses(server);
 
         // Add a receiver listener to server
         server.addListener(new Listener() {

@@ -1,16 +1,11 @@
 package com.progark.group2.gameserver;
 
-import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 
-import com.progark.group2.wizardrumble.network.CreateGameRequest;
-import com.progark.group2.wizardrumble.network.CreateGameResponse;
 import com.progark.group2.wizardrumble.network.PlayerDeadRequest;
 import com.progark.group2.wizardrumble.network.PlayerJoinedRequest;
-import com.progark.group2.wizardrumble.network.PlayerStatisticsResponse;
-import com.progark.group2.wizardrumble.network.ServerErrorResponse;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,6 +17,9 @@ public class GameServer {
     private Server server;
     private int TCP_PORT;
     private int UDP_PORT;
+
+    private HashMap<Integer, HashMap<String, Object>> joinedPlayers =
+            new HashMap<Integer, HashMap<String, Object>>();
 
     // List of all joinedPlayerIDs joined the game
     private List<Integer> joinedPlayerIDs = new ArrayList<Integer>();
@@ -60,7 +58,12 @@ public class GameServer {
      * @param playerID  (int) player id
      */
     private void addJoinedPlayer(int playerID) {
-        this.joinedPlayerIDs.add(playerID);
+        HashMap<String, Object> playerStats = new HashMap<String, Object>();
+        playerStats.put("isDead", false);
+        playerStats.put("Name", "Player"); // TODO: Get player name from MasterServer => DB
+        //playerStats.put("")
+
+        this.joinedPlayers.put(playerID, playerStats);
     }
 
     /**
@@ -100,15 +103,8 @@ public class GameServer {
         server.start();
         server.bind(tcpPort, udpPort);
 
-        // Register response and request classes
-        Kryo kryo = server.getKryo();
-        kryo.register(PlayerJoinedRequest.class);
-        kryo.register(PlayerDeadRequest.class);
-        kryo.register(PlayerStatisticsResponse.class);
-        kryo.register(ServerErrorResponse.class);
-        kryo.register(CreateGameRequest.class);
-        kryo.register(CreateGameResponse.class);
-        kryo.register(HashMap.class);
+        // Register response and request classes for kryo serializer
+        KryoServerRegister.registerKryoClasses(server);
 
         // Add a receiver listener to server
         server.addListener(new Listener() {

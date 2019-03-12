@@ -32,14 +32,8 @@ public class NetworkController {
                 MASTER_SERVER_UDP_PORT
         );
 
-        Kryo kryo = masterServerClient.getKryo();
-        kryo.register(PlayerJoinedRequest.class);
-        kryo.register(PlayerDeadRequest.class);
-        kryo.register(PlayerStatisticsResponse.class);
-        kryo.register(ServerErrorResponse.class);
-        kryo.register(CreateGameRequest.class);
-        kryo.register(CreateGameResponse.class);
-        kryo.register(HashMap.class);
+        // Register classes for kryo serializer
+        KryoClientRegister.registerKryoClasses(masterServerClient);
 
         final CreateGameRequest request = new CreateGameRequest();
         request.playerID = 0; // TODO: ID is generated through name registering
@@ -60,15 +54,8 @@ public class NetworkController {
                                 response.map.get("udpPort")
                         );
 
-
-                        Kryo kryo = client.getKryo();
-                        kryo.register(PlayerJoinedRequest.class);
-                        kryo.register(PlayerDeadRequest.class);
-                        kryo.register(PlayerStatisticsResponse.class);
-                        kryo.register(ServerErrorResponse.class);
-                        kryo.register(CreateGameRequest.class);
-                        kryo.register(CreateGameResponse.class);
-                        kryo.register(HashMap.class);
+                        // Register classes for kryo serializer
+                        KryoClientRegister.registerKryoClasses(client);
 
                         // Let the client join the game server (lobby)
                         PlayerJoinedRequest requestToJoin = new PlayerJoinedRequest();
