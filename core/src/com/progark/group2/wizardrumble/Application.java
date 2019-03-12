@@ -34,6 +34,7 @@ public class Application extends ApplicationAdapter {
 	// TODO move to inGameSate
 	private List<Spell> spellList;
 
+
 	
 	@Override
 	public void create () {
@@ -46,8 +47,11 @@ public class Application extends ApplicationAdapter {
 
 		this.gameStateManager = new GameStateManager();
 		gameStateManager.push(new InGameState(gameStateManager));
-	}
 
+
+		this.gameStateManager = new GameStateManager();
+		gameStateManager.push(new InGameState(gameStateManager));
+	}
 
 	@Override
 	public void render () {
