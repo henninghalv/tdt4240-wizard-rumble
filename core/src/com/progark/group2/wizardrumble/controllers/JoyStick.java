@@ -1,4 +1,4 @@
-package com.progark.group2.wizardrumble;
+package com.progark.group2.wizardrumble.controllers;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -6,17 +6,23 @@ import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 
 
-public class AnalogStick extends Touchpad {
+public class JoyStick extends Touchpad {
 
     private static Touchpad.TouchpadStyle touchpadStyle;
     private static Skin touchpadSkin;
     private static Drawable touchBackground;
     private static Drawable touchKnob;
+    public static int diameter;
 
-    public AnalogStick(float x, float y) {
+    public JoyStick(float x, float y) {
 
         super(10, getTouchpadStyle());
-        setBounds(15, 15, 200, 200);
+
+        //TODO: set knob size based on diameter
+        // Adjust diameter to change size of joysticks
+        diameter=200;
+
+        setBounds(15, 15, diameter, diameter);
         setPosition(x,y);
 
     }
@@ -35,7 +41,6 @@ public class AnalogStick extends Touchpad {
 
         touchpadStyle.background = touchBackground;
         touchpadStyle.knob = touchKnob;
-
         return touchpadStyle;
     }
 }

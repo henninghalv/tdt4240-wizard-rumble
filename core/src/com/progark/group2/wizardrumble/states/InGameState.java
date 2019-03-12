@@ -5,9 +5,14 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.progark.group2.wizardrumble.controllers.JoyStick;
 import com.progark.group2.wizardrumble.entities.Wizard;
 
 import static com.badlogic.gdx.Input.Keys;
+import static com.progark.group2.wizardrumble.Application.HEIGHT;
+import static com.progark.group2.wizardrumble.Application.WIDTH;
 
 public class InGameState extends State {
 
@@ -15,12 +20,32 @@ public class InGameState extends State {
     private Texture wizardSprite;
     private TextureRegion region;
 
-    public InGameState(GameStateManager gameStateManager){
+    private SpriteBatch sb;
+    private JoyStick leftJoyStick;
+    private JoyStick rightJoyStick;
+    private Stage stage;
+
+
+
+
+
+    public InGameState(GameStateManager gameStateManager) {
         super(gameStateManager);
-        wizard = new Wizard(new Vector2(200,200));
+        wizard = new Wizard(new Vector2(200, 200));
         wizardSprite = new Texture("wizard.jpg");
         region = new TextureRegion(wizardSprite);
+
+        sb = new SpriteBatch();
+        stage = new Stage();
+        leftJoyStick = new JoyStick(15, 15);
+        rightJoyStick = new JoyStick(WIDTH-15-JoyStick.diameter, 15);
+        Gdx.input.setInputProcessor(stage);
+        stage = new Stage(new ScreenViewport(), sb);
+        stage.addActor(leftJoyStick);
+        stage.addActor(rightJoyStick);
+        Gdx.input.setInputProcessor(stage);
     }
+
 
     @Override
     public void update(float dt) {
@@ -59,6 +84,9 @@ public class InGameState extends State {
                 wizardSprite.getWidth(), wizardSprite.getHeight(),
                 1,1,0);
         sb.end();
+
+            stage.act(Gdx.graphics.getDeltaTime());
+            stage.draw();
     }
 
     @Override
