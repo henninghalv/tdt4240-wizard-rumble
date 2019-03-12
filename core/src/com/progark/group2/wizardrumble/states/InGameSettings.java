@@ -1,6 +1,12 @@
 package com.progark.group2.wizardrumble.states;
 
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+
 public class InGameSettings extends SettingsState {
+
+    public InGameSettings(GameStateManager gameStateManager){
+        super(gameStateManager);
+    }
 
     @Override
     public void applyChanges() {
@@ -8,12 +14,12 @@ public class InGameSettings extends SettingsState {
     }
 
     @Override
-    public void update() {
+    public void update(float dt) {
 
     }
 
     @Override
-    public void render() {
+    public void render(SpriteBatch spriteBatch) {
 
     }
 
