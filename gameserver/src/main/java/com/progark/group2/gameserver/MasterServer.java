@@ -175,6 +175,12 @@ public class MasterServer {
         }
     }
 
+    static String getPlayerName(int playerID) {
+        String playerName = "Guest";
+        // TODO: Retrieve playername from database from playerID
+        return playerName;
+    }
+
     public static void main(String[] args) throws IOException {
         // Init master server
         MasterServer.getInstance();

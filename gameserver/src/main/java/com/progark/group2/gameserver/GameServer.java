@@ -8,9 +8,7 @@ import com.progark.group2.wizardrumble.network.PlayerDeadRequest;
 import com.progark.group2.wizardrumble.network.PlayerJoinedRequest;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class GameServer {
 
@@ -18,14 +16,15 @@ public class GameServer {
     private int TCP_PORT;
     private int UDP_PORT;
 
-    private HashMap<Integer, HashMap<String, Object>> joinedPlayers =
+    private final static String NAME = "name";
+    private final static String KILLS = "kills";
+    private final static String IS_DEAD = "isDead";
+    private final static String POSITION = "position";
+    private final static String TIME_ALIVE = "timeAlive";
+
+    // List of all players that has joined the game with their stats for this game
+    private HashMap<Integer, HashMap<String, Object>> players =
             new HashMap<Integer, HashMap<String, Object>>();
-
-    // List of all joinedPlayerIDs joined the game
-    private List<Integer> joinedPlayerIDs = new ArrayList<Integer>();
-
-    // List of all joinedPlayerIDs that are dead in the game
-    private List<Integer> deadPlayerIDs = new ArrayList<Integer>();
 
     // This is the master server
     GameServer(int tcpPort, int udpPort) throws IOException {
@@ -58,39 +57,53 @@ public class GameServer {
      * @param playerID  (int) player id
      */
     private void addJoinedPlayer(int playerID) {
-        HashMap<String, Object> playerStats = new HashMap<String, Object>();
-        playerStats.put("isDead", false);
-        playerStats.put("Name", "Player"); // TODO: Get player name from MasterServer => DB
-        //playerStats.put("")
+        // Default name if not registered in DB
+        String playerName = "Guest";
 
-        this.joinedPlayers.put(playerID, playerStats);
+        // TODO: Get player name from MasterServer => DB
+        //playerName = MasterServer.getPlayerName(playerID);
+
+        HashMap<String, Object> playerStats = new HashMap<String, Object>();
+        playerStats.put(IS_DEAD, false); // If the player is dead
+        playerStats.put(NAME, playerName); // Player name registered
+        playerStats.put(KILLS, 0); // Amount of kills in one game
+        playerStats.put(TIME_ALIVE, 0); // Time alive in a game
+        playerStats.put(POSITION, -1); // Placement based on when the player died
+        // TODO: Consider adding more info to register more metadata
+
+        // Add playerstats to the list of joined players
+        players.put(playerID, playerStats);
     }
 
     /**
      * Removes a player when the player is leaving the game or disconnects.
+     * Player stats will not be saved.
      * @param playerID  (int) player id
      */
     protected void removeJoinedPlayer(int playerID) {
-        for (int i = 0; i < joinedPlayerIDs.size(); i++) {
-            if (joinedPlayerIDs.get(i) == playerID) {
-                joinedPlayerIDs.remove(i);
-                break;
-            }
-        }
+        players.remove(playerID);
     }
 
     /**
-     * Adds a player to the list of dead players.
+     * Sets a player status as dead.
      * @param playerID  (int) player id
      */
-    private void addDeadPlayer(int playerID) { deadPlayerIDs.add(playerID); }
+    private void addDeadPlayer(int playerID) {
+        players.get(playerID).put(IS_DEAD, true);
+    }
 
     /**
      * Return whether all players are dead and the game has ended.
      * @return  Boolean     True if all players have died
      */
     private boolean hasGameEnded() {
-        return deadPlayerIDs.size() == joinedPlayerIDs.size();
+        for (int playerID : players.keySet()) {
+            // If one player is alive
+            if (!(Boolean) players.get(playerID).get(IS_DEAD)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -141,7 +154,7 @@ public class GameServer {
     private void endGame(Connection connection) {
         if (!hasGameEnded()) return;
 
-        // TODO: Create a timeout for when the server shutdown anyway
+        // TODO: Create a timeout for when the server should shutdown anyway
 
         // TODO: send request with metadata (scoreboard data) to all clients
         //PlayerStatisticsResponse response = new PlayerStatisticsResponse();
@@ -151,6 +164,7 @@ public class GameServer {
         // Send the response back to client
         //connection.sendTCP(response);
 
+        System.out.println("ALL PLAYERS ARE DEAD. STOPPING GAMESERVER: GOODBYE WORLD");
         // Stop the server connection
         server.stop();
         try {
@@ -160,5 +174,10 @@ public class GameServer {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void main(String[] args) throws IOException {
+        GameServer gs = new GameServer(54556, 544557);
+        gs.hasGameEnded();
     }
 }

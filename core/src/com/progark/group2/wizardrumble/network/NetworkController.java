@@ -1,6 +1,5 @@
 package com.progark.group2.wizardrumble.network;
 
-import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
@@ -10,6 +9,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class NetworkController {
+
+    // TODO: Set this based on generated ID from server
+    private final static int playerID = 0;
 
     // IP address to MasterServer
     private final static int TIMEOUT = 5000;
@@ -60,6 +62,10 @@ public class NetworkController {
                         // Let the client join the game server (lobby)
                         PlayerJoinedRequest requestToJoin = new PlayerJoinedRequest();
                         client.sendTCP(requestToJoin);
+
+                        PlayerDeadRequest requestPlayerDied = new PlayerDeadRequest();
+                        requestPlayerDied.playerID = playerID;
+                        client.sendTCP(requestPlayerDied);
 
                     } catch (IOException e) {
                         e.printStackTrace();
