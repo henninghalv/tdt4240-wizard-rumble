@@ -5,16 +5,34 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.progark.group2.wizardrumble.entities.Spell;
+import com.progark.group2.wizardrumble.network.NetworkController;
+
+import java.util.List;
 
 public class Application extends ApplicationAdapter {
 	private SpriteBatch batch;
 	private Texture img;
+
+	private NetworkController nc;
+	private int height;
+	private int width;
+	private List<Spell> spellList;
+
+	/*
+	public void update(){
+
+	}
+
+	* */
 	
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
 		img = new Texture("badlogic.jpg");
 	}
+
+
 
 	@Override
 	public void render () {
