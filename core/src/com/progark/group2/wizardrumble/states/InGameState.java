@@ -71,6 +71,11 @@ public class InGameState extends State {
         );
     }
 
+    @Override
+    public void handleInput() {
+
+    }
+
     private void updateWizardPosition(){
         //GetKnobPercentX and -Y returns cos and sin values of the touchpad in question
         Vector2 leftJoyPosition = new Vector2(leftJoyStick.getKnobPercentX(),leftJoyStick.getKnobPercentY());

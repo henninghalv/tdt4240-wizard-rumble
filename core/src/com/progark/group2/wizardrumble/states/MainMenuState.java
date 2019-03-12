@@ -26,6 +26,11 @@ public class MainMenuState extends State {
     }
 
     @Override
+    public void handleInput() {
+
+    }
+
+    @Override
     public void update(float dt) {
 
     }
