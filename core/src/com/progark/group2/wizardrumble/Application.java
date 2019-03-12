@@ -47,7 +47,6 @@ public class Application extends ApplicationAdapter {
 		gameStateManager.push(new InGameState(gameStateManager));
 	}
 
-
 	@Override
 	public void render () {
 		//TODO remove
@@ -66,5 +65,6 @@ public class Application extends ApplicationAdapter {
 		spriteBatch.dispose();
 		img.dispose();
 		//gameStateManager.dispose();
+
 	}
 }
