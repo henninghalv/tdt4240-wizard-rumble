@@ -20,6 +20,7 @@ public class InGameState extends State {
     private Texture wizardSprite;
     private TextureRegion region;
 
+
     private SpriteBatch sb;
     private JoyStick leftJoyStick;
     private JoyStick rightJoyStick;
