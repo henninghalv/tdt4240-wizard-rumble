@@ -2,6 +2,7 @@ package com.progark.group2.wizardrumble.states;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
+import java.util.EmptyStackException;
 import java.util.Stack;
 
 /**
@@ -23,7 +24,7 @@ public class GameStateManager {
     public void pop(){
         try {
             this.states.pop();
-        } catch(Exception e){
+        } catch(EmptyStackException e){
             System.out.println(e.getMessage());
         }
     }
