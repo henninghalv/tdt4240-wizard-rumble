@@ -7,6 +7,10 @@ import java.util.Map;
 public class PostGameState extends State {
     private Map stats;
 
+    public PostGameState(GameStateManager gameStateManager){
+        super(gameStateManager);
+    }
+
     public void updateDB(){
 
     }

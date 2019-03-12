@@ -7,6 +7,10 @@ import java.util.Map;
 public class PlayerStatsState extends State {
     private Map stats;
 
+    public PlayerStatsState(GameStateManager gameStateManager){
+        super(gameStateManager);
+    }
+
     public Map retrieveStats(){
         return null;
     }
