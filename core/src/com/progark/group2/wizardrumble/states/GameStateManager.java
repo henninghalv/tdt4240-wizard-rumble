@@ -40,8 +40,6 @@ public class GameStateManager {
         this.states.push(state);
     }
 
-
-
     public void update(float dt){
         states.peek().update(dt);
     }

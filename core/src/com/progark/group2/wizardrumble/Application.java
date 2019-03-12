@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.progark.group2.wizardrumble.entities.Spell;
 import com.progark.group2.wizardrumble.network.NetworkController;
 import com.progark.group2.wizardrumble.states.GameStateManager;
@@ -17,6 +18,7 @@ import java.util.List;
  * starts the first state.
  */
 public class Application extends ApplicationAdapter {
+
 	// Window parameters
 	public static final int WIDTH = 480;
 	public static final int HEIGHT = 800;
@@ -60,6 +62,7 @@ public class Application extends ApplicationAdapter {
 
 		gameStateManager.update(Gdx.graphics.getDeltaTime());
 		gameStateManager.render(spriteBatch);
+
 	}
 	
 	@Override

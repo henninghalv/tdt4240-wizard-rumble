@@ -1,5 +1,6 @@
 package com.progark.group2.wizardrumble.states;
 
+
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class MainMenuState extends State {
@@ -26,6 +27,7 @@ public class MainMenuState extends State {
     }
 
     @Override
+
     public void render(SpriteBatch spriteBatch) {
 
     }
