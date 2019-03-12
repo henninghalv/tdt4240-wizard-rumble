@@ -11,6 +11,7 @@ import com.progark.group2.wizardrumble.entities.Spell;
 import com.progark.group2.wizardrumble.network.NetworkController;
 import com.progark.group2.wizardrumble.states.GameStateManager;
 import com.progark.group2.wizardrumble.states.InGameState;
+import com.progark.group2.wizardrumble.states.MainMenuState;
 
 import java.io.IOException;
 import java.util.List;
@@ -63,11 +64,13 @@ public class Application extends Game {
 	@Override
 	public void render () {
 		//TODO remove
+		/*
 		Gdx.gl.glClearColor(1, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		spriteBatch.begin();
 		//spriteBatch.draw(img, 0, 0);
 		spriteBatch.end();
+		*/
 
 		gameStateManager.update(Gdx.graphics.getDeltaTime());
 		gameStateManager.render(spriteBatch);
