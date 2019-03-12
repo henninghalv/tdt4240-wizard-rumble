@@ -10,9 +10,12 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
  */
 public class MainMenuState extends State {
 
+    private Texture button;
+
     public MainMenuState(GameStateManager gameStateManager){
         super(gameStateManager);
 
+        button = new Texture("UI/blue_button00.png");
     }
 
     public void startGame(){
@@ -42,6 +45,10 @@ public class MainMenuState extends State {
     public void render(SpriteBatch spriteBatch) {
         Gdx.gl.glClearColor(0, 0, 1, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        spriteBatch.begin();
+        spriteBatch.draw(button, 0, 0);
+        spriteBatch.end();
     }
 
     @Override
