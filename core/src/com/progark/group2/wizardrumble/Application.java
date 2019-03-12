@@ -47,10 +47,6 @@ public class Application extends ApplicationAdapter {
 
 		this.gameStateManager = new GameStateManager();
 		gameStateManager.push(new InGameState(gameStateManager));
-
-
-		this.gameStateManager = new GameStateManager();
-		gameStateManager.push(new InGameState(gameStateManager));
 	}
 
 	@Override
