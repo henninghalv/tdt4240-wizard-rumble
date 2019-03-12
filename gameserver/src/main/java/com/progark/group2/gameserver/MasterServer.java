@@ -38,7 +38,7 @@ public class MasterServer {
     private final static HashMap<Integer, String> UDP_PORTS =
             new HashMap<Integer, String>();
 
-    public MasterServer(int tcpPort, int udpPort) throws IOException {
+    private MasterServer(int tcpPort, int udpPort) throws IOException {
         // Create a list of TCP and UDP ports that are available
         populateTCPAndUDPPorts();
 
@@ -77,7 +77,7 @@ public class MasterServer {
      * @return  Returns the MasterServer instance
      * @throws IOException      Exception upon creation of master server
      */
-    public static MasterServer getInstance() throws IOException {
+    static MasterServer getInstance() throws IOException {
         if (instance == null) {
             instance = new MasterServer(DEFAULT_MASTERSERVER_TCP_PORT, DEFAULT_MASTERSERVER_UDP_PORT);
         }
@@ -140,7 +140,7 @@ public class MasterServer {
      * Remove server from the list of all servers and
      * updates which ports that are now open
      */
-    protected void removeGameServer(GameServer server) {
+    void removeGameServer(GameServer server) {
         TCP_PORTS.put(server.getTCPPort(), "open");
         UDP_PORTS.put(server.getUDPPort(), "open");
         this.servers.remove(server);
@@ -155,8 +155,7 @@ public class MasterServer {
         return new GameServer(tcpPort, udpPort);
     }
 
-    // TODO this is the method for responding to clientRequest when creating lobby
-    public void sendGameCreatedResponse(Connection connection) {
+    private void sendGameCreatedResponse(Connection connection) {
 
         // Find a available ports
         int tcpPort = findTCPPort();
@@ -188,10 +187,8 @@ public class MasterServer {
         }
     }
 
-
     public static void main(String[] args) throws IOException {
-        // Example master server startup
-        MasterServer ms = MasterServer.getInstance();
-
+        // Init master server
+        MasterServer.getInstance();
     }
 }

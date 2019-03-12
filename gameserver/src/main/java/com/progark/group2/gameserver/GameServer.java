@@ -30,7 +30,7 @@ public class GameServer {
     private List<Integer> deadPlayerIDs = new ArrayList<Integer>();
 
     // This is the master server
-    protected GameServer(int tcpPort, int udpPort) throws IOException {
+    GameServer(int tcpPort, int udpPort) throws IOException {
         // Add ports for reference
         TCP_PORT = tcpPort;
         UDP_PORT = udpPort;
@@ -39,11 +39,19 @@ public class GameServer {
         server = createNewServer(TCP_PORT, UDP_PORT);
     }
 
-    public int getTCPPort() {
+    /**
+     * Used by master server to determine which tcp port this server used
+     * @return  tcp port used by server
+     */
+    int getTCPPort() {
         return TCP_PORT;
     }
 
-    public int getUDPPort() {
+    /**
+     * Used by master server to determine which udp port this server used
+     * @return  dup port used by server
+     */
+    int getUDPPort() {
         return UDP_PORT;
     }
 
@@ -51,7 +59,7 @@ public class GameServer {
      * Add a new player to list when joining or creating a new game.
      * @param playerID  (int) player id
      */
-    protected void addJoinedPlayer(int playerID) {
+    private void addJoinedPlayer(int playerID) {
         this.joinedPlayerIDs.add(playerID);
     }
 
@@ -134,7 +142,7 @@ public class GameServer {
      * When the game has ended and all joinedPlayerIDs has left the game,
      * the server stops and removes itself from the MasterServer.
      */
-    public void endGame(Connection connection) {
+    private void endGame(Connection connection) {
         if (!hasGameEnded()) return;
 
         // TODO: Create a timeout for when the server shutdown anyway
