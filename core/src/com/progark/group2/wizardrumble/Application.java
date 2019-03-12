@@ -2,7 +2,6 @@ package com.progark.group2.wizardrumble;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -22,6 +21,7 @@ public class Application extends ApplicationAdapter {
 	public static final int HEIGHT = 800;
 	public static final float SCALE = 0.5f;
 	public static final String TITLE = "WizardRumble";
+
 
 	private SpriteBatch spriteBatch;
 	private GameStateManager gameStateManager;
