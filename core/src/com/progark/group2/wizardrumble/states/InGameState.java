@@ -50,30 +50,17 @@ public class InGameState extends State {
 
     @Override
     public void update(float dt) {
-        //updatePlayerRotation(direction);
-        /*
-        if (leftJoy.isTouched()){
-            float angle = direction.angle();
-            Vector2 movement = new Vector2((float) Math.sin(angle), (float) Math.cos(angle)); // Kan hende man må flippe sin og cos.
-            position.x += movement.x;
-            position.y += movement.y;
+        if (leftJoyStick.isTouched()){
+            wizard.updatePlayerRotation(
+                    rightJoyStick.isTouched() ?
+                            new Vector2(rightJoyStick.getKnobPercentX(),rightJoyStick.getKnobPercentY()) :
+                            new Vector2(leftJoyStick.getKnobPercentX(),leftJoyStick.getKnobPercentY()));
+            //GetKnobPercentX and -Y returns cos and sin values
+            Vector2 leftJoyPosition = new Vector2(leftJoyStick.getKnobPercentX(),leftJoyStick.getKnobPercentY());
+            wizard.move(leftJoyPosition);
+        } else if (rightJoyStick.isTouched()){
+            wizard.updatePlayerRotation(new Vector2(rightJoyStick.getKnobPercentX(),rightJoyStick.getKnobPercentY()));
         }
-        */
-
-
-        if(Gdx.input.isKeyPressed(Keys.UP)){
-            wizard.move(new Vector2(0,2));
-        }
-        if(Gdx.input.isKeyPressed(Keys.RIGHT)){
-            wizard.move(new Vector2(2,0));
-        }
-        if(Gdx.input.isKeyPressed(Keys.DOWN)){
-            wizard.move(new Vector2(0,-2));
-        }
-        if(Gdx.input.isKeyPressed(Keys.LEFT)){
-            wizard.move(new Vector2(-2,0));
-        }
-
     }
 
     @Override
@@ -83,7 +70,7 @@ public class InGameState extends State {
                 wizardSprite.getWidth()/(float)2,
                 wizardSprite.getHeight()/(float)2,
                 wizardSprite.getWidth(), wizardSprite.getHeight(),
-                1,1,0);
+                1,1,wizard.getRotation());
         sb.end();
 
             stage.act(Gdx.graphics.getDeltaTime());

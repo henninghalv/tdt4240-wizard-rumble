@@ -43,19 +43,18 @@ public class Wizard extends Entity {
     }
 
     public void updatePlayerRotation(Vector2 direction){
-        if (rightJoy.isTouched()){
-            Vector2 v = new Vector2(rightJoy.getKnobPercentX(), rightJoy.getKnobPercentY());
-            rotation = v.angle(); // Test hvordan angle fungerer
-        } else {
-            rotation = direction.angle();
-        }
-        // runningframe.setRotation(angle);
+        float angle = direction.angle();
+        angle += 270;
+        rotation = angle%360; //
     }
 
     public Vector2 getPosition(){
         return this.position;
     }
 
+    public float getRotation(){
+        return this.rotation;
+    }
 
     @Override
     public void onCollision() {
