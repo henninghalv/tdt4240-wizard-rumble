@@ -2,7 +2,6 @@ package com.progark.group2.wizardrumble;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -13,7 +12,8 @@ import com.progark.group2.wizardrumble.states.GameStateManager;
 import java.util.List;
 
 /**
- * Initialize the game, network controller and the gameManager, then starts the first state.
+ * Keeps the main render loop Initialize the game, network controller and the gameManager, then
+ * starts the first state.
  */
 public class Application extends ApplicationAdapter {
 	// Window parameters
@@ -23,42 +23,45 @@ public class Application extends ApplicationAdapter {
 	public static final String TITLE = "WizardRumble";
 
 
-	private SpriteBatch batch;
+	private SpriteBatch spriteBatch;
 	private GameStateManager gameStateManager;
-	private NetworkController nc;
+	private NetworkController networkController;
 
+	// TODO remove
 	private Texture img;
 
-
-	/*
-	private int height;
-	private int width;
+	// TODO move to inGameSate
 	private List<Spell> spellList;
-	*/
 	
 	@Override
 	public void create () {
 		Gdx.graphics.setTitle(TITLE);
 		Gdx.graphics.setWindowedMode(WIDTH, HEIGHT);
 
-		batch = new SpriteBatch();
+		// TODO remove
+		spriteBatch = new SpriteBatch();
 		img = new Texture("badlogic.jpg");
 	}
-
 
 
 	@Override
 	public void render () {
 		Gdx.gl.glClearColor(1, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		batch.begin();
-		batch.draw(img, 0, 0);
-		batch.end();
+		spriteBatch.begin();
+		spriteBatch.draw(img, 0, 0);
+		spriteBatch.end();
+
+		/*
+		gameStateManager.update(Gdx.graphics.getDeltaTime());
+		gameStateManager.render(spriteBatch);
+		*/
 	}
 	
 	@Override
 	public void dispose () {
-		batch.dispose();
+		spriteBatch.dispose();
 		img.dispose();
+		// gameStateManager.dispose();
 	}
 }
