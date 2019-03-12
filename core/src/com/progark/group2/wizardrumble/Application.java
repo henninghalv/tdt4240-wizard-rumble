@@ -9,14 +9,12 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.progark.group2.wizardrumble.entities.Spell;
 import com.progark.group2.wizardrumble.network.NetworkController;
 import com.progark.group2.wizardrumble.states.GameStateManager;
-import com.progark.group2.wizardrumble.states.MainMenuState;
+import com.progark.group2.wizardrumble.states.InGameState;
 
 import java.util.List;
 
 public class Application extends ApplicationAdapter {
 	private SpriteBatch batch;
-	private Texture img;
-	private TextureRegion region;
 
 	private GameStateManager gsm;
 	private NetworkController nc;
@@ -24,7 +22,6 @@ public class Application extends ApplicationAdapter {
 	private int width;
 	private List<Spell> spellList;
 
-	private float rotation;
 
 	/*
 	public void update(){
@@ -37,13 +34,12 @@ public class Application extends ApplicationAdapter {
 	public void create () {
 		gsm = new GameStateManager();
 		batch = new SpriteBatch();
-		img = new Texture("wizard.jpg");
-		region = new TextureRegion(img);
-		gsm.push(new MainMenuState());
+		gsm.push(new InGameState());
 	}
 
 	@Override
 	public void render () {
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		gsm.update(Gdx.graphics.getDeltaTime());
 		gsm.render(batch);
 	}
@@ -51,6 +47,5 @@ public class Application extends ApplicationAdapter {
 	@Override
 	public void dispose () {
 		batch.dispose();
-		img.dispose();
 	}
 }
