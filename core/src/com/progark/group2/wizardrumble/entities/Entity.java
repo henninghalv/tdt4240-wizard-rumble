@@ -4,10 +4,11 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
 
 public abstract class Entity {
-    private Vector2 position;
-    private Vector2 velocity;
-    private boolean isCollidable;
-    private Sprite sprite;
+    protected Vector2 position;
+    protected Vector2 velocity;
+    protected boolean isCollidable;
+    protected Sprite sprite;
+    protected float rotation; // Definert som en Vector2.angle()
 
     public abstract void onCollision();
 
