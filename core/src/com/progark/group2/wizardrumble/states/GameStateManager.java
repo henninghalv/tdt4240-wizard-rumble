@@ -18,7 +18,7 @@ public class GameStateManager {
         this.states = new Stack<State>();
     }
 
-    public static GameStateManager getGameStateManager(){
+    public static GameStateManager getInstance(){
         if(instance == null){
             return new GameStateManager();
         }
