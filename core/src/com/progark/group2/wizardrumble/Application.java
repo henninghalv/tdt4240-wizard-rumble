@@ -65,18 +65,17 @@ public class Application extends ApplicationAdapter {
 		Gdx.gl.glClearColor(1, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		spriteBatch.begin();
-		spriteBatch.draw(img, 0, 0);
+		//spriteBatch.draw(img, 0, 0);
 		spriteBatch.end();
 
 		gameStateManager.update(Gdx.graphics.getDeltaTime());
 		gameStateManager.render(spriteBatch);
-
 	}
 	
 	@Override
 	public void dispose () {
 		spriteBatch.dispose();
-		img.dispose();
+		//img.dispose();
 		//gameStateManager.dispose();
 	}
 }
