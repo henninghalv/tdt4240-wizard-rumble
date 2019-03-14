@@ -47,7 +47,7 @@ public class Application extends ApplicationAdapter {
 		spriteBatch = new SpriteBatch();
 		img = new Texture("badlogic.jpg");
 
-		this.gameStateManager = new GameStateManager();
+		this.gameStateManager = GameStateManager.getGameStateManager();
 		gameStateManager.push(new InGameState(gameStateManager));
 	}
 

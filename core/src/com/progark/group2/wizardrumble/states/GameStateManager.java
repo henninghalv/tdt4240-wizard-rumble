@@ -6,14 +6,25 @@ import java.util.EmptyStackException;
 import java.util.Stack;
 
 /**
- * Keeps track of the different states by using a private stack.
+ * Singelton that keeps track of the different states by using a private stack.
  */
 public class GameStateManager {
 
+    private static GameStateManager instance;
+
     private Stack<State> states;
 
-    public GameStateManager(){
+    private GameStateManager(){
         this.states = new Stack<State>();
+    }
+
+    public static GameStateManager getGameStateManager(){
+        if(instance == null){
+            return new GameStateManager();
+        }
+        else{
+            return instance;
+        }
     }
 
     public void push(State state){
