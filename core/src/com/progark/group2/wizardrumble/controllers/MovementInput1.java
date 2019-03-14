@@ -6,26 +6,26 @@ import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 
 
-public class JoyStick extends Touchpad {
+public class MovementInput1 extends Touchpad {
 
     private static Touchpad.TouchpadStyle touchpadStyle;
     private static Skin touchpadSkin;
     private static Drawable touchBackground;
     private static Drawable touchKnob;
-    public static int diameter;
+    // Adjust diameter to change size of joystick
+    public static int diameter=200;
 
-    public JoyStick(float x, float y) {
+    public MovementInput1(float x, float y) {
 
         super(10, getTouchpadStyle());
-
-        //TODO: set knob size based on diameter
-        // Adjust diameter to change size of joysticks
-        diameter=200;
-
         setBounds(15, 15, diameter, diameter);
-        setPosition(x,y);
+        setPosition(x, y);
+        touchKnob.setMinWidth(diameter/3);
+        touchKnob.setMinHeight(diameter/3);
 
     }
+
+
 
     private static Touchpad.TouchpadStyle getTouchpadStyle() {
 

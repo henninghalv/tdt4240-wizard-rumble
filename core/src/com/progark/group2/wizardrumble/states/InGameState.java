@@ -7,11 +7,11 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import com.progark.group2.wizardrumble.controllers.JoyStick;
+import com.progark.group2.wizardrumble.controllers.AimInput1;
+import com.progark.group2.wizardrumble.controllers.MovementInput1;
 import com.progark.group2.wizardrumble.entities.Wizard;
 
 import static com.badlogic.gdx.Input.Keys;
-import static com.progark.group2.wizardrumble.Application.HEIGHT;
 import static com.progark.group2.wizardrumble.Application.WIDTH;
 
 public class InGameState extends State {
@@ -22,8 +22,8 @@ public class InGameState extends State {
 
 
     private SpriteBatch sb;
-    private JoyStick leftJoyStick;
-    private JoyStick rightJoyStick;
+    private MovementInput1 leftJoyStick;
+    private AimInput1 rightJoyStick;
     private Stage stage;
 
 
@@ -38,8 +38,9 @@ public class InGameState extends State {
 
         sb = new SpriteBatch();
         stage = new Stage();
-        leftJoyStick = new JoyStick(15, 15);
-        rightJoyStick = new JoyStick(WIDTH-15-JoyStick.diameter, 15);
+        leftJoyStick = new MovementInput1(15, 15);
+        rightJoyStick = new AimInput1(WIDTH-15- AimInput1.diameter, 15);
+
         Gdx.input.setInputProcessor(stage);
         stage = new Stage(new ScreenViewport(), sb);
         stage.addActor(leftJoyStick);
