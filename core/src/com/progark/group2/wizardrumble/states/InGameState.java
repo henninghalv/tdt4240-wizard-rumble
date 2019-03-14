@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.progark.group2.wizardrumble.controllers.JoyStick;
+import com.progark.group2.wizardrumble.entities.Entity;
 import com.progark.group2.wizardrumble.entities.Wizard;
 
 import static com.badlogic.gdx.Input.Keys;
@@ -20,14 +21,10 @@ public class InGameState extends State {
     private Texture wizardSprite;
     private TextureRegion region;
 
-
     private SpriteBatch sb;
     private JoyStick leftJoyStick;
     private JoyStick rightJoyStick;
     private Stage stage;
-
-
-
 
 
     public InGameState(GameStateManager gameStateManager) {
@@ -47,19 +44,29 @@ public class InGameState extends State {
         Gdx.input.setInputProcessor(stage);
     }
 
+    private void updateWizardRotation(){
+        wizard.updateRotation(
+                rightJoyStick.isTouched() ? // Terniary
+                        new Vector2(rightJoyStick.getKnobPercentX(),rightJoyStick.getKnobPercentY()) :
+                        new Vector2(leftJoyStick.getKnobPercentX(),leftJoyStick.getKnobPercentY())
+        );
+    }
+
+    private void updateWizardPosition(){
+        //GetKnobPercentX and -Y returns cos and sin values of the touchpad in question
+        Vector2 leftJoyPosition = new Vector2(leftJoyStick.getKnobPercentX(),leftJoyStick.getKnobPercentY());
+        wizard.updatePosition(leftJoyPosition);
+    }
 
     @Override
     public void update(float dt) {
+        // Let the player rotate primarily using the right stick, but use left stick if right stick input is absent.
         if (leftJoyStick.isTouched()){
-            wizard.updatePlayerRotation(
-                    rightJoyStick.isTouched() ?
-                            new Vector2(rightJoyStick.getKnobPercentX(),rightJoyStick.getKnobPercentY()) :
-                            new Vector2(leftJoyStick.getKnobPercentX(),leftJoyStick.getKnobPercentY()));
-            //GetKnobPercentX and -Y returns cos and sin values
-            Vector2 leftJoyPosition = new Vector2(leftJoyStick.getKnobPercentX(),leftJoyStick.getKnobPercentY());
-            wizard.move(leftJoyPosition);
-        } else if (rightJoyStick.isTouched()){
-            wizard.updatePlayerRotation(new Vector2(rightJoyStick.getKnobPercentX(),rightJoyStick.getKnobPercentY()));
+            updateWizardPosition();
+            updateWizardRotation();
+        }
+        if (rightJoyStick.isTouched()){
+            wizard.updateRotation(new Vector2(rightJoyStick.getKnobPercentX(),rightJoyStick.getKnobPercentY()));
         }
     }
 
@@ -70,11 +77,10 @@ public class InGameState extends State {
                 wizardSprite.getWidth()/(float)2,
                 wizardSprite.getHeight()/(float)2,
                 wizardSprite.getWidth(), wizardSprite.getHeight(),
-                1,1,wizard.getRotation());
+                1,1, wizard.getRotation());
         sb.end();
-
-            stage.act(Gdx.graphics.getDeltaTime());
-            stage.draw();
+        stage.act(Gdx.graphics.getDeltaTime());
+        stage.draw();
     }
 
     @Override

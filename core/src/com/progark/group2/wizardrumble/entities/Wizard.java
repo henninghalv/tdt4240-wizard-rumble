@@ -19,20 +19,7 @@ public class Wizard extends Entity {
 
     }
 
-    public void move(Vector2 direction){
-
-
-        //updatePlayerRotation(direction);
-        /*
-        if (leftJoy.isTouched()){
-            float angle = direction.angle();
-            Vector2 movement = new Vector2((float) Math.sin(angle), (float) Math.cos(angle)); // Kan hende man må flippe sin og cos.
-            position.x += movement.x;
-            position.y += movement.y;
-        }
-        */
-
-        //jank shit under here. Not to be used for real.
+    public void updatePosition(Vector2 direction){
         position.x += direction.x;
         position.y += direction.y;
 
@@ -42,10 +29,11 @@ public class Wizard extends Entity {
 
     }
 
-    public void updatePlayerRotation(Vector2 direction){
-        float angle = direction.angle();
-        angle += 270;
-        rotation = angle%360; //
+    public void updateRotation(Vector2 direction){
+        // Rotation is set with an offset, since the rotation-argument in SpriteBatch.draw() starts
+        // at zero to the right, but we want it to be at zero upwards.
+        float ANGLE_OFFSET = 270;
+        rotation = (direction.angle() + ANGLE_OFFSET);
     }
 
     public Vector2 getPosition(){
