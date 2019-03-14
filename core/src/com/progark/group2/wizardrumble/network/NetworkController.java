@@ -63,9 +63,10 @@ public class NetworkController {
                         PlayerJoinedRequest requestToJoin = new PlayerJoinedRequest();
                         client.sendTCP(requestToJoin);
 
-                        PlayerDeadRequest requestPlayerDied = new PlayerDeadRequest();
+                        // TODO: Send this request when this player died
+                        /*PlayerDeadRequest requestPlayerDied = new PlayerDeadRequest();
                         requestPlayerDied.playerID = playerID;
-                        client.sendTCP(requestPlayerDied);
+                        client.sendTCP(requestPlayerDied);*/
 
                     } catch (IOException e) {
                         e.printStackTrace();
