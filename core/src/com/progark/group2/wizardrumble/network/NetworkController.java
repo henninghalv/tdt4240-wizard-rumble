@@ -38,7 +38,7 @@ public class NetworkController {
         KryoClientRegister.registerKryoClasses(masterServerClient);
 
         final CreateGameRequest request = new CreateGameRequest();
-        request.playerID = 0; // TODO: ID is generated through name registering
+        request.setPlayerID(playerID); // TODO: ID is generated through name registering
         masterServerClient.sendTCP(request);
 
         masterServerClient.addListener(new Listener() {
@@ -52,8 +52,8 @@ public class NetworkController {
                         client.connect(
                                 TIMEOUT,
                                 MASTER_SERVER_HOST,
-                                response.map.get("tcpPort"),
-                                response.map.get("udpPort")
+                                response.getMap().get("tcpPort"),
+                                response.getMap().get("udpPort")
                         );
 
                         // Register classes for kryo serializer
@@ -74,12 +74,12 @@ public class NetworkController {
                 } else if (object instanceof ServerIsFullResponse) {
                     // If all servers are full
                     ServerIsFullResponse response = (ServerIsFullResponse) object;
-                    System.out.println("Client got that the server is full: " + response.isFull);
+                    System.out.println("Client got that the server is full: " + response.getIsFull());
                     // TODO: Handle server is full - display message on interface
                 } else if (object instanceof ServerErrorResponse) {
                     // If there occures a server error
                     ServerErrorResponse response = (ServerErrorResponse) object;
-                    System.out.println("Client got this error message: " + response.errorMsg);
+                    System.out.println("Client got this error message: " + response.getErrorMsg());
                     // TODO: Handle server error on client side. Give error message to interface
                 }
             }
