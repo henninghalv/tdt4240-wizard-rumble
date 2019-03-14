@@ -55,7 +55,7 @@ public class Application extends ApplicationAdapter {
 			e.printStackTrace();
 		}
 
-        this.gameStateManager = new GameStateManager();
+        this.gameStateManager = GameStateManager.getInstance();
         gameStateManager.push(new InGameState(gameStateManager));
 	}
 
