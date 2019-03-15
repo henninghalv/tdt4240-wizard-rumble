@@ -4,6 +4,7 @@ package com.progark.group2.gameserver;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
+import com.progark.group2.gameserver.database.SQLiteDBConnector;
 import com.progark.group2.wizardrumble.network.CreateGameRequest;
 import com.progark.group2.wizardrumble.network.CreateGameResponse;
 import com.progark.group2.wizardrumble.network.PlayerJoinedRequest;
@@ -11,6 +12,7 @@ import com.progark.group2.wizardrumble.network.ServerErrorResponse;
 import com.progark.group2.wizardrumble.network.ServerIsFullResponse;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +20,7 @@ import java.util.List;
 public class MasterServer {
 
     private static MasterServer instance = null;
+    private static SQLiteDBConnector connector;
 
     // List of all server instances. 1 server = 1 game
     private List<GameServer> servers = new ArrayList<GameServer>();
@@ -175,14 +178,29 @@ public class MasterServer {
         }
     }
 
-    static String getPlayerName(int playerID) {
+    static String getPlayerName(int playerID)  {
+        // Default name if not registered in DB
         String playerName = "Guest";
-        // TODO: Retrieve playername from database from playerID
+
+        try {
+            // Connects to the database and tries to get the player name based on player id
+            playerName = connector.getPlayer(playerID).get(playerID);
+            System.out.println("Player: " + playerName);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return playerName;
     }
 
     public static void main(String[] args) throws IOException {
         // Init master server
         MasterServer.getInstance();
+        try {
+            connector = SQLiteDBConnector.getInstance();
+            connector.connect();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
     }
 }

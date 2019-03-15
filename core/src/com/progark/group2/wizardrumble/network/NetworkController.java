@@ -11,7 +11,9 @@ import java.util.Map;
 public class NetworkController {
 
     // TODO: Set this based on generated ID from server
-    private final static int playerID = 0;
+    //TODO: Get playerID and name from local storage
+    //It is set to 1 until this feature is implemented.
+    private final static int playerID = 1;
 
     // IP address to MasterServer
     private final static int TIMEOUT = 5000;
@@ -38,7 +40,7 @@ public class NetworkController {
         KryoClientRegister.registerKryoClasses(masterServerClient);
 
         final CreateGameRequest request = new CreateGameRequest();
-        request.playerID = 0; // TODO: ID is generated through name registering
+        request.playerID = playerID; // TODO: ID is generated through name registering
         masterServerClient.sendTCP(request);
 
         masterServerClient.addListener(new Listener() {
@@ -61,6 +63,7 @@ public class NetworkController {
 
                         // Let the client join the game server (lobby)
                         PlayerJoinedRequest requestToJoin = new PlayerJoinedRequest();
+                        requestToJoin.playerID = playerID;
                         client.sendTCP(requestToJoin);
 
                         PlayerDeadRequest requestPlayerDied = new PlayerDeadRequest();

@@ -57,11 +57,8 @@ public class GameServer {
      * @param playerID  (int) player id
      */
     private void addJoinedPlayer(int playerID) {
-        // Default name if not registered in DB
-        String playerName = "Guest";
-
-        // TODO: Get player name from MasterServer => DB
-        //playerName = MasterServer.getPlayerName(playerID);
+        System.out.println(playerID);
+        String playerName = MasterServer.getPlayerName(playerID);
 
         HashMap<String, Object> playerStats = new HashMap<String, Object>();
         playerStats.put(IS_DEAD, false); // If the player is dead
