@@ -5,17 +5,22 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 
 /** The main menu that is shown when the game is launched
  */
 public class MainMenuState extends State {
 
     private Texture button;
+    private Stage stage;
+    private Table table;
 
     public MainMenuState(GameStateManager gameStateManager){
         super(gameStateManager);
 
         button = new Texture("UI/blue_button00.png");
+
     }
 
     public void startGame(){
@@ -23,11 +28,11 @@ public class MainMenuState extends State {
     }
 
     public void openSettings(){
-        this.gameStateManager.set(new MainMenuSettings(this.gameStateManager));
+        this.gameStateManager.push(new MainMenuSettings(this.gameStateManager));
     }
 
     public void openPlayerSettings(){
-        this.gameStateManager.set(new PlayerStatsState(this.gameStateManager));
+        this.gameStateManager.push(new PlayerStatsState(this.gameStateManager));
     }
 
     @Override
