@@ -26,18 +26,16 @@ public class WizardPlayer extends Wizard {
 
     }
 
-    @Override
     public int getPlayerID() {
-        return super.getPlayerID();
+        return playerID;
     }
 
-    @Override
     public void setPlayerID(int playerID) {
-        super.setPlayerID(playerID);
+        this.playerID = playerID;
     }
 
     public void setHealth(int health) {
-        super.setHealthH(health);
+        this.health = health;
     }
 
 }

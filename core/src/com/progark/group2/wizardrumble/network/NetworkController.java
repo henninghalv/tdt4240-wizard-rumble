@@ -40,14 +40,14 @@ public class NetworkController {
         // Register classes for kryo serializer
         KryoClientRegister.registerKryoClasses(masterServerClient);
 
-        final CreateGameRequest request = new CreateGameRequest();
+        final PlayerJoinRequest request = new PlayerJoinRequest();
         request.setPlayerID(playerID); // TODO: ID is generated through name registering
         masterServerClient.sendTCP(request);
 
         masterServerClient.addListener(new Listener() {
             public void received (Connection connection, Object object) {
-                if (object instanceof CreateGameResponse) {
-                    CreateGameResponse response = (CreateGameResponse) object;
+                if (object instanceof CreateGameRequest) {
+                    CreateGameRequest response = (CreateGameRequest) object;
                     try {
                         // Client tries to connect to the given GameServer
                         client.close();
@@ -74,9 +74,13 @@ public class NetworkController {
                     // Find player instance
                     WizardPlayer player = WizardPlayer.getInstance();
 
-                    // Player lose health
-                    WizardPlayer.getInstance().loseHealth(
-                            request.getMap().get(player.getPlayerID()));
+                    // Set the new health amount
+                    WizardPlayer.getInstance().setHealth(
+                            // Player health registered on gameserver
+                            request.getMap().get(player.getPlayerID())
+                    );
+
+                    // TODO Set the new health amount to all players
 
                 } else if (object instanceof ServerIsFullResponse) {
                     // If all servers are full
@@ -103,15 +107,6 @@ public class NetworkController {
             instance = new NetworkController();
         }
         return instance;
-    }
-
-    /**
-     * Send a request to the gameserver that this player has died.
-     */
-    public void sendPlayerDeadRequest() {
-        PlayerDeadRequest requestPlayerDied = new PlayerDeadRequest();
-        requestPlayerDied.setPlayerID(playerID);
-        client.sendTCP(requestPlayerDied);
     }
 
     public Map getStats(){

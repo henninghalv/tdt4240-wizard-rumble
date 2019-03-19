@@ -6,11 +6,11 @@ public abstract class Wizard extends Entity {
 
     public static int DEFAULT_HEALTH = 100;
 
-    private int playerID;
-    private int health;
-    private int maxHealth;
+    protected int playerID;
+    protected int health;
+    protected int maxHealth;
 
-    public Wizard(int maxHealth, Vector2 spawnPoint) {
+    protected Wizard(int maxHealth, Vector2 spawnPoint) {
         position = spawnPoint;
 
         if (maxHealth <= 0) {
@@ -39,22 +39,6 @@ public abstract class Wizard extends Entity {
 
     public float getRotation(){
         return this.rotation;
-    }
-
-    /**
-     * Set the amount of health for this player
-     * @param health    (int) health amount
-     */
-    public void setHealthH(int health) {
-        this.health = health;
-    }
-
-    public void setPlayerID(int playerID) {
-        this.playerID = playerID;
-    }
-
-    public int getPlayerID() {
-        return playerID;
     }
 
     @Override

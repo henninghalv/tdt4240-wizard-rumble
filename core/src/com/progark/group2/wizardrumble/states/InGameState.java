@@ -10,6 +10,10 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.progark.group2.wizardrumble.controllers.JoyStick;
 import com.progark.group2.wizardrumble.entities.Entity;
 import com.progark.group2.wizardrumble.entities.Wizard;
+import com.progark.group2.wizardrumble.entities.WizardPlayer;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.badlogic.gdx.Input.Keys;
 import static com.progark.group2.wizardrumble.Application.HEIGHT;
@@ -26,12 +30,18 @@ public class InGameState extends State {
     private JoyStick rightJoyStick;
     private Stage stage;
 
+    private static List<Wizard> wizards = new ArrayList<Wizard>();
+
 
     public InGameState(GameStateManager gameStateManager) {
         super(gameStateManager);
-        wizard = new Wizard(Wizard.DEFAULT_HEALTH, new Vector2(200, 200));
+        // TODO: Add wizard according to coordinate from gameserver
+        wizard = new WizardPlayer(Wizard.DEFAULT_HEALTH, new Vector2(200, 200));
         wizardSprite = new Texture("wizard.jpg");
         region = new TextureRegion(wizardSprite);
+
+        // TODO: add all wizards
+        wizards.add(wizard);
 
         sb = new SpriteBatch();
         stage = new Stage();
@@ -42,6 +52,10 @@ public class InGameState extends State {
         stage.addActor(leftJoyStick);
         stage.addActor(rightJoyStick);
         Gdx.input.setInputProcessor(stage);
+    }
+
+    public static List<Wizard> getWizards() {
+        return wizards;
     }
 
     private void updateWizardRotation(){

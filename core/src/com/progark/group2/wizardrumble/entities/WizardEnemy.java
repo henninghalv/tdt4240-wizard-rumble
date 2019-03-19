@@ -7,17 +7,15 @@ public class WizardEnemy extends Wizard {
         super(maxHealth, spawnPoint);
     }
 
-    @Override
     public int getPlayerID() {
-        return super.getPlayerID();
+        return playerID;
     }
 
-    @Override
     public void setPlayerID(int playerID) {
-        super.setPlayerID(playerID);
+        this.playerID = playerID;
     }
 
     public void setHealth(int health) {
-        super.setHealthH(health);
+        this.health = health;
     }
 }
