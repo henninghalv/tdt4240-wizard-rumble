@@ -10,6 +10,8 @@ import java.util.Map;
 
 public class NetworkController {
 
+    private static NetworkController instance = null;
+
     // TODO: Set this based on generated ID from server
     private final static int playerID = 0;
 
@@ -22,7 +24,7 @@ public class NetworkController {
     // Client for handling communication with given game server
     private static Client client = new Client();
 
-    public void init() throws IOException {
+    private NetworkController() throws IOException {
 
         // Client for handling communication with master server
         Client masterServerClient = new Client();
@@ -63,11 +65,6 @@ public class NetworkController {
                         PlayerJoinedRequest requestToJoin = new PlayerJoinedRequest();
                         client.sendTCP(requestToJoin);
 
-                        // TODO: Send this request when this player died
-                        /*PlayerDeadRequest requestPlayerDied = new PlayerDeadRequest();
-                        requestPlayerDied.playerID = playerID;
-                        client.sendTCP(requestPlayerDied);*/
-
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -86,6 +83,27 @@ public class NetworkController {
         });
     }
 
+    /**
+     * Get networkcontroller instance if not existing
+     * @return  (NetworkController) The instance made or retrieved
+     * @throws IOException  If instansiating a server went wrong
+     */
+    public static NetworkController getInstance() throws IOException {
+        if (instance == null) {
+            instance = new NetworkController();
+        }
+        return instance;
+    }
+
+    /**
+     * Send a request to the gameserver that this player has died.
+     */
+    public void sendPlayerDeadRequest() {
+        PlayerDeadRequest requestPlayerDied = new PlayerDeadRequest();
+        requestPlayerDied.setPlayerID(playerID);
+        client.sendTCP(requestPlayerDied);
+    }
+
     public Map getStats(){
         //TODO
         return new HashMap();
@@ -95,6 +113,7 @@ public class NetworkController {
         //TODO
         return new HashMap();
     }
+
 
     public Map updateGameState(Map map){
         //TODO
