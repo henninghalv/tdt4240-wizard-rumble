@@ -22,55 +22,57 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
  */
 public class MainMenuState extends State {
 
-    private Image buttonImage;
+    //private Image buttonImage;
     private Stage stage;
     private Table table;
     private Label.LabelStyle labelStyle;
-    // DEBUG
-    private int i = 0;
-    private Label label;
     private Texture imageTexture;
 
-    // TODO extract variables, make method for creating a button and adding it to the table
     public MainMenuState(GameStateManager gameStateManager){
         super(gameStateManager);
 
-        this.buttonImage = new Image(new Texture("UI/blue_button00.png"));
         this.stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 
+        // Button styling
+        this.imageTexture = new Texture("UI/blue_button00.png");
         BitmapFont font = new BitmapFont();
         font.setColor(Color.BLACK);
-
         this.labelStyle = new Label.LabelStyle(font, font.getColor());
 
-        // Start
-        Stack startButton = addButton("Start");
+        this.table = new Table();
+        table.setFillParent(true);
+        table.setDebug(true);
+        table.center();
 
-        // TODO listener only react on upper half of stack, add listener to table and check for elements? Change to textButton?
-        // Listeners must be added to button stack after they are created.
+        // Buttons
+        Stack startButton = addButton("Start");
         startButton.addListener(new InputListener(){
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                System.out.println(i++);
                 return true;
             }
 
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                System.out.println("Bye");
-                // this.startGame();
+                startGame();
             }
         });
 
-        this.table = new Table();
-        table.add(startButton);
-        table.setFillParent(true);
-        table.setDebug(true);
-        table.center();
+        Stack exitButton = addButton("Exit");
+        exitButton.addListener(new InputListener(){
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                return true;
+            }
 
-        //stage.addActor(table);
-        stage.addActor(startButton);
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                onBackButtonPress();
+            }
+        });
+
+        stage.addActor(table);
     }
 
     public void startGame(){
@@ -112,16 +114,27 @@ public class MainMenuState extends State {
     @Override
     public void onBackButtonPress() {
         // TODO lol how do u qq?
+        System.out.println("Exit");
     }
 
-    // TODO implement addButton method
+    /**
+     * Mek button
+     *
+     * @param buttonText
+     * @return
+     */
     private Stack addButton(String buttonText){
-        this.label = new Label(buttonText, labelStyle);
+        Label label = new Label(buttonText, labelStyle);
         label.setAlignment(Align.center);
 
+        Image buttonImage = new Image(this.imageTexture);
+
         Stack button = new Stack();
-        button.add(this.buttonImage);
+        button.add(buttonImage);
         button.add(label);
+
+        this.table.add(button).pad(10f);
+        this.table.row();
 
         return button;
     }
