@@ -22,28 +22,18 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
  */
 public class MainMenuState extends State {
 
-    //private Image buttonImage;
     private Stage stage;
     private Table table;
     private Label.LabelStyle labelStyle;
     private Texture imageTexture;
 
+    private final String title = "Wizard Rumble";
+
+    //TODO Remove sout and uncomment method calls in the button listeners
     public MainMenuState(GameStateManager gameStateManager){
         super(gameStateManager);
 
-        this.stage = new Stage(new ScreenViewport());
-        Gdx.input.setInputProcessor(stage);
-
-        // Button styling
-        this.imageTexture = new Texture("UI/blue_button00.png");
-        BitmapFont font = new BitmapFont();
-        font.setColor(Color.BLACK);
-        this.labelStyle = new Label.LabelStyle(font, font.getColor());
-
-        this.table = new Table();
-        table.setFillParent(true);
-        table.setDebug(true);
-        table.center();
+        initializeVariables();
 
         // Buttons
         Stack startButton = addButton("Start");
@@ -55,7 +45,22 @@ public class MainMenuState extends State {
 
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                startGame();
+                System.out.println("Start game");
+                // startGame();
+            }
+        });
+
+        Stack settingsButton = addButton("Settings");
+        settingsButton.addListener(new InputListener(){
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                return true;
+            }
+
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                System.out.println("Settings");
+                // openSettings();
             }
         });
 
@@ -68,6 +73,7 @@ public class MainMenuState extends State {
 
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                System.out.println("Exit");
                 onBackButtonPress();
             }
         });
@@ -75,16 +81,12 @@ public class MainMenuState extends State {
         stage.addActor(table);
     }
 
-    public void startGame(){
+    private void startGame(){
         this.gameStateManager.set(new InGameState(this.gameStateManager));
     }
 
-    public void openSettings(){
+    private void openSettings(){
         this.gameStateManager.push(new MainMenuSettings(this.gameStateManager));
-    }
-
-    public void openPlayerSettings(){
-        this.gameStateManager.push(new PlayerStatsState(this.gameStateManager));
     }
 
     @Override
@@ -113,8 +115,7 @@ public class MainMenuState extends State {
 
     @Override
     public void onBackButtonPress() {
-        // TODO lol how do u qq?
-        System.out.println("Exit");
+        Gdx.app.exit();
     }
 
     /**
@@ -137,5 +138,31 @@ public class MainMenuState extends State {
         this.table.row();
 
         return button;
+    }
+
+    /**
+     * Initialize stuff
+     */
+    private void initializeVariables(){
+        this.stage = new Stage(new ScreenViewport());
+        Gdx.input.setInputProcessor(stage);
+
+        // Button styling
+        this.imageTexture = new Texture("UI/blue_button00.png");
+        BitmapFont font = new BitmapFont();
+        font.setColor(Color.BLACK);
+        this.labelStyle = new Label.LabelStyle(font, font.getColor());
+
+        // Layout styling
+        this.table = new Table();
+        table.setFillParent(true);
+        table.setDebug(true);
+        table.center();
+
+        Label label = new Label(this.title, labelStyle);
+        label.setAlignment(Align.center);
+        label.setSize((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/4);
+        table.add(label).size((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/4);
+        table.row();
     }
 }
