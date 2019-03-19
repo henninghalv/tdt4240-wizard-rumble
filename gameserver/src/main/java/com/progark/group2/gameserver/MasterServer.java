@@ -1,6 +1,5 @@
 package com.progark.group2.gameserver;
 
-
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
@@ -85,11 +84,15 @@ public class MasterServer {
                     // Try to create a new server
                     if (givenTCPPort == null || givenUDPPort == null) {
                         try {
-                            GameServer gameServer = createNewServer();
+                            GameServer gameServer = createNewGameServer();
                             addGameServer(gameServer);
 
                             // Set the ports of the new gameserver
-                            givenTCPPort = gameServer.getTCPPorts().get(0);
+                            for (int port : gameServer.getTCPPorts().keySet()) {
+                                if (gameServer.getTCPPorts().get(port) == null) {
+                                    givenTCPPort = port;
+                                }
+                            }
                             givenUDPPort = gameServer.getUDPPort();
                         } catch (IOException e) {
                             ServerErrorResponse errorResponse = new ServerErrorResponse();
@@ -99,7 +102,6 @@ public class MasterServer {
                             e.printStackTrace();
                         }
                     }
-
 
                     if (givenTCPPort == null || givenUDPPort == null) {
                         throw new IllegalStateException(
@@ -138,9 +140,7 @@ public class MasterServer {
         // Populate tcp
         for (int i = DEFAULT_GAMESERVER_TCP_PORT; i <  DEFAULT_GAMESERVER_TCP_PORT + GAMESERVER_COUNT; i++) {
             // Need one port per player for tcp and this for every gameserver.
-            for (int j = 0; j < MAXIMUM_PLAYERS_PER_GAME; j++) {
-                TCP_PORTS.put(j, "open");
-            }
+            TCP_PORTS.put(i, "open");
         }
 
         // Populate udp
@@ -216,10 +216,12 @@ public class MasterServer {
      * response classes.
      * @return      GameServer object
      */
-    private GameServer createNewServer() throws IOException {
+    private GameServer createNewGameServer() throws IOException {
 
         List<Integer> tcpPorts = findAvailableTCPPorts();
         List<Integer> udpPorts = findAvailableUDPPorts();
+
+        System.out.println("Createnewserver at masterserver: " + tcpPorts.toString() + " & udp: " + udpPorts.toString());
 
         if (tcpPorts.size() <= 0 || udpPorts.size() <= 0) {
             throw new IllegalStateException(
@@ -233,11 +235,6 @@ public class MasterServer {
 
         // Return a list of all tcpPorts, one for each player. They all have same udp port.
         return new GameServer(tcpPorts, udpPorts.get(0));
-    }
-
-    private void sendGameCreatedResponse(Connection connection) {
-
-
     }
 
     /**
