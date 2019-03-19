@@ -4,14 +4,12 @@ package com.progark.group2.gameserver;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
-import com.progark.group2.wizardrumble.network.PlayerJoinRequest;
-import com.progark.group2.wizardrumble.network.CreateGameRequest;
+import com.progark.group2.wizardrumble.network.PlayerJoinedRequest;
+import com.progark.group2.wizardrumble.network.PlayerJoinedResponse;
 import com.progark.group2.wizardrumble.network.ServerErrorResponse;
-import com.progark.group2.wizardrumble.network.ServerIsFullResponse;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -20,8 +18,11 @@ public class MasterServer {
     private static MasterServer instance = null;
 
     // List of all server instances. 1 server = 1 game
-    private List<GameServer> servers = new ArrayList<GameServer>();
+    private HashMap<GameServer, String> gameServers = new HashMap<GameServer, String>();
     private Server server;
+
+    private final static String STAND_BY = "standBy";
+    private final static String IN_PROGRESS = "inProgress";
 
     private final static int GAMESERVER_COUNT= 100;
     private final static int MAXIMUM_PLAYERS_PER_GAME = 6;
@@ -38,7 +39,7 @@ public class MasterServer {
     private final static HashMap<Integer, String> UDP_PORTS =
             new HashMap<Integer, String>();
 
-    private MasterServer(int tcpPort, int udpPort) throws IOException {
+    private MasterServer(final int tcpPort, final int udpPort) throws IOException {
         // Create a list of TCP and UDP ports that are available
         populateTCPAndUDPPorts();
 
@@ -54,14 +55,64 @@ public class MasterServer {
         server.addListener(new Listener() {
             public void received (Connection connection, Object object) {
                 // If the client wants to create a new game lobby
-                if (object instanceof PlayerJoinRequest) {
+                if (object instanceof PlayerJoinedRequest) {
+
+                    Integer givenTCPPort = null;
+                    Integer givenUDPPort = null;
+
+                    // For all gameServers that are not in progress, but on standby
+                    for (GameServer gs : gameServers.keySet()) {
+                        if (STAND_BY.equals(gameServers.get(gs))) {
+
+                            // Check if the gameserver has an available tcp port
+                            for (int tcpPort : gs.getTCPPorts().keySet()) {
+                                if (gs.getTCPPorts().get(tcpPort) == null) {
+                                    // Stop when found a tcp port for client
+                                    givenTCPPort = tcpPort;
+                                    givenUDPPort = gs.getUDPPort();
+                                    break;
+                                }
+                            }
+                        }
+
+                        // If found given tcp, stop searching
+                        if (givenTCPPort != null) {
+                            break;
+                        }
+                    }
+
+                    // If not one of the ports found - either because of full or none servers etc.
+                    // Try to create a new server
+                    if (givenTCPPort == null || givenUDPPort == null) {
+                        try {
+                            GameServer gameServer = createNewServer();
+                            addGameServer(gameServer);
+
+                            // Set the ports of the new gameserver
+                            givenTCPPort = gameServer.getTCPPorts().get(0);
+                            givenUDPPort = gameServer.getUDPPort();
+                        } catch (IOException e) {
+                            ServerErrorResponse errorResponse = new ServerErrorResponse();
+                            errorResponse.setErrorMsg(
+                                    "Something is wrong with the server. Please try again later.");
+                            connection.sendTCP(errorResponse);
+                            e.printStackTrace();
+                        }
+                    }
 
 
-                    // choose or create a gameserver:
+                    if (givenTCPPort == null || givenUDPPort == null) {
+                        throw new IllegalStateException(
+                                "Player couldn't join the given " +
+                                        "gameserver as requested from masterserver.");
+                    }
 
-                    // If none found, create a new gameserver and add player
+                    // Give the client the ports of the new gameserver as a response
+                    PlayerJoinedResponse response = new PlayerJoinedResponse();
+                    response.setTcpPort(givenTCPPort);
+                    response.setUdpPort(givenUDPPort);
+                    connection.sendTCP(response);
 
-                    sendGameCreatedResponse(connection);
                 }
             }
         });
@@ -102,7 +153,7 @@ public class MasterServer {
      * Finds an available TCP ports from hashmap
      * @return  (int)  The first open port number for TCP
      */
-    private List<Integer> findTCPPorts() {
+    private List<Integer> findAvailableTCPPorts() {
         List<Integer> tcpPorts = new ArrayList<Integer>();
         for (int tcpPort : TCP_PORTS.keySet()) {
             if ("open".equals(TCP_PORTS.get(tcpPort))) {
@@ -120,11 +171,10 @@ public class MasterServer {
      * Finds an available UDP port from hashmap
      * @return  (int)   The first open port number for UDP
      */
-    private List<Integer> findUDPPorts() {
+    private List<Integer> findAvailableUDPPorts() {
         List<Integer> udpPorts = new ArrayList<Integer>();
         for (int port : UDP_PORTS.keySet()) {
             if ("open".equals(UDP_PORTS.get(port))) {
-                UDP_PORTS.put(port, "closed");
                 udpPorts.add(port);
             }
 
@@ -136,11 +186,11 @@ public class MasterServer {
     }
 
     /**
-     * Add server to the list of all servers
+     * Add server to the list of all servers on standby
      * @param server    GameServer object
      */
     private void addGameServer(GameServer server) {
-        this.servers.add(server);
+        this.gameServers.put(server, STAND_BY);
     }
 
     /**
@@ -158,7 +208,7 @@ public class MasterServer {
         UDP_PORTS.put(server.getUDPPort(), "open");
 
         // Remove gameserver from MasterServer
-        this.servers.remove(server);
+        this.gameServers.remove(server);
     }
 
     /**
@@ -166,44 +216,28 @@ public class MasterServer {
      * response classes.
      * @return      GameServer object
      */
-    private GameServer createNewServer(
-            List<Integer> tcpPorts, int udpPort
-    ) throws IOException {
-        return new GameServer(tcpPorts, udpPort);
+    private GameServer createNewServer() throws IOException {
+
+        List<Integer> tcpPorts = findAvailableTCPPorts();
+        List<Integer> udpPorts = findAvailableUDPPorts();
+
+        if (tcpPorts.size() <= 0 || udpPorts.size() <= 0) {
+            throw new IllegalStateException(
+                    "There are not enough ports for me to create a new gameserver");
+        }
+
+        if (tcpPorts.size() < MAXIMUM_PLAYERS_PER_GAME) {
+            throw new IllegalStateException(
+                    "There aren't enough tcp ports to handle the maximum amount of players");
+        }
+
+        // Return a list of all tcpPorts, one for each player. They all have same udp port.
+        return new GameServer(tcpPorts, udpPorts.get(0));
     }
 
     private void sendGameCreatedResponse(Connection connection) {
 
-        // Find a available ports
-        List<Integer> tcpPorts = findTCPPorts();
-        List<Integer> udpPorts = findUDPPorts();
 
-        // If gameservers are full
-        if (tcpPorts.size() <= 0 || udpPorts.size() <= 0) {
-            ServerIsFullResponse response = new ServerIsFullResponse();
-            response.setIsFull(true);
-            connection.sendTCP(response);
-        } else {
-            // Create a response with the new Gameserver ports
-            CreateGameRequest request = new CreateGameRequest();
-            request.setMap(new HashMap<String, List<Integer>>());
-
-            // Add available ports for a game server.
-            request.getMap().put("tcpPort", tcpPorts);
-            request.getMap().put("udpPort", udpPorts);
-
-            // Init a new server
-            try {
-                addGameServer(createNewServer(tcpPorts, udpPorts.get(0)));
-                connection.sendTCP(request);
-            } catch (IOException e) {
-                ServerErrorResponse errorResponse = new ServerErrorResponse();
-                errorResponse.setErrorMsg(
-                        "Something is wrong with the server. Please try again later.");
-                connection.sendTCP(errorResponse);
-                e.printStackTrace();
-            }
-        }
     }
 
     /**

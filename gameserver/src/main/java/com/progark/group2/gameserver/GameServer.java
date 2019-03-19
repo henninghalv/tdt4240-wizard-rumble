@@ -134,6 +134,7 @@ public class GameServer {
     private Server createNewServer(int tcpPort, int udpPort) throws IOException {
         Server server = new Server();
         server.start();
+        System.out.println("creating me by using ports" + tcpPort + " AND " + udpPort);
         server.bind(tcpPort, udpPort);
 
         // Register response and request classes for kryo serializer

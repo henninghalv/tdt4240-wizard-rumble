@@ -40,14 +40,14 @@ public class NetworkController {
         // Register classes for kryo serializer
         KryoClientRegister.registerKryoClasses(masterServerClient);
 
-        final PlayerJoinRequest request = new PlayerJoinRequest();
+        final PlayerJoinedRequest request = new PlayerJoinedRequest();
         request.setPlayerID(playerID); // TODO: ID is generated through name registering
         masterServerClient.sendTCP(request);
 
         masterServerClient.addListener(new Listener() {
             public void received (Connection connection, Object object) {
-                if (object instanceof CreateGameRequest) {
-                    CreateGameRequest response = (CreateGameRequest) object;
+                if (object instanceof PlayerJoinedResponse) {
+                    PlayerJoinedResponse response = (PlayerJoinedResponse) object;
                     try {
                         // Client tries to connect to the given GameServer
                         client.close();
@@ -55,8 +55,8 @@ public class NetworkController {
                         client.connect(
                                 TIMEOUT,
                                 MASTER_SERVER_HOST,
-                                response.getMap().get("tcpPort"),
-                                response.getMap().get("udpPort")
+                                response.getTcpPort(),
+                                response.getUdpPort()
                         );
 
                         // Register classes for kryo serializer
@@ -80,13 +80,7 @@ public class NetworkController {
                             request.getMap().get(player.getPlayerID())
                     );
 
-                    // TODO Set the new health amount to all players
-
-                } else if (object instanceof ServerIsFullResponse) {
-                    // If all servers are full
-                    ServerIsFullResponse response = (ServerIsFullResponse) object;
-                    System.out.println("Client got that the server is full: " + response.getIsFull());
-                    // TODO: Handle server is full - display message on interface
+                    // TODO Set the new health amount to all wizard entities
                 } else if (object instanceof ServerErrorResponse) {
                     // If there occures a server error
                     ServerErrorResponse response = (ServerErrorResponse) object;
