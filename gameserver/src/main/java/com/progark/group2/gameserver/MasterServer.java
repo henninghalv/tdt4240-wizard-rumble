@@ -55,6 +55,7 @@ public class MasterServer {
             public void received (Connection connection, Object object) {
                 // If the client wants to create a new game lobby
                 if (object instanceof PlayerJoinedRequest) {
+                    PlayerJoinedRequest request = (PlayerJoinedRequest) object;
 
                     Integer givenTCPPort = null;
                     Integer givenUDPPort = null;
@@ -87,7 +88,7 @@ public class MasterServer {
                             GameServer gameServer = createNewGameServer();
                             addGameServer(gameServer);
 
-                            // Set the ports of the new gameserver
+                            // Find the first tcp port that is available in the new gameserver
                             for (int port : gameServer.getTCPPorts().keySet()) {
                                 if (gameServer.getTCPPorts().get(port) == null) {
                                     givenTCPPort = port;
@@ -113,6 +114,7 @@ public class MasterServer {
                     PlayerJoinedResponse response = new PlayerJoinedResponse();
                     response.setTcpPort(givenTCPPort);
                     response.setUdpPort(givenUDPPort);
+                    System.out.println("masterserver sends port: " + givenTCPPort + ", " + givenUDPPort + " to player " + request.getPlayerID());
                     connection.sendTCP(response);
 
                 }
@@ -220,8 +222,6 @@ public class MasterServer {
 
         List<Integer> tcpPorts = findAvailableTCPPorts();
         List<Integer> udpPorts = findAvailableUDPPorts();
-
-        System.out.println("Createnewserver at masterserver: " + tcpPorts.toString() + " & udp: " + udpPorts.toString());
 
         if (tcpPorts.size() <= 0 || udpPorts.size() <= 0) {
             throw new IllegalStateException(

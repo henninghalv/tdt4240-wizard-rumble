@@ -40,6 +40,7 @@ public class NetworkController {
         // Register classes for kryo serializer
         KryoClientRegister.registerKryoClasses(masterServerClient);
 
+        // Send request to join
         final PlayerJoinedRequest request = new PlayerJoinedRequest();
         request.setPlayerID(playerID); // TODO: ID is generated through name registering
         masterServerClient.sendTCP(request);
@@ -64,6 +65,7 @@ public class NetworkController {
 
                         // Let the client join the game server (lobby)
                         PlayerJoinedRequest requestToJoin = new PlayerJoinedRequest();
+                        requestToJoin.setPlayerID(1);
                         client.sendTCP(requestToJoin);
 
                     } catch (IOException e) {
