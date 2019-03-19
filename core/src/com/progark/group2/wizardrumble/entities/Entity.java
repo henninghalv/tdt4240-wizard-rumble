@@ -1,6 +1,7 @@
 package com.progark.group2.wizardrumble.entities;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 
 public abstract class Entity {
@@ -14,7 +15,7 @@ public abstract class Entity {
 
     public abstract void update();
 
-    public abstract void render();
+    public abstract void render(SpriteBatch sb);
 
     public abstract void dispose();
 

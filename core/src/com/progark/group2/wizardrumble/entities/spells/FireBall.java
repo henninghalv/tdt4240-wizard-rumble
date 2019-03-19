@@ -1,9 +1,37 @@
 package com.progark.group2.wizardrumble.entities.spells;
 
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
 import com.progark.group2.wizardrumble.entities.Spell;
 
 public class FireBall extends Spell {
 
+    private Vector2 spawnPoint;
+    private Texture fireBallSprite;
+    private TextureRegion region;
+    private float scale;
+    // velocity
+    // rotation
+    // position
+
+
+
+    public FireBall(Vector2 spawnPoint, float rotation, Vector2 velocity){
+        this.spawnPoint = spawnPoint; // Need to offset this by size of wizard sprite
+        this.velocity = velocity; // Use speed in spell abstract class in addition to this.
+        this.rotation = rotation;
+        this.position = spawnPoint;
+        fireBallSprite = new Texture("fireball.png");
+        region = new TextureRegion(fireBallSprite);
+        scale = 0.2f;
+    }
+
+    private void updatePosition(){
+        position.x += velocity.x;
+        position.y += velocity.y;
+    }
 
     @Override
     public void onCollision() {
@@ -12,12 +40,15 @@ public class FireBall extends Spell {
 
     @Override
     public void update() {
-
+        updatePosition();
     }
 
     @Override
-    public void render() {
-
+    public void render(SpriteBatch sb) {
+        sb.draw(region, position.x,position.y,
+                fireBallSprite.getWidth()/2f,
+                fireBallSprite.getHeight()/2f,
+                fireBallSprite.getWidth(),fireBallSprite.getHeight(),scale,scale,rotation); // 0.2 is a random number. Tweak as necessary
     }
 
     @Override
