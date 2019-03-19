@@ -1,1 +1,2 @@
+include ':gameserver'
 include 'desktop', 'android', 'ios', 'html', 'core'
