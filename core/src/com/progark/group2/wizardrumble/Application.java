@@ -1,6 +1,7 @@
 package com.progark.group2.wizardrumble;
 
 import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
@@ -18,7 +19,7 @@ import java.util.List;
  * Keeps the main render loop Initialize the game, network controller and the gameManager, then
  * starts the first state.
  */
-public class Application extends ApplicationAdapter {
+public class Application extends Game {
 
 	// Window parameters
 	public static final int WIDTH = 800;

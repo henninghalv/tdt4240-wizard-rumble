@@ -1,11 +1,11 @@
 package com.progark.group2.wizardrumble.states;
 
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-public abstract class State {
+public abstract class State{
 
-    private OrthographicCamera camera;
     private GameStateManager gameStateManager;
 
     public State(GameStateManager gameStateManager){
