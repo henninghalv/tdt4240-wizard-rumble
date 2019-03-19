@@ -131,6 +131,17 @@ project(":core") {
     }
 }
 
+project(":gameserver") {
+    apply plugin: "java"
+
+    dependencies {
+        implementation project(":core")
+        // https://mvnrepository.com/artifact/com.esotericsoftware/kryonet
+        implementation group: 'com.esotericsoftware', name: 'kryonet', version: '2.22.0-RC1'
+
+    }
+}
+
 tasks.eclipse.doLast {
     delete ".project"
 }
