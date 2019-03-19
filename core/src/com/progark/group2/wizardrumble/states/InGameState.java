@@ -29,7 +29,7 @@ public class InGameState extends State {
 
     public InGameState(GameStateManager gameStateManager) {
         super(gameStateManager);
-        wizard = new Wizard(new Vector2(200, 200));
+        wizard = new Wizard(Wizard.DEFAULT_HEALTH, new Vector2(200, 200));
         wizardSprite = new Texture("wizard.jpg");
         region = new TextureRegion(wizardSprite);
 

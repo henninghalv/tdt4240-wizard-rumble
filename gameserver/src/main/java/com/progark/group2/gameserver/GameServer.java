@@ -3,9 +3,9 @@ package com.progark.group2.gameserver;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
-
-import com.progark.group2.wizardrumble.network.PlayerDeadRequest;
+import com.progark.group2.wizardrumble.entities.Wizard;
 import com.progark.group2.wizardrumble.network.PlayerJoinedRequest;
+import com.progark.group2.wizardrumble.network.PlayersHealthStatusRequest;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -18,6 +18,7 @@ public class GameServer {
 
     private final static String NAME = "name";
     private final static String KILLS = "kills";
+    private final static String HEALTH = "health";
     private final static String IS_DEAD = "isDead";
     private final static String POSITION = "position";
     private final static String TIME_ALIVE = "timeAlive";
@@ -67,9 +68,9 @@ public class GameServer {
         playerStats.put(IS_DEAD, false); // If the player is dead
         playerStats.put(NAME, playerName); // Player name registered
         playerStats.put(KILLS, 0); // Amount of kills in one game
+        playerStats.put(HEALTH, Wizard.DEFAULT_HEALTH); // Start health of player
         playerStats.put(TIME_ALIVE, 0); // Time alive in a game
         playerStats.put(POSITION, -1); // Placement based on when the player died
-        // TODO: Consider adding more info to register more metadata
 
         // Add playerstats to the list of joined players
         players.put(playerID, playerStats);
@@ -122,17 +123,7 @@ public class GameServer {
         // Add a receiver listener to server
         server.addListener(new Listener() {
             public void received (Connection connection, Object object) {
-                if (object instanceof PlayerDeadRequest) {
-                    // If a player is dead.
-                    PlayerDeadRequest request = (PlayerDeadRequest)object;
-
-                    // Add player to list of dead player
-                    addDeadPlayer(request.getPlayerID());
-                    System.out.println("Player ID: " + request.getPlayerID() + " has been moved to deadPlayerIDs list");
-
-                    // End game if all players are dead
-                    endGame(connection);
-                } else if (object instanceof PlayerJoinedRequest) {
+                if (object instanceof PlayerJoinedRequest) {
                     // If a player has joined
                     PlayerJoinedRequest request = (PlayerJoinedRequest)object;
 
@@ -145,6 +136,25 @@ public class GameServer {
         });
 
         return server;
+    }
+
+    /**
+     * Subtracts the player's health equal to the damage taken
+     * and sends a request to the client about the damage taken.
+     * @param damage    (int) damage taken
+     */
+    public void takeDamage(int playerID, int damage) {
+        // The players previous health
+        int previousHealth = (Integer) players.get(playerID).get(HEALTH);
+
+        // Update playerhealth
+        players.get(playerID).put(HEALTH, previousHealth - damage);
+
+        // Send takeDamage request to client
+        PlayersHealthStatusRequest request = new PlayersHealthStatusRequest();
+        request.setDamage(damage);
+        // TODO: Set up connection to corresponding client
+        // connection.sendTCP(request)
     }
 
     /**
@@ -176,8 +186,9 @@ public class GameServer {
         }
     }
 
+    /*
     public static void main(String[] args) throws IOException {
         GameServer gs = new GameServer(54556, 544557);
         gs.hasGameEnded();
-    }
+    }*/
 }

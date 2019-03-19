@@ -47,13 +47,13 @@ public class Application extends ApplicationAdapter {
 
 		// Used to test server connection.
 		// Not necessarily the right way to do it.
-        networkController = new NetworkController();
-
 		try {
-            networkController.init();
+			networkController = NetworkController.getInstance();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+
 
         this.gameStateManager = GameStateManager.getInstance();
         gameStateManager.push(new InGameState(gameStateManager));

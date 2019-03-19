@@ -3,6 +3,7 @@ package com.progark.group2.wizardrumble.network;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
+import com.progark.group2.wizardrumble.entities.WizardPlayer;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -46,7 +47,7 @@ public class NetworkController {
         masterServerClient.addListener(new Listener() {
             public void received (Connection connection, Object object) {
                 if (object instanceof CreateGameResponse) {
-                    CreateGameResponse response = (CreateGameResponse)object;
+                    CreateGameResponse response = (CreateGameResponse) object;
                     try {
                         // Client tries to connect to the given GameServer
                         client.close();
@@ -68,6 +69,15 @@ public class NetworkController {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                } else if (object instanceof PlayersHealthStatusRequest) {
+                    PlayersHealthStatusRequest request = (PlayersHealthStatusRequest) object;
+                    // Find player instance
+                    WizardPlayer player = WizardPlayer.getInstance();
+
+                    // Player lose health
+                    WizardPlayer.getInstance().loseHealth(
+                            request.getMap().get(player.getPlayerID()));
+
                 } else if (object instanceof ServerIsFullResponse) {
                     // If all servers are full
                     ServerIsFullResponse response = (ServerIsFullResponse) object;
