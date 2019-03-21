@@ -1,5 +1,6 @@
 package com.progark.group2.wizardrumble.network;
 
+import com.badlogic.gdx.graphics.g3d.particles.influencers.ColorInfluencer;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
@@ -14,7 +15,7 @@ public class NetworkController {
     private static NetworkController instance = null;
 
     // TODO: Set this based on generated ID from server
-    private final static int playerID = 0;
+    private final static int playerID = 6;
 
     // IP address to MasterServer
     private final static int TIMEOUT = 5000;
@@ -22,13 +23,10 @@ public class NetworkController {
     private final static int MASTER_SERVER_TCP_PORT = 54555;
     private final static int MASTER_SERVER_UDP_PORT = 54777;
 
-    // Client for handling communication with given game server
-    private static Client client = new Client();
-
     private NetworkController() throws IOException {
 
         // Client for handling communication with master server
-        Client masterServerClient = new Client();
+        final Client masterServerClient = new Client();
         masterServerClient.start();
         masterServerClient.connect(
                 TIMEOUT,
@@ -40,8 +38,9 @@ public class NetworkController {
         // Register classes for kryo serializer
         KryoClientRegister.registerKryoClasses(masterServerClient);
 
+        // TODO Register player before joining game
         // Send request to join
-        final PlayerJoinedRequest request = new PlayerJoinedRequest();
+        PlayerJoinedRequest request = new PlayerJoinedRequest();
         request.setPlayerID(playerID); // TODO: ID is generated through name registering
         masterServerClient.sendTCP(request);
 
@@ -49,9 +48,12 @@ public class NetworkController {
             public void received (Connection connection, Object object) {
                 if (object instanceof PlayerJoinedResponse) {
                     PlayerJoinedResponse response = (PlayerJoinedResponse) object;
+                    System.out.println("tcp " + response.getTcpPort());
+                    System.out.println("udp " + response.getUdpPort());
                     try {
+
                         // Client tries to connect to the given GameServer
-                        client.close();
+                        Client client = new Client();
                         client.start();
                         client.connect(
                                 TIMEOUT,
@@ -63,10 +65,10 @@ public class NetworkController {
                         // Register classes for kryo serializer
                         KryoClientRegister.registerKryoClasses(client);
 
-                        // Let the client join the game server (lobby)
-                        PlayerJoinedRequest requestToJoin = new PlayerJoinedRequest();
-                        requestToJoin.setPlayerID(1);
-                        client.sendTCP(requestToJoin);
+                        // Player asks to join gameserver
+                        PlayerJoinedRequest request = new PlayerJoinedRequest();
+                        request.setPlayerID(playerID);
+                        client.sendTCP(request);
 
                     } catch (IOException e) {
                         e.printStackTrace();
