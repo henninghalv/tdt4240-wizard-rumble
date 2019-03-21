@@ -20,23 +20,23 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 /** The main menu that is shown when the game is launched.
  */
-public class MainMenuState extends State {
+public class MainMenuState extends MenuState {
 
     private Stage stage;
     private Table table;
-    private Label.LabelStyle labelStyle;
-    private Texture imageTexture;
+    private Label.LabelStyle titleStyle;
 
     private final String title = "Wizard Rumble";
+
 
     //TODO Remove sout and uncomment method calls in the button listeners
     public MainMenuState(GameStateManager gameStateManager){
         super(gameStateManager);
+        initialize();
 
-        initializeVariables();
 
-        // Buttons
-        Stack startButton = addButton("Start");
+        // startButton
+        Stack startButton = this.menuButton("Start");
         startButton.addListener(new InputListener(){
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -48,8 +48,11 @@ public class MainMenuState extends State {
                 startGame();
             }
         });
+        this.table.add(startButton).pad(10f);
+        this.table.row();
 
-        Stack settingsButton = addButton("Settings");
+        // Settings
+        Stack settingsButton = menuButton("Settings");
         settingsButton.addListener(new InputListener(){
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -62,8 +65,11 @@ public class MainMenuState extends State {
                 openSettings();
             }
         });
+        this.table.add(settingsButton).pad(10f);
+        this.table.row();
 
-        Stack exitButton = addButton("Exit");
+        // exitButton
+        Stack exitButton = menuButton("Exit");
         exitButton.addListener(new InputListener(){
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -75,6 +81,8 @@ public class MainMenuState extends State {
                 onBackButtonPress();
             }
         });
+        this.table.add(exitButton).pad(10f);
+        this.table.row();
 
         stage.addActor(table);
     }
@@ -117,39 +125,11 @@ public class MainMenuState extends State {
     }
 
     /**
-     * Mek button
-     *
-     * @param buttonText
-     * @return
-     */
-    private Stack addButton(String buttonText){
-        Label label = new Label(buttonText, labelStyle);
-        label.setAlignment(Align.center);
-
-        Image buttonImage = new Image(this.imageTexture);
-
-        Stack button = new Stack();
-        button.add(buttonImage);
-        button.add(label);
-
-        this.table.add(button).pad(10f);
-        this.table.row();
-
-        return button;
-    }
-
-    /**
      * Initialize stuff
      */
-    private void initializeVariables(){
+    private void initialize() {
         this.stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
-
-        // Button styling
-        this.imageTexture = new Texture("UI/blue_button00.png");
-        BitmapFont font = new BitmapFont();
-        font.setColor(Color.BLACK);
-        this.labelStyle = new Label.LabelStyle(font, font.getColor());
 
         // Layout styling
         this.table = new Table();
@@ -157,7 +137,12 @@ public class MainMenuState extends State {
         table.setDebug(true);
         table.center();
 
-        Label label = new Label(this.title, labelStyle);
+        // Title
+        BitmapFont font = new BitmapFont();
+        font.setColor(Color.BLACK);
+        this.titleStyle = new Label.LabelStyle(font, font.getColor());
+
+        Label label = new Label(this.title, titleStyle);
         label.setAlignment(Align.center);
         label.setSize((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/4);
         table.add(label).size((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/4);
