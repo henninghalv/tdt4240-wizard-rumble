@@ -18,7 +18,7 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 
-/** The main menu that is shown when the game is launched
+/** The main menu that is shown when the game is launched.
  */
 public class MainMenuState extends State {
 
@@ -45,8 +45,7 @@ public class MainMenuState extends State {
 
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                System.out.println("Start game");
-                // startGame();
+                startGame();
             }
         });
 
@@ -60,7 +59,7 @@ public class MainMenuState extends State {
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 System.out.println("Settings");
-                // openSettings();
+                openSettings();
             }
         });
 
@@ -73,7 +72,6 @@ public class MainMenuState extends State {
 
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                System.out.println("Exit");
                 onBackButtonPress();
             }
         });
