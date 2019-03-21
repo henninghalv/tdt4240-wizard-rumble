@@ -1,8 +1,10 @@
 package com.progark.group2.wizardrumble.network;
 
+import com.badlogic.gdx.graphics.g3d.particles.influencers.ColorInfluencer;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
+import com.progark.group2.wizardrumble.entities.WizardPlayer;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -10,8 +12,10 @@ import java.util.Map;
 
 public class NetworkController {
 
+    private static NetworkController instance = null;
+
     // TODO: Set this based on generated ID from server
-    private final static int playerID = 0;
+    private final static int playerID = 6;
 
     // IP address to MasterServer
     private final static int TIMEOUT = 5000;
@@ -19,13 +23,10 @@ public class NetworkController {
     private final static int MASTER_SERVER_TCP_PORT = 54555;
     private final static int MASTER_SERVER_UDP_PORT = 54777;
 
-    // Client for handling communication with given game server
-    private static Client client = new Client();
-
-    public void init() throws IOException {
+    private NetworkController() throws IOException {
 
         // Client for handling communication with master server
-        Client masterServerClient = new Client();
+        final Client masterServerClient = new Client();
         masterServerClient.start();
         masterServerClient.connect(
                 TIMEOUT,
@@ -37,45 +38,53 @@ public class NetworkController {
         // Register classes for kryo serializer
         KryoClientRegister.registerKryoClasses(masterServerClient);
 
-        final CreateGameRequest request = new CreateGameRequest();
+        // TODO Register player before joining game
+        // Send request to join
+        PlayerJoinedRequest request = new PlayerJoinedRequest();
         request.setPlayerID(playerID); // TODO: ID is generated through name registering
         masterServerClient.sendTCP(request);
 
         masterServerClient.addListener(new Listener() {
             public void received (Connection connection, Object object) {
-                if (object instanceof CreateGameResponse) {
-                    CreateGameResponse response = (CreateGameResponse)object;
+                if (object instanceof PlayerJoinedResponse) {
+                    PlayerJoinedResponse response = (PlayerJoinedResponse) object;
+                    System.out.println("tcp " + response.getTcpPort());
+                    System.out.println("udp " + response.getUdpPort());
                     try {
+
                         // Client tries to connect to the given GameServer
-                        client.close();
+                        Client client = new Client();
                         client.start();
                         client.connect(
                                 TIMEOUT,
                                 MASTER_SERVER_HOST,
-                                response.getMap().get("tcpPort"),
-                                response.getMap().get("udpPort")
+                                response.getTcpPort(),
+                                response.getUdpPort()
                         );
 
                         // Register classes for kryo serializer
                         KryoClientRegister.registerKryoClasses(client);
 
-                        // Let the client join the game server (lobby)
-                        PlayerJoinedRequest requestToJoin = new PlayerJoinedRequest();
-                        client.sendTCP(requestToJoin);
-
-                        // TODO: Send this request when this player died
-                        /*PlayerDeadRequest requestPlayerDied = new PlayerDeadRequest();
-                        requestPlayerDied.playerID = playerID;
-                        client.sendTCP(requestPlayerDied);*/
+                        // Player asks to join gameserver
+                        PlayerJoinedRequest request = new PlayerJoinedRequest();
+                        request.setPlayerID(playerID);
+                        client.sendTCP(request);
 
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                } else if (object instanceof ServerIsFullResponse) {
-                    // If all servers are full
-                    ServerIsFullResponse response = (ServerIsFullResponse) object;
-                    System.out.println("Client got that the server is full: " + response.getIsFull());
-                    // TODO: Handle server is full - display message on interface
+                } else if (object instanceof PlayersHealthStatusRequest) {
+                    PlayersHealthStatusRequest request = (PlayersHealthStatusRequest) object;
+                    // Find player instance
+                    WizardPlayer player = WizardPlayer.getInstance();
+
+                    // Set the new health amount
+                    WizardPlayer.getInstance().setHealth(
+                            // Player health registered on gameserver
+                            request.getMap().get(player.getPlayerID())
+                    );
+
+                    // TODO Set the new health amount to all wizard entities
                 } else if (object instanceof ServerErrorResponse) {
                     // If there occures a server error
                     ServerErrorResponse response = (ServerErrorResponse) object;
@@ -84,6 +93,18 @@ public class NetworkController {
                 }
             }
         });
+    }
+
+    /**
+     * Get networkcontroller instance if not existing
+     * @return  (NetworkController) The instance made or retrieved
+     * @throws IOException  If instansiating a server went wrong
+     */
+    public static NetworkController getInstance() throws IOException {
+        if (instance == null) {
+            instance = new NetworkController();
+        }
+        return instance;
     }
 
     public Map getStats(){
@@ -95,6 +116,7 @@ public class NetworkController {
         //TODO
         return new HashMap();
     }
+
 
     public Map updateGameState(Map map){
         //TODO

@@ -3,93 +3,112 @@ package com.progark.group2.gameserver;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
-
+import com.progark.group2.wizardrumble.entities.Wizard;
 import com.progark.group2.wizardrumble.network.PlayerDeadRequest;
 import com.progark.group2.wizardrumble.network.PlayerJoinedRequest;
+import com.progark.group2.wizardrumble.network.PlayerJoinedResponse;
+import com.progark.group2.wizardrumble.network.PlayersHealthStatusRequest;
+import com.progark.group2.wizardrumble.network.ServerErrorResponse;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class GameServer {
 
-    private Server server;
-    private int TCP_PORT;
-    private int UDP_PORT;
+    private List<Server> servers = new ArrayList<Server>();
+    private HashMap<Integer, Integer> TCP_PORTS = new HashMap<Integer, Integer>();
+    private HashMap<Integer, Integer> UDP_PORTS = new HashMap<Integer, Integer>();
 
-    private final static String NAME = "name";
-    private final static String KILLS = "kills";
-    private final static String IS_DEAD = "isDead";
-    private final static String POSITION = "position";
-    private final static String TIME_ALIVE = "timeAlive";
 
     // List of all players that has joined the game with their stats for this game
-    private HashMap<Integer, HashMap<String, Object>> players =
-            new HashMap<Integer, HashMap<String, Object>>();
+    private HashMap<Integer, Player> players =
+            new HashMap<Integer, Player>();
 
     // This is the master server
-    GameServer(int tcpPort, int udpPort) throws IOException {
-        // Add ports for reference
-        TCP_PORT = tcpPort;
-        UDP_PORT = udpPort;
+    GameServer(List<Integer> tcpPorts, List<Integer> udpPorts) throws IOException {
 
-        // Set a created a kryo server object
-        server = createNewServer(TCP_PORT, UDP_PORT);
+        if (tcpPorts.size() != udpPorts.size()) {
+            throw new IllegalArgumentException("Gameserver: tcpports length must be equal to udpports provided");
+        }
+
+        // Add ports for reference
+        // Create one kryo server object per tcp port and add to list of servers
+        for (int i = 0; i < tcpPorts.size(); i++) {
+            TCP_PORTS.put(tcpPorts.get(i), null);
+            UDP_PORTS.put(udpPorts.get(i), null);
+            servers.add(createNewServer(tcpPorts.get(i), udpPorts.get(i)));
+        }
     }
 
     /**
      * Used by master server to determine which tcp port this server used
      * @return  tcp port used by server
      */
-    int getTCPPort() {
-        return TCP_PORT;
+    HashMap<Integer, Integer> getTCPPorts() {
+        return TCP_PORTS;
     }
 
     /**
-     * Used by master server to determine which udp port this server used
-     * @return  dup port used by server
+     * Used by master server to determine which udp ports this server used
+     * @return  udp ports used by server
      */
-    int getUDPPort() {
-        return UDP_PORT;
+    HashMap<Integer, Integer> getUDPPorts() {
+        return UDP_PORTS;
     }
 
     /**
      * Add a new player to list when joining or creating a new game.
      * @param playerID  (int) player id
      */
-    private void addJoinedPlayer(int playerID) {
+    protected void addedPlayer(int playerID) {
         // Default name if not registered in DB
         String playerName = "Guest";
 
         // TODO: Get player name from MasterServer => DB
         //playerName = MasterServer.getPlayerName(playerID);
 
-        HashMap<String, Object> playerStats = new HashMap<String, Object>();
-        playerStats.put(IS_DEAD, false); // If the player is dead
-        playerStats.put(NAME, playerName); // Player name registered
-        playerStats.put(KILLS, 0); // Amount of kills in one game
-        playerStats.put(TIME_ALIVE, 0); // Time alive in a game
-        playerStats.put(POSITION, -1); // Placement based on when the player died
-        // TODO: Consider adding more info to register more metadata
+        Player player = new Player(
+                playerName, // name
+                0, // Kills
+                Wizard.DEFAULT_HEALTH, // Health
+                -1, // Position or rank according to time of death
+                0// Time alive, milliseconds
+        );
 
         // Add playerstats to the list of joined players
-        players.put(playerID, playerStats);
+        players.put(playerID, player);
     }
 
     /**
-     * Removes a player when the player is leaving the game or disconnects.
-     * Player stats will not be saved.
-     * @param playerID  (int) player id
+     * Returns available udp port on gameserver
+     * @return  udp port if any, else null
      */
-    protected void removeJoinedPlayer(int playerID) {
-        players.remove(playerID);
+    // TODO: Set port as busy
+    public Integer getAvailableUDPPort() {
+        for (int port : UDP_PORTS.keySet()){
+            if (UDP_PORTS.get(port) == null) {
+                return port;
+            }
+        }
+
+        return null;
     }
 
     /**
-     * Sets a player status as dead.
-     * @param playerID  (int) player id
+     * Returns available tcp port on gameserver
+     * @return  tcp port if any, else null
      */
-    private void addDeadPlayer(int playerID) {
-        players.get(playerID).put(IS_DEAD, true);
+    // TODO: Set port as busy
+    public Integer getAvailableTCPPort() {
+        for (int port : TCP_PORTS.keySet()){
+            if (TCP_PORTS.get(port) == null) {
+                return port;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -97,13 +116,14 @@ public class GameServer {
      * @return  Boolean     True if all players have died
      */
     private boolean hasGameEnded() {
+        int playersAlive = 0;
         for (int playerID : players.keySet()) {
-            // If one player is alive
-            if (!(Boolean) players.get(playerID).get(IS_DEAD)) {
-                return false;
+            // Count every player alive
+            if (players.get(playerID).getHealth() > 0) {
+                playersAlive++;
             }
         }
-        return true;
+        return playersAlive <= 1;
     }
 
     /**
@@ -111,7 +131,7 @@ public class GameServer {
      * response classes.
      * @return      Kryo Server object
      */
-    private Server createNewServer(int tcpPort, int udpPort) throws IOException {
+    private Server createNewServer(final int tcpPort, final int udpPort) throws IOException {
         Server server = new Server();
         server.start();
         server.bind(tcpPort, udpPort);
@@ -122,29 +142,80 @@ public class GameServer {
         // Add a receiver listener to server
         server.addListener(new Listener() {
             public void received (Connection connection, Object object) {
-                if (object instanceof PlayerDeadRequest) {
-                    // If a player is dead.
-                    PlayerDeadRequest request = (PlayerDeadRequest)object;
-
-                    // Add player to list of dead player
-                    addDeadPlayer(request.getPlayerID());
-                    System.out.println("Player ID: " + request.getPlayerID() + " has been moved to deadPlayerIDs list");
-
-                    // End game if all players are dead
-                    endGame(connection);
-                } else if (object instanceof PlayerJoinedRequest) {
+                if (object instanceof PlayerJoinedRequest) {
                     // If a player has joined
                     PlayerJoinedRequest request = (PlayerJoinedRequest)object;
 
                     // Add player to list of joined players
-                    addJoinedPlayer(request.getPlayerID());
-                    System.out.println("Player ID: " + request.getPlayerID() + " has been moved to joined player list");
-
+                    addedPlayer(request.getPlayerID());
+                    // TODO: Added success response to player
                 }
             }
         });
 
         return server;
+    }
+
+    /**
+     * Subtracts the player's health equal to the damage taken
+     * and updates the game data correspondingly.
+     * @param playerID  (int) the id of the player taken damage
+     * @param damage    (int) damage taken
+     */
+    public void takeDamage(int playerID, int damage) {
+        // The player's previous health
+        int previousHealth = players.get(playerID).getHealth();
+
+        // Update player's health
+        players.get(playerID).setHealth(previousHealth - damage);
+
+        if (previousHealth - damage <= 0) {
+            // TODO: send player is dead request to all clients
+            PlayerDeadRequest request = new PlayerDeadRequest();
+            request.setPlayerID(playerID);
+        }
+    }
+
+    /**
+     * Sends all players health status to all clients.
+     * This should be called between a set time interval
+     * to update all clients about the health to all players.
+     */
+    // TODO: Call this function between a set time interval.
+    public void sendPlayersHealthStatusRequest() {
+        PlayersHealthStatusRequest request = new PlayersHealthStatusRequest();
+        HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
+
+        // Add each players health status to the map
+        for (int playerID : players.keySet()) {
+            map.put(playerID, players.get(playerID).getHealth());
+        }
+
+        // Add the health status in the request
+        request.setMap(map);
+
+        // Send health status update to all clients
+        for (Server server : servers) {
+            // TODO: Go through all clients joined and send this request through connection.sendTCP(request).
+        }
+    }
+
+    /**
+     * Tell the master server that this server no longer is on standby,
+     * but in progress. Start game after 30 seconds from when two players joined or
+     * when the game server is full.
+     */
+    private void startGame() {
+
+        if (players.keySet().size() == MasterServer.getMaximumPlayer()) {
+            // set gameserver status to inprogress
+        }
+
+        if (players.keySet().size() >= 2) {
+            // Start countdown from 30 sec.
+            // After this countdown, set gameserver status to inprogress
+
+        }
     }
 
     /**
@@ -165,8 +236,11 @@ public class GameServer {
         //connection.sendTCP(response);
 
         System.out.println("ALL PLAYERS ARE DEAD. STOPPING GAMESERVER: GOODBYE WORLD");
-        // Stop the server connection
-        server.stop();
+        // Stop the server connection for all servers
+        for (Server server : servers) {
+            server.stop();
+        }
+
         try {
             // Try removing this from the master server
             // This should open the used ports in master server
@@ -176,8 +250,9 @@ public class GameServer {
         }
     }
 
+    /*
     public static void main(String[] args) throws IOException {
         GameServer gs = new GameServer(54556, 544557);
         gs.hasGameEnded();
-    }
+    }*/
 }

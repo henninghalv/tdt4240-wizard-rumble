@@ -1,32 +1,29 @@
 package com.progark.group2.wizardrumble.entities;
 
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
 
-public class Wizard extends Entity {
-    private int playerID;
-    private int health;
-    private int maxHealth;
-    private Touchpad leftJoy; // importer touchpad-objektet som Bjørn lager
-    private Touchpad rightJoy; // importer touchpad-objektet som Bjørn lager
+public abstract class Wizard extends Entity {
 
-    public Wizard(Vector2 spawnPoint){
+    public static int DEFAULT_HEALTH = 100;
+
+    protected int playerID;
+    protected int health;
+    protected int maxHealth;
+
+    protected Wizard(int maxHealth, Vector2 spawnPoint) {
         position = spawnPoint;
 
-    }
-
-    public void attack(){
-
+        if (maxHealth <= 0) {
+            throw new IllegalArgumentException("Max health must be set to a positive integer");
+        }
+        // Replenishes health to full
+        this.maxHealth = maxHealth;
+        health = maxHealth;
     }
 
     public void updatePosition(Vector2 direction){
         position.x += direction.x;
         position.y += direction.y;
-
-    }
-
-    public void takeDamage(int damage){
-
     }
 
     public void updateRotation(Vector2 direction){
