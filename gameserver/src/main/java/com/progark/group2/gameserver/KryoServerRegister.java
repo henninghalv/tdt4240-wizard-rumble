@@ -22,7 +22,7 @@ public class KryoServerRegister {
      * Registers all classes for kryo serializer
      * @param server    kryo server object
      */
-    protected static void registerKryoClasses(Server server) {
+    public static void registerKryoClasses(Server server) {
         Kryo kryo = server.getKryo();
         kryo.register(PlayerDeadRequest.class);
         kryo.register(PlayerJoinedRequest.class);

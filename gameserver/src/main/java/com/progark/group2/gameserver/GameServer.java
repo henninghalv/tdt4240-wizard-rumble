@@ -3,12 +3,12 @@ package com.progark.group2.gameserver;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
+import com.progark.group2.gameserver.resources.KryoServerRegister;
 import com.progark.group2.wizardrumble.entities.Wizard;
 import com.progark.group2.wizardrumble.network.PlayerDeadRequest;
 import com.progark.group2.wizardrumble.network.PlayerJoinedRequest;
-import com.progark.group2.wizardrumble.network.PlayerJoinedResponse;
 import com.progark.group2.wizardrumble.network.PlayersHealthStatusRequest;
-import com.progark.group2.wizardrumble.network.ServerErrorResponse;
+import com.progark.group2.gameserver.resources.Player;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -70,6 +70,7 @@ public class GameServer {
         //playerName = MasterServer.getPlayerName(playerID);
 
         Player player = new Player(
+                playerID,
                 playerName, // name
                 0, // Kills
                 Wizard.DEFAULT_HEALTH, // Health

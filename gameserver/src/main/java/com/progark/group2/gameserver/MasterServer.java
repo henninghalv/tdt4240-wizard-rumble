@@ -3,6 +3,7 @@ package com.progark.group2.gameserver;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
+import com.progark.group2.gameserver.resources.KryoServerRegister;
 import com.progark.group2.wizardrumble.network.PlayerJoinedRequest;
 import com.progark.group2.wizardrumble.network.PlayerJoinedResponse;
 import com.progark.group2.wizardrumble.network.ServerErrorResponse;
