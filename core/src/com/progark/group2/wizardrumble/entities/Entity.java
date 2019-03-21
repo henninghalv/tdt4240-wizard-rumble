@@ -11,6 +11,10 @@ public abstract class Entity {
     protected Sprite sprite;
     protected float rotation; // Definert som en Vector2.angle()
 
+    public Vector2 getPosition() {
+        return position;
+    }
+
     public abstract void onCollision();
 
     public abstract void update();

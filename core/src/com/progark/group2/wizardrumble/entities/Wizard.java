@@ -39,13 +39,15 @@ public class Wizard extends Entity {
         rotation = (direction.angle() + ANGLE_OFFSET);
     }
 
-    public Vector2 getPosition(){
-        return this.position;
-    }
-
     public float getRotation(){
         return this.rotation;
     }
+
+    public Vector2 getGlobalPosition(){
+        // TODO return global position, if that's even needed
+        return null;
+    }
+
 
     @Override
     public void onCollision() {
