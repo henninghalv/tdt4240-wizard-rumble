@@ -3,6 +3,11 @@ package com.progark.group2.wizardrumble.network;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
+import com.progark.group2.wizardrumble.network.requests.GameStartRequest;
+import com.progark.group2.wizardrumble.network.requests.PlayerJoinedRequest;
+import com.progark.group2.wizardrumble.network.responses.PlayerJoinedResponse;
+import com.progark.group2.wizardrumble.network.responses.ServerErrorResponse;
+import com.progark.group2.wizardrumble.network.responses.ServerSuccessResponse;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -10,8 +15,10 @@ import java.util.Map;
 
 public class NetworkController {
 
+    private static NetworkController instance = null;
+
     // TODO: Set this based on generated ID from server
-    private final static int playerID = 0;
+    private final static int playerID = 6;
 
     // IP address to MasterServer
     private final static int TIMEOUT = 5000;
@@ -19,71 +26,99 @@ public class NetworkController {
     private final static int MASTER_SERVER_TCP_PORT = 54555;
     private final static int MASTER_SERVER_UDP_PORT = 54777;
 
-    // Client for handling communication with given game server
-    private static Client client = new Client();
-
-    public void init() throws IOException {
+    private NetworkController() throws IOException {
 
         // Client for handling communication with master server
-        Client masterServerClient = new Client();
-        masterServerClient.start();
-        masterServerClient.connect(
+        final Client masterServerClient = createAndConnectClient(
                 TIMEOUT,
                 MASTER_SERVER_HOST,
                 MASTER_SERVER_TCP_PORT,
                 MASTER_SERVER_UDP_PORT
         );
 
-        // Register classes for kryo serializer
-        KryoClientRegister.registerKryoClasses(masterServerClient);
-
-        final CreateGameRequest request = new CreateGameRequest();
+        // TODO Register player before joining game
+        // Send request to join
+        PlayerJoinedRequest request = new PlayerJoinedRequest();
         request.setPlayerID(playerID); // TODO: ID is generated through name registering
         masterServerClient.sendTCP(request);
 
         masterServerClient.addListener(new Listener() {
-            public void received (Connection connection, Object object) {
-                if (object instanceof CreateGameResponse) {
-                    CreateGameResponse response = (CreateGameResponse)object;
-                    try {
-                        // Client tries to connect to the given GameServer
-                        client.close();
-                        client.start();
-                        client.connect(
-                                TIMEOUT,
-                                MASTER_SERVER_HOST,
-                                response.getMap().get("tcpPort"),
-                                response.getMap().get("udpPort")
-                        );
-
-                        // Register classes for kryo serializer
-                        KryoClientRegister.registerKryoClasses(client);
-
-                        // Let the client join the game server (lobby)
-                        PlayerJoinedRequest requestToJoin = new PlayerJoinedRequest();
-                        client.sendTCP(requestToJoin);
-
-                        // TODO: Send this request when this player died
-                        /*PlayerDeadRequest requestPlayerDied = new PlayerDeadRequest();
-                        requestPlayerDied.playerID = playerID;
-                        client.sendTCP(requestPlayerDied);*/
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                } else if (object instanceof ServerIsFullResponse) {
-                    // If all servers are full
-                    ServerIsFullResponse response = (ServerIsFullResponse) object;
-                    System.out.println("Client got that the server is full: " + response.getIsFull());
-                    // TODO: Handle server is full - display message on interface
+            public void received(Connection connection, Object object) {
+                if (object instanceof PlayerJoinedResponse) {
+                    PlayerJoinedResponse response = (PlayerJoinedResponse) object;
+                    requestGameCreation(response);
+                    // Creating game server, the closing the master server connection
+                    closeClientConnection(masterServerClient);
                 } else if (object instanceof ServerErrorResponse) {
-                    // If there occures a server error
+                    // If there is a server error
                     ServerErrorResponse response = (ServerErrorResponse) object;
                     System.out.println("Client got this error message: " + response.getErrorMsg());
                     // TODO: Handle server error on client side. Give error message to interface
                 }
             }
         });
+    }
+
+    public void requestGameCreation(PlayerJoinedResponse response){
+        System.out.println("tcp " + response.getTcpPort());
+        System.out.println("udp " + response.getUdpPort());
+        try {
+            // Client tries to connect to the given GameServer
+            Client client = createAndConnectClient(
+                    TIMEOUT,
+                    MASTER_SERVER_HOST,
+                    response.getTcpPort(),
+                    response.getUdpPort()
+            );
+            // Player asks to join gameserver
+            PlayerJoinedRequest request = new PlayerJoinedRequest();
+            request.setPlayerID(playerID);
+            client.sendTCP(request);
+            // Add listeners to the connection
+            addGameServerListener(client);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void addGameServerListener(Client client){
+        client.addListener(new Listener() {
+            public void received(Connection connection, Object object) {
+                if (object instanceof ServerSuccessResponse) {
+                    // TODO: Wait for game to start.
+                }
+                else if (object instanceof GameStartRequest){
+
+                }
+                // TODO: Add listeners for game status.
+            }
+        });
+    }
+
+    public Client createAndConnectClient(Integer timeout, String host, Integer tcp, Integer udp) throws IOException {
+        Client client = new Client();
+        client.start();
+        client.connect(timeout, host, tcp, udp);
+        KryoClientRegister.registerKryoClasses(client);  // Register classes for kryo serializer
+        return client;
+    }
+
+    public void closeClientConnection(Client client){
+        client.close();
+        client.stop();
+    }
+
+    /**
+     * Get networkcontroller instance if not existing
+     * @return  (NetworkController) The instance made or retrieved
+     * @throws IOException  If instansiating a server went wrong
+     */
+    public static NetworkController getInstance() throws IOException {
+        if (instance == null) {
+            instance = new NetworkController();
+        }
+        return instance;
     }
 
     public Map getStats(){
@@ -95,6 +130,7 @@ public class NetworkController {
         //TODO
         return new HashMap();
     }
+
 
     public Map updateGameState(Map map){
         //TODO

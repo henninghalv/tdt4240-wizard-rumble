@@ -12,6 +12,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.progark.group2.wizardrumble.Application;
 import com.progark.group2.wizardrumble.entities.Wizard;
+import com.progark.group2.wizardrumble.entities.WizardPlayer;
 import com.progark.group2.wizardrumble.handlers.MapHandler;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.progark.group2.wizardrumble.controllers.AimInput1;
@@ -43,7 +44,7 @@ public class InGameState extends State {
         camera = new OrthographicCamera();
         gamePort = new FitViewport(Application.WIDTH, Application.HEIGHT, camera);
 
-        wizard = new Wizard(new Vector2(Application.WIDTH/2, Application.HEIGHT/2));
+        wizard = new WizardPlayer(10, new Vector2(Application.WIDTH/2, Application.HEIGHT/2));
         wizardSprite = new Texture("wizard_liten.jpg");
         region = new TextureRegion(wizardSprite);
 

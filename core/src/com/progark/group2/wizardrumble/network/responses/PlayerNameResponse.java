@@ -1,4 +1,4 @@
-package com.progark.group2.wizardrumble.network;
+package com.progark.group2.wizardrumble.network.responses;
 
 public class PlayerNameResponse {
     private String playerName;
