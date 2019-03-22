@@ -58,7 +58,7 @@ public class Application extends Game {
 		}
 
         this.gameStateManager = GameStateManager.getInstance();
-        gameStateManager.push(new InGameState(gameStateManager));
+        gameStateManager.push(new MainMenuState(gameStateManager));
 	}
 
 	@Override
