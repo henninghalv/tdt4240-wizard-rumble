@@ -8,6 +8,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.utils.Align;
 
+/**
+ * An abstract menu state that takes care of loading the image and style of the buttons
+ */
 abstract class MenuState extends State{
 
     private Label.LabelStyle labelStyle;
@@ -19,10 +22,10 @@ abstract class MenuState extends State{
     }
 
     /**
-     * Mek button
+     * The method used for creating a button with a desired text on it
      *
-     * @param buttonText
-     * @return
+     * @param buttonText    The desired text
+     * @return  a stack consisting of a button image and a text overlay
      */
     protected Stack menuButton(String buttonText){
         Label label = new Label(buttonText, labelStyle);
@@ -38,7 +41,7 @@ abstract class MenuState extends State{
     }
 
     /**
-     * Initialize stuff
+     * Initialize button and text styling
      */
     protected void initializeVariables(){
         // Button styling

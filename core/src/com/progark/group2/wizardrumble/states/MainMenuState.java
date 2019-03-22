@@ -18,7 +18,8 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 
-/** The main menu that is shown when the game is launched.
+/** The main menu that is shown when the game is launched. The listeners must be added individually
+ * to the buttons that are created by the parent class MenuState.
  */
 public class MainMenuState extends MenuState {
 
@@ -125,7 +126,7 @@ public class MainMenuState extends MenuState {
     }
 
     /**
-     * Initialize stuff
+     * Initialize stage, input, table and font for title.
      */
     private void initialize() {
         this.stage = new Stage(new ScreenViewport());
@@ -134,7 +135,7 @@ public class MainMenuState extends MenuState {
         // Layout styling
         this.table = new Table();
         table.setFillParent(true);
-        table.setDebug(true);
+        //table.setDebug(true);
         table.center();
 
         // Title
