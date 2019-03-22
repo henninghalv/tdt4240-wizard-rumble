@@ -1,4 +1,4 @@
-package com.progark.group2.wizardrumble.network;
+package com.progark.group2.wizardrumble.network.resources;
 
 import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryo.Kryo;

@@ -1,4 +1,4 @@
-package com.progark.group2.gameserver;
+package com.progark.group2.gameserver.resources;
 
 import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryo.Kryo;
@@ -22,7 +22,7 @@ public class KryoServerRegister {
      * Registers all classes for kryo serializer
      * @param server    kryo server object
      */
-    static void registerKryoClasses(Server server) {
+    protected static void registerKryoClasses(Server server) {
         Kryo kryo = server.getKryo();
         kryo.register(PlayerDeadRequest.class);
         kryo.register(PlayerJoinedRequest.class);
