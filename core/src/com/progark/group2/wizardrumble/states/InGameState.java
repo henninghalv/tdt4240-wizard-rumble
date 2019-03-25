@@ -10,16 +10,21 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.progark.group2.wizardrumble.Application;
 import com.progark.group2.wizardrumble.entities.Wizard;
-import com.progark.group2.wizardrumble.entities.WizardPlayer;
 import com.progark.group2.wizardrumble.handlers.MapHandler;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.progark.group2.wizardrumble.entities.Spell;
 import com.progark.group2.wizardrumble.controllers.AimInput1;
 import com.progark.group2.wizardrumble.controllers.MovementInput1;
 import com.progark.group2.wizardrumble.entities.Entity;
 import com.progark.group2.wizardrumble.entities.Wizard;
+import com.progark.group2.wizardrumble.entities.spells.FireBall;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import static com.badlogic.gdx.Input.Keys;
+import static com.progark.group2.wizardrumble.Application.HEIGHT;
 import static com.progark.group2.wizardrumble.Application.WIDTH;
 
 public class InGameState extends State {
@@ -33,6 +38,9 @@ public class InGameState extends State {
     private AimInput1 rightJoyStick;
     private Stage stage;
 
+    // Used for testing spells
+    private List<Spell> spells;
+
     private OrthographicCamera camera;
     private Viewport gamePort;
     private MapHandler mapHandler;
@@ -42,9 +50,9 @@ public class InGameState extends State {
         super(gameStateManager);
 
         camera = new OrthographicCamera();
-        gamePort = new FitViewport(Application.WIDTH, Application.HEIGHT, camera);
+        gamePort = new FitViewport(WIDTH, HEIGHT, camera);
 
-        wizard = new WizardPlayer(10, new Vector2(Application.WIDTH/2, Application.HEIGHT/2));
+        wizard = new Wizard(new Vector2(WIDTH/2f, HEIGHT/2f));
         wizardSprite = new Texture("wizard_liten.jpg");
         region = new TextureRegion(wizardSprite);
 
@@ -59,10 +67,14 @@ public class InGameState extends State {
         stage.addActor(rightJoyStick);
         Gdx.input.setInputProcessor(stage);
 
+        // Used for testing spells.
+        spells = new ArrayList<Spell>();
+
         mapHandler = new MapHandler();
 
-        camera.position.set(wizard.getPosition().x + wizardSprite.getWidth()/2, wizard.getPosition().y + wizardSprite.getHeight()/2, 0);
+        camera.position.set(wizard.getPosition().x + wizardSprite.getWidth()/2f, wizard.getPosition().y + wizardSprite.getHeight()/2f, 0);
     }
+
 
     private void updateWizardRotation(){
         wizard.updateRotation(
@@ -76,6 +88,29 @@ public class InGameState extends State {
         //GetKnobPercentX and -Y returns cos and sin values of the touchpad in question
         Vector2 leftJoyPosition = new Vector2(leftJoyStick.getKnobPercentX(),leftJoyStick.getKnobPercentY());
         wizard.updatePosition(leftJoyPosition);
+    }
+
+    private void castSpell() {
+        // Computes x and y from right joystick input making the speed the same regardless of
+        // where on the joystick you touch.
+        float x1 = rightJoyStick.getKnobPercentX();
+        float y1 = rightJoyStick.getKnobPercentY();
+        float hypotenuse = (float) Math.sqrt(x1 * x1 + y1 * y1);
+        float ratio = (float) Math.sqrt(2) / hypotenuse;
+        float x = x1 * ratio;
+        float y = y1 * ratio;
+
+        FireBall fb = new FireBall( // spawnPoint, rotation, velocity
+                new Vector2(
+                        // TODO: offsetting spell position by screen width and height is not desirable, but it works for now.
+                        // Need to further look into how spell position or rendering is decided.
+                        wizard.getPosition().x - (WIDTH + wizardSprite.getWidth())/2f ,
+                        wizard.getPosition().y - (HEIGHT + wizardSprite.getHeight())/2f
+                        ),
+                wizard.getRotation(), // rotation
+                new Vector2(x, y)  // velocity
+        );
+        spells.add(fb); // THIS IS ONLY FOR FIREBALL AT THE MOMENT
     }
 
     private void updateCamera(float x, float y){
@@ -92,13 +127,24 @@ public class InGameState extends State {
             updateWizardPosition();
             updateWizardRotation();
             //Update camera to follow player. If we move player sprite to player, we have to fix this method.
-            updateCamera(wizard.getPosition().x + wizardSprite.getWidth() / 2, wizard.getPosition().y + wizardSprite.getHeight() / 2);
+            updateCamera(wizard.getPosition().x + wizardSprite.getWidth() / 2f, wizard.getPosition().y + wizardSprite.getHeight() / 2f);
+            System.out.println(wizard.getPosition());
         }
         if (rightJoyStick.isTouched()){
             wizard.updateRotation(new Vector2(rightJoyStick.getKnobPercentX(),rightJoyStick.getKnobPercentY()));
         }
 
-
+        // Probably temporary code. Written to test functionality.
+        if (Gdx.input.justTouched()){
+            // I think that spells should be cast when the player releases the right
+            if (rightJoyStick.isTouched()){
+                castSpell();
+            }
+        }
+        // Iterate spells to update
+        for (Spell spell : spells){
+            spell.update();
+        }
     }
 
     @Override
@@ -110,12 +156,15 @@ public class InGameState extends State {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         mapHandler.render();
         sb.begin();
-        sb.draw(region, wizard.getPosition().x,wizard.getPosition().y,
-                wizardSprite.getWidth()/(float)2,
-                wizardSprite.getHeight()/(float)2,
+        sb.draw(region, wizard.getPosition().x, wizard.getPosition().y,
+                wizardSprite.getWidth()/2f,
+                wizardSprite.getHeight()/2f,
                 wizardSprite.getWidth(), wizardSprite.getHeight(),
                 1,1, wizard.getRotation());
-
+        // Iterate spells to render
+        for (Spell spell : spells){
+            spell.render(sb);
+        }
         sb.end();
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();
