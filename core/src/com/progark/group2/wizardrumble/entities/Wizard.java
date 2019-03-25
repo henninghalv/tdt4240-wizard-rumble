@@ -10,12 +10,11 @@ public class Wizard extends Entity {
     private int maxHealth;
     private Touchpad leftJoy; // importer touchpad-objektet som Bjørn lager
     private Touchpad rightJoy; // importer touchpad-objektet som Bjørn lager
-    private float ANGLE_OFFSET;
+    private final float ANGLE_OFFSET = 270;
 
 
     public Wizard(Vector2 spawnPoint){
         position = spawnPoint;
-        ANGLE_OFFSET = 270;
     }
 
     public void attack(){
