@@ -18,7 +18,6 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.progark.group2.wizardrumble.controllers.AimInput;
 import com.progark.group2.wizardrumble.entities.Wizard;
 import com.progark.group2.wizardrumble.entities.WizardPlayer;
 import com.progark.group2.wizardrumble.handlers.MapHandler;
@@ -263,7 +262,7 @@ public class InGameState extends State {
 
     @Override
     public void onBackButtonPress() {
-
+        this.gameStateManager.push(new InGameMenuState(gameStateManager));
     }
 
 }
