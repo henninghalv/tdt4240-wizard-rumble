@@ -8,8 +8,10 @@ import com.progark.group2.gameserver.resources.PortStatus;
 import com.progark.group2.wizardrumble.network.requests.PlayerJoinedRequest;
 import com.progark.group2.wizardrumble.network.responses.PlayerJoinedResponse;
 import com.progark.group2.wizardrumble.network.responses.ServerErrorResponse;
+import com.progark.group2.gameserver.database.SQLiteDBConnector;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +19,7 @@ import java.util.List;
 public class MasterServer {
 
     private static MasterServer instance = null;
+    private static SQLiteDBConnector connector;
 
     // List of all server instances. 1 server = 1 game
     private HashMap<GameServer, GameStatus> gameServers = new HashMap<GameServer, GameStatus>();
@@ -246,14 +249,30 @@ public class MasterServer {
      * @param playerID  The id of the player that name is requested
      * @return  The name of the player with corresponding playerID
      */
-    String getPlayerName(int playerID) {
-        String playerName = "Guest"; // Placeholder?
-        // TODO: Retrieve playername from database from playerID
+     static String getPlayerName(int playerID)  {
+        // Default name if not registered in DB
+        String playerName = "Guest";
+
+        try {
+            // Connects to the database and tries to get the player name based on player id
+            playerName = connector.getPlayer(playerID).get(playerID);
+            System.out.println("Player: " + playerName);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         return playerName;
     }
 
     public static void main(String[] args) throws IOException {
         // Init master server
         MasterServer.getInstance();
+        try {
+            connector = SQLiteDBConnector.getInstance();
+            connector.connect();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
     }
 }
