@@ -1,10 +1,14 @@
 package com.progark.group2.wizardrumble.network;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Preferences;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
+import com.progark.group2.wizardrumble.network.requests.CreatePlayerRequest;
 import com.progark.group2.wizardrumble.network.requests.GameStartRequest;
 import com.progark.group2.wizardrumble.network.requests.PlayerJoinedRequest;
+import com.progark.group2.wizardrumble.network.responses.CreatePlayerResponse;
 import com.progark.group2.wizardrumble.network.responses.PlayerJoinedResponse;
 import com.progark.group2.wizardrumble.network.responses.ServerErrorResponse;
 import com.progark.group2.wizardrumble.network.responses.ServerSuccessResponse;
@@ -15,11 +19,10 @@ import java.util.Map;
 
 public class NetworkController {
 
-    private static NetworkController instance = null;
-
-    // TODO: Set this based on generated ID from server
-    private final static int playerID = 1;
-
+    private static NetworkController instance;
+    private static Client masterServerClient;
+    private static Preferences userPreferences = Gdx.app.getPreferences("user");
+    private static int playerId;
     // IP address to MasterServer
     private final static int TIMEOUT = 5000;
     private final static String MASTER_SERVER_HOST = "localhost";
@@ -30,7 +33,7 @@ public class NetworkController {
 
         // Client for handling communication with master server
         System.out.println("Creating connection to MasterServer...");
-        final Client masterServerClient = createAndConnectClient(
+        masterServerClient = createAndConnectClient(
                 TIMEOUT,
                 MASTER_SERVER_HOST,
                 MASTER_SERVER_TCP_PORT,
@@ -51,7 +54,14 @@ public class NetworkController {
                     System.out.println("Closing connection to MasterServer...");
                     closeClientConnection(masterServerClient);
                     System.out.println("Done!");
-                } else if (object instanceof ServerErrorResponse) {
+                }
+                else if (object instanceof CreatePlayerResponse){
+                    CreatePlayerResponse response = (CreatePlayerResponse) object;
+                    playerId = response.getPlayerId();
+                    userPreferences.putInteger("playerId", playerId);
+                }
+
+                else if (object instanceof ServerErrorResponse) {
                     // If there is a server error
                     ServerErrorResponse response = (ServerErrorResponse) object;
                     System.out.println("Client got this error message: " + response.getErrorMsg());
@@ -63,13 +73,30 @@ public class NetworkController {
 
         // TODO Register player before joining game
         // Send request to join
+        Preferences preferences = Gdx.app.getPreferences("user");
+        playerId = preferences.getInteger("playerId", 0);
+        if(playerId == 0){
+            Gdx.input.getTextInput(
+                    new UsernamePrompt(),
+                    "Please tell us your name, Wizard!",
+                    "",
+                    "Username"
+            );
+        }
         System.out.println("Sending PlayerJoinedRequest to MasterServer...");
         PlayerJoinedRequest request = new PlayerJoinedRequest();
-        request.setPlayerID(playerID); // TODO: ID is generated through name registering
+        request.setPlayerID(playerId); // TODO: ID is generated through name registering
         masterServerClient.sendTCP(request);
         System.out.println("Done!");
 
     }
+
+    public void requestPlayerCreation(String username){
+        CreatePlayerRequest request = new CreatePlayerRequest();
+        request.setPlayerName(username);
+        masterServerClient.sendTCP(request);
+    }
+
 
     public void requestGameCreation(PlayerJoinedResponse response){
         System.out.println("TCP: " + response.getTcpPort());
@@ -91,7 +118,7 @@ public class NetworkController {
             // Player asks to join gameserver
             System.out.println("Sending PlayerJoinedRequest to GameServer...");
             PlayerJoinedRequest request = new PlayerJoinedRequest();
-            request.setPlayerID(playerID);
+            request.setPlayerID(playerId);
             client.sendTCP(request);
             System.out.println("Done!");
 

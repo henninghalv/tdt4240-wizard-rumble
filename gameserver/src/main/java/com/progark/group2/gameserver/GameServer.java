@@ -74,7 +74,7 @@ public class GameServer {
                 playerId,
                 playerName, // name
                 0, // Kills
-                Wizard.DEFAULT_HEALTH, // Health
+                100, // Health
                 -1, // Position or rank according to time of death
                 0// Time alive, milliseconds
         );

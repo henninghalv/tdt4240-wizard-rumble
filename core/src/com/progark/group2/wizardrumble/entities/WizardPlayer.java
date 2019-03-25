@@ -14,10 +14,14 @@ public class WizardPlayer extends Wizard {
         super(maxHealth, spawnPoint);
     }
 
+    public WizardPlayer(Vector2 spawnPoint) {
+        super(spawnPoint);
+    }
+
     public static WizardPlayer getInstance() {
         if (instance == null) {
             // TODO: Find a safe position for the exception when a player hasn't been instansiated
-            instance = new WizardPlayer(Wizard.DEFAULT_HEALTH, new Vector2(0,0));
+            instance = new WizardPlayer(new Vector2(0,0));
         }
         return instance;
     }
