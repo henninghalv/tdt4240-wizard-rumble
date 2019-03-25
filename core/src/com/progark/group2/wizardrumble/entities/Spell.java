@@ -7,5 +7,4 @@ public abstract class Spell extends Entity{
     private int cooldown;
     private int castTime;
 
-
 }
