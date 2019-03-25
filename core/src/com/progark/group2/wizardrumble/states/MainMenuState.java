@@ -8,15 +8,14 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
-import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.progark.group2.wizardrumble.network.NetworkController;
 
 import java.io.IOException;
+
 
 
 /** The main menu that is shown when the game is launched. The listeners must be added individually
@@ -24,14 +23,12 @@ import java.io.IOException;
  */
 public class MainMenuState extends MenuState {
 
-    private Stage stage;
     private Table table;
     private Label.LabelStyle titleStyle;
 
     private final String title = "Wizard Rumble";
 
 
-    //TODO Remove sout and uncomment method calls in the button listeners
     public MainMenuState(GameStateManager gameStateManager){
         super(gameStateManager);
         initialize();
@@ -68,7 +65,6 @@ public class MainMenuState extends MenuState {
 
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                System.out.println("Settings");
                 openSettings();
             }
         });
@@ -91,7 +87,7 @@ public class MainMenuState extends MenuState {
         this.table.add(exitButton).pad(10f);
         this.table.row();
 
-        stage.addActor(table);
+        this.stage.addActor(table);
     }
 
     private void startGame(){
@@ -99,7 +95,9 @@ public class MainMenuState extends MenuState {
     }
 
     private void openSettings(){
-        this.gameStateManager.push(new MainMenuSettings(this.gameStateManager));
+        //TODO Remove sout and uncomment method calls in the button listeners
+        System.out.println("Settings");
+        //this.gameStateManager.push(new MainMenuSettings(this.gameStateManager));
     }
 
     @Override
@@ -118,12 +116,12 @@ public class MainMenuState extends MenuState {
         Gdx.gl.glClearColor(0, 1, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        stage.draw();
+        this.stage.draw();
     }
 
     @Override
     public void dispose() {
-        stage.dispose();
+        this.stage.dispose();
     }
 
     @Override
@@ -132,16 +130,13 @@ public class MainMenuState extends MenuState {
     }
 
     /**
-     * Initialize stage, input, table and font for title.
+     * Initialize table and font for title.
      */
     private void initialize() {
-        this.stage = new Stage(new ScreenViewport());
-        Gdx.input.setInputProcessor(stage);
 
         // Layout styling
         this.table = new Table();
         table.setFillParent(true);
-        //table.setDebug(true);
         table.center();
 
         // Title
