@@ -1,6 +1,7 @@
 package com.progark.group2.wizardrumble.states;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -26,6 +27,7 @@ import com.progark.group2.wizardrumble.controllers.MovementInput1;
 import com.progark.group2.wizardrumble.entities.Spell;
 import com.progark.group2.wizardrumble.entities.spells.FireBall;
 
+import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -220,6 +222,10 @@ public class InGameState extends State {
         // Iterate spells to update
         for (Spell spell : spells){
             spell.update();
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
+            this.onBackButtonPress();
         }
     }
 
