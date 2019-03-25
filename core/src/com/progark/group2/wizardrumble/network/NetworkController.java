@@ -18,7 +18,7 @@ public class NetworkController {
     private static NetworkController instance = null;
 
     // TODO: Set this based on generated ID from server
-    private final static int playerID = 6;
+    private final static int playerID = 1;
 
     // IP address to MasterServer
     private final static int TIMEOUT = 5000;
@@ -29,26 +29,28 @@ public class NetworkController {
     private NetworkController() throws IOException {
 
         // Client for handling communication with master server
+        System.out.println("Creating connection to MasterServer...");
         final Client masterServerClient = createAndConnectClient(
                 TIMEOUT,
                 MASTER_SERVER_HOST,
                 MASTER_SERVER_TCP_PORT,
                 MASTER_SERVER_UDP_PORT
         );
+        System.out.println("Done!");
 
-        // TODO Register player before joining game
-        // Send request to join
-        PlayerJoinedRequest request = new PlayerJoinedRequest();
-        request.setPlayerID(playerID); // TODO: ID is generated through name registering
-        masterServerClient.sendTCP(request);
-
+        System.out.println("Adding listeners...");
         masterServerClient.addListener(new Listener() {
             public void received(Connection connection, Object object) {
                 if (object instanceof PlayerJoinedResponse) {
+                    System.out.println("Received PlayerJoinedResponse");
                     PlayerJoinedResponse response = (PlayerJoinedResponse) object;
+                    System.out.println("Requesting Game Creation...");
                     requestGameCreation(response);
+                    System.out.println("Done!");
                     // Creating game server, the closing the master server connection
+                    System.out.println("Closing connection to MasterServer...");
                     closeClientConnection(masterServerClient);
+                    System.out.println("Done!");
                 } else if (object instanceof ServerErrorResponse) {
                     // If there is a server error
                     ServerErrorResponse response = (ServerErrorResponse) object;
@@ -57,25 +59,41 @@ public class NetworkController {
                 }
             }
         });
+        System.out.println("Done!");
+
+        // TODO Register player before joining game
+        // Send request to join
+        System.out.println("Sending PlayerJoinedRequest to MasterServer...");
+        PlayerJoinedRequest request = new PlayerJoinedRequest();
+        request.setPlayerID(playerID); // TODO: ID is generated through name registering
+        masterServerClient.sendTCP(request);
+        System.out.println("Done!");
+
     }
 
     public void requestGameCreation(PlayerJoinedResponse response){
-        System.out.println("tcp " + response.getTcpPort());
-        System.out.println("udp " + response.getUdpPort());
+        System.out.println("TCP: " + response.getTcpPort());
+        System.out.println("UDP: " + response.getUdpPort());
         try {
             // Client tries to connect to the given GameServer
+            System.out.println("Creating connection to assigned GameServer...");
             Client client = createAndConnectClient(
                     TIMEOUT,
                     MASTER_SERVER_HOST,
                     response.getTcpPort(),
                     response.getUdpPort()
             );
+            System.out.println("Done!");
+            // Add listeners to the connection
+            System.out.println("Adding listeners...");
+            addGameServerListener(client);
+            System.out.println("Done!");
             // Player asks to join gameserver
+            System.out.println("Sending PlayerJoinedRequest to GameServer...");
             PlayerJoinedRequest request = new PlayerJoinedRequest();
             request.setPlayerID(playerID);
             client.sendTCP(request);
-            // Add listeners to the connection
-            addGameServerListener(client);
+            System.out.println("Done!");
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -87,6 +105,7 @@ public class NetworkController {
             public void received(Connection connection, Object object) {
                 if (object instanceof ServerSuccessResponse) {
                     // TODO: Wait for game to start.
+                    System.out.println("Game created and connected! Waiting for players...");
                 }
                 else if (object instanceof GameStartRequest){
 

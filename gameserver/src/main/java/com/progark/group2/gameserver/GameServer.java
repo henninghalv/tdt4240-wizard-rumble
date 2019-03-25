@@ -3,6 +3,7 @@ package com.progark.group2.gameserver;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
+import com.progark.group2.gameserver.resources.GameStatus;
 import com.progark.group2.gameserver.resources.Player;
 import com.progark.group2.gameserver.resources.PortStatus;
 import com.progark.group2.wizardrumble.entities.Wizard;
@@ -17,7 +18,6 @@ import com.progark.group2.wizardrumble.network.responses.ServerSuccessResponse;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -42,7 +42,9 @@ public class GameServer {
         for (int i = 0; i < tcpPorts.size(); i++) {
             TCP_PORTS.put(tcpPorts.get(i), PortStatus.OPEN);
             UDP_PORTS.put(udpPorts.get(i), PortStatus.OPEN);
+            System.out.println("Creating KryoNet Servers for each player...");
             servers.add(createNewServer(tcpPorts.get(i), udpPorts.get(i)));
+            System.out.println("Done!");
         }
     }
 
@@ -77,12 +79,19 @@ public class GameServer {
                 0// Time alive, milliseconds
         );
         // Add playerstats to the list of joined players
+        System.out.println("Players keyset size: " + players.keySet().size());
+        System.out.println("Max players: " + MasterServer.getMaximumPlayers());
         if(players.keySet().size() < MasterServer.getMaximumPlayers()){
             players.put(playerId, player);
-
         }
         else{
             //TODO: Don't add allow more players
+        }
+        if(players.keySet().size() == MasterServer.getMaximumPlayers()){
+            // TODO: Set GameServerStatus to "Full" or "In Progress"
+            System.out.println("Server full! Updating status...");
+            MasterServer.getInstance().updateGameServerStatus(this, GameStatus.IN_PROGRESS);
+            System.out.println("Done!");
         }
     }
 
@@ -90,10 +99,10 @@ public class GameServer {
      * Returns available udp port on gameserver
      * @return  udp port if any, else null
      */
-    // TODO: Set port as busy
     public Integer getAvailableUDPPort() {
         for (int port : UDP_PORTS.keySet()){
-            if (UDP_PORTS.get(port) == null) {
+            if (PortStatus.OPEN.equals(UDP_PORTS.get(port))) {
+                UDP_PORTS.put(port, PortStatus.CLOSED);
                 return port;
             }
         }
@@ -104,10 +113,10 @@ public class GameServer {
      * Returns available tcp port on gameserver
      * @return  tcp port if any, else null
      */
-    // TODO: Set port as busy
     public Integer getAvailableTCPPort() {
         for (int port : TCP_PORTS.keySet()){
-            if (TCP_PORTS.get(port) == null) {
+            if (PortStatus.OPEN.equals(TCP_PORTS.get(port))) {
+                TCP_PORTS.put(port, PortStatus.CLOSED);
                 return port;
             }
         }
@@ -135,11 +144,11 @@ public class GameServer {
      * @return      Kryo Server object
      */
     private Server createNewServer(final int tcpPort, final int udpPort) throws IOException {
-        Server server = createNewServer(tcpPort, udpPort);
-
+        Server server = new Server();
+        server.start();
+        server.bind(tcpPort, udpPort);
         // Register response and request classes for kryo serializer
         KryoServerRegister.registerKryoClasses(server);
-
         // Add a receiver listener to server
         server.addListener(new Listener() {
             public void received (Connection connection, Object object) {
@@ -176,9 +185,14 @@ public class GameServer {
     }
 
     public void broadcastRequest(Request request){
+        System.out.println("Broadcasting request...");
         for(Server server : servers){
-            server.getConnections()[0].sendTCP(request);
+            // If one of the players are missing, then that player's server has no connection
+            if(server.getConnections().length > 0){
+                server.getConnections()[0].sendTCP(request);
+            }
         }
+        System.out.println("Done!");
     }
 
 

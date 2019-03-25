@@ -4,6 +4,7 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 import com.progark.group2.gameserver.resources.GameStatus;
+import com.progark.group2.gameserver.resources.PortStatus;
 import com.progark.group2.wizardrumble.network.requests.PlayerJoinedRequest;
 import com.progark.group2.wizardrumble.network.responses.PlayerJoinedResponse;
 import com.progark.group2.wizardrumble.network.responses.ServerErrorResponse;
@@ -30,26 +31,34 @@ public class MasterServer {
     private final static int DEFAULT_GAMESERVER_UDP_PORT =
             DEFAULT_GAMESERVER_TCP_PORT + (GAMESERVER_COUNT * MAXIMUM_PLAYERS_PER_GAME) + 1;
 
-    private final static HashMap<Integer, String> TCP_PORTS =
-            new HashMap<Integer, String>();
-    private final static HashMap<Integer, String> UDP_PORTS =
-            new HashMap<Integer, String>();
+    private final static HashMap<Integer, PortStatus> TCP_PORTS =
+            new HashMap<Integer, PortStatus>();
+    private final static HashMap<Integer, PortStatus> UDP_PORTS =
+            new HashMap<Integer, PortStatus>();
 
     private MasterServer(final int tcpPort, final int udpPort) throws IOException {
         // Create a list of TCP and UDP ports that are available
+
+        System.out.println("Creating ports...");
         populateTCPAndUDPPorts();
+        System.out.println("Done!");
         // Init server
+        System.out.println("Initializing master server...");
         server = createAndConnectServer(tcpPort, udpPort);
+        System.out.println("Done!");
         // Add a receiver listener to server
+        System.out.println("Adding listener for PlayerJoinedRequest...");
         server.addListener(new Listener() {
             public void received (Connection connection, Object object) {
                 // If the client wants to create a new game lobby
                 if (object instanceof PlayerJoinedRequest) {
+                    System.out.println("Received PlayerJoinedRequest...");
                     PlayerJoinedRequest request = (PlayerJoinedRequest) object;
                     handlePlayerJoinedRequest(connection, request);
                 }
             }
         });
+        System.out.println("Done!");
     }
 
     /**
@@ -66,9 +75,11 @@ public class MasterServer {
 
     public void handlePlayerJoinedRequest(Connection connection, PlayerJoinedRequest request){
         boolean serverFound = false;
+        System.out.println("Looking for available GameServer...");
         // For all gameServers that are not in progress, but on standby
         for (GameServer gs : gameServers.keySet()) {
             if (GameStatus.STAND_BY.equals(gameServers.get(gs))) {
+                System.out.println("Found one!");
                 // Get tcp and udp port from gameserver and send this to client
                 PlayerJoinedResponse response = new PlayerJoinedResponse();
                 response.setTcpPort(gs.getAvailableTCPPort());
@@ -79,6 +90,8 @@ public class MasterServer {
             }
         }
         if(!serverFound){
+            System.out.println("No GameServer found!");
+            System.out.println("Trying to create new GameServer...");
             // If no server with status STAND_BY is found, try to create a new server
             try {
                 GameServer gameServer = createNewGameServer();
@@ -121,12 +134,12 @@ public class MasterServer {
         // Populate tcp
         for (int i = DEFAULT_GAMESERVER_TCP_PORT; i <  DEFAULT_GAMESERVER_TCP_PORT + GAMESERVER_COUNT; i++) {
             // Need one port per player for tcp and this for every gameserver.
-            TCP_PORTS.put(i, "open");
+            TCP_PORTS.put(i, PortStatus.OPEN);
         }
 
         // Populate udp
         for (int i = DEFAULT_GAMESERVER_UDP_PORT; i <  DEFAULT_GAMESERVER_UDP_PORT + GAMESERVER_COUNT; i++) {
-            UDP_PORTS.put(i, "open");
+            UDP_PORTS.put(i, PortStatus.OPEN);
         }
     }
 
@@ -137,8 +150,9 @@ public class MasterServer {
     private List<Integer> findAvailableTCPPorts() {
         List<Integer> tcpPorts = new ArrayList<Integer>();
         for (int tcpPort : TCP_PORTS.keySet()) {
-            if ("open".equals(TCP_PORTS.get(tcpPort))) {
+            if (PortStatus.OPEN.equals(TCP_PORTS.get(tcpPort))) {
                 tcpPorts.add(tcpPort);
+                TCP_PORTS.put(tcpPort, PortStatus.CLOSED);
             }
 
             if (tcpPorts.size() == MAXIMUM_PLAYERS_PER_GAME) {
@@ -154,9 +168,10 @@ public class MasterServer {
      */
     private List<Integer> findAvailableUDPPorts() {
         List<Integer> udpPorts = new ArrayList<Integer>();
-        for (int port : UDP_PORTS.keySet()) {
-            if ("open".equals(UDP_PORTS.get(port))) {
-                udpPorts.add(port);
+        for (int udpPort : UDP_PORTS.keySet()) {
+            if (PortStatus.OPEN.equals(UDP_PORTS.get(udpPort))) {
+                udpPorts.add(udpPort);
+                UDP_PORTS.put(udpPort, PortStatus.CLOSED);
             }
 
             if (udpPorts.size() == MAXIMUM_PLAYERS_PER_GAME) {
@@ -175,6 +190,10 @@ public class MasterServer {
         this.gameServers.put(server, GameStatus.STAND_BY);
     }
 
+    public void updateGameServerStatus(GameServer server, GameStatus status){
+        gameServers.put(server, status);
+    }
+
     /**
      * Remove server from the list of all servers and
      * updates which ports that are now open
@@ -183,12 +202,12 @@ public class MasterServer {
 
         // Open all tcpports
         for (int tcpPort : server.getTCPPorts().keySet()) {
-            TCP_PORTS.put(tcpPort, "open");
+            TCP_PORTS.put(tcpPort, PortStatus.OPEN);
         }
 
         // Open all udpPorts
         for (int udpPort : server.getUDPPorts().keySet()) {
-            TCP_PORTS.put(udpPort, "open");
+            TCP_PORTS.put(udpPort, PortStatus.OPEN);
         }
 
         // Remove gameserver from MasterServer
@@ -201,14 +220,15 @@ public class MasterServer {
      * @return      GameServer object
      */
     private GameServer createNewGameServer() throws IOException {
-        System.out.println("CREATING A NEW GAME SERVER");
-
+        System.out.println("Creating a new GameServer...");
+        System.out.println("Finding available TCP ports...");
         List<Integer> tcpPorts = findAvailableTCPPorts();
+        System.out.println("Finding available UDP ports...");
         List<Integer> udpPorts = findAvailableUDPPorts();
 
         if (tcpPorts.size() <= 0 || udpPorts.size() <= 0) {
             throw new IllegalStateException(
-                    "There are not enough ports for me to create a new gameserver");
+                    "There are not enough ports to create a new GameServer...");
         }
 
         if (tcpPorts.size() < MAXIMUM_PLAYERS_PER_GAME) {
