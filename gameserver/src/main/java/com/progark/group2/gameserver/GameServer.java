@@ -124,8 +124,8 @@ public class GameServer {
                     PlayerDeadRequest request = (PlayerDeadRequest)object;
 
                     // Add player to list of dead player
-                    addDeadPlayer(request.playerID);
-                    System.out.println("Player ID: " + request.playerID + " has been moved to deadPlayerIDs list");
+                    addDeadPlayer(request.getPlayerID());
+                    System.out.println("Player ID: " + request.getPlayerID() + " has been moved to deadPlayerIDs list");
 
                     // End game if all players are dead
                     endGame(connection);
@@ -134,8 +134,8 @@ public class GameServer {
                     PlayerJoinedRequest request = (PlayerJoinedRequest)object;
 
                     // Add player to list of joined players
-                    addJoinedPlayer(request.playerID);
-                    System.out.println("Player ID: " + request.playerID + " has been moved to joined player list");
+                    addJoinedPlayer(request.getPlayerID());
+                    System.out.println("Player ID: " + request.getPlayerID() + " has been moved to joined player list");
 
                 }
             }

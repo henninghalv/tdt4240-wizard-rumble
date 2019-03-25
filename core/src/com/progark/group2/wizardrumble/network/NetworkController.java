@@ -54,8 +54,8 @@ public class NetworkController {
                         client.connect(
                                 TIMEOUT,
                                 MASTER_SERVER_HOST,
-                                response.map.get("tcpPort"),
-                                response.map.get("udpPort")
+                                response.getMap().get("tcpPort"),
+                                response.getMap().get("udpPort")
                         );
 
                         // Register classes for kryo serializer
@@ -66,9 +66,10 @@ public class NetworkController {
                         requestToJoin.playerID = playerID;
                         client.sendTCP(requestToJoin);
 
-                        PlayerDeadRequest requestPlayerDied = new PlayerDeadRequest();
+                        // TODO: Send this request when this player died
+                        /*PlayerDeadRequest requestPlayerDied = new PlayerDeadRequest();
                         requestPlayerDied.playerID = playerID;
-                        client.sendTCP(requestPlayerDied);
+                        client.sendTCP(requestPlayerDied);*/
 
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -76,12 +77,12 @@ public class NetworkController {
                 } else if (object instanceof ServerIsFullResponse) {
                     // If all servers are full
                     ServerIsFullResponse response = (ServerIsFullResponse) object;
-                    System.out.println("Client got that the server is full: " + response.isFull);
+                    System.out.println("Client got that the server is full: " + response.getIsFull());
                     // TODO: Handle server is full - display message on interface
                 } else if (object instanceof ServerErrorResponse) {
                     // If there occures a server error
                     ServerErrorResponse response = (ServerErrorResponse) object;
-                    System.out.println("Client got this error message: " + response.errorMsg);
+                    System.out.println("Client got this error message: " + response.getErrorMsg());
                     // TODO: Handle server error on client side. Give error message to interface
                 }
             }

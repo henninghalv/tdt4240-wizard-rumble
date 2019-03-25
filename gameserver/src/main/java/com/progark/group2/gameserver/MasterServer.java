@@ -155,14 +155,14 @@ public class MasterServer {
         // If gameservers are full
         if (tcpPort == -1 || udpPort == -1) {
             ServerIsFullResponse response = new ServerIsFullResponse();
-            response.isFull = true;
+            response.setIsFull(true);
             connection.sendTCP(response);
         } else {
             // Create a response with the new Gameserver ports
             CreateGameResponse response = new CreateGameResponse();
-            response.map = new HashMap<String, Integer>();
-            response.map.put("tcpPort", tcpPort);
-            response.map.put("udpPort", udpPort);
+            response.setMap(new HashMap<String, Integer>());
+            response.getMap().put("tcpPort", tcpPort);
+            response.getMap().put("udpPort", udpPort);
 
             // Init a new server
             try {
@@ -170,15 +170,21 @@ public class MasterServer {
                 connection.sendTCP(response);
             } catch (IOException e) {
                 ServerErrorResponse errorResponse = new ServerErrorResponse();
-                errorResponse.errorMsg =
-                        "Something is wrong with the server. Please try again later.";
+                errorResponse.setErrorMsg(
+                        "Something is wrong with the server. Please try again later.");
                 connection.sendTCP(errorResponse);
                 e.printStackTrace();
             }
         }
     }
-
-    static String getPlayerName(int playerID)  {
+  
+    /**
+     * Gameserver will request for playername from master server.
+     * The master server must then send a sql query to DB.
+     * @param playerID  The id of the player that name is requested
+     * @return  The name of the player with corresponding playerID
+     */
+     static String getPlayerName(int playerID)  {
         // Default name if not registered in DB
         String playerName = "Guest";
 
@@ -189,6 +195,7 @@ public class MasterServer {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return playerName;
     }
 
