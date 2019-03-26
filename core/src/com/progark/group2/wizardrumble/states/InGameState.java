@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -70,6 +71,12 @@ public class InGameState extends State {
         button2 = spellButtons.createSpellButton("Ice", WIDTH- AimInput1.diameter-80, 100);
         button3 = spellButtons.createSpellButton("Blast", WIDTH- AimInput1.diameter-60, 50);
 
+        ButtonGroup buttonGroup = new ButtonGroup(button1, button2, button3);
+        buttonGroup.setMaxCheckCount(1);
+        buttonGroup.setMinCheckCount(0);
+        buttonGroup.setUncheckLast(true);
+
+
         Gdx.input.setInputProcessor(stage);
         stage = new Stage(gamePort, sb);
         stage.addActor(leftJoyStick);
@@ -77,7 +84,6 @@ public class InGameState extends State {
         stage.addActor(button1);
         stage.addActor(button2);
         stage.addActor(button3);
-
         Gdx.input.setInputProcessor(stage);
 
         // Used for testing spells.
