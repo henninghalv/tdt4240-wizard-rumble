@@ -4,11 +4,11 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
 
-public class Wizard extends Entity {
+public abstract class Wizard extends Entity {
     protected int playerID;
     protected int health;
     protected int maxHealth;
-    protected int DEFAULT_HEALTH = 100;
+    public final static int DEFAULT_HEALTH = 100;
     private Touchpad leftJoy; // importer touchpad-objektet som Bjørn lager
     private Touchpad rightJoy; // importer touchpad-objektet som Bjørn lager
     private final float ANGLE_OFFSET = 270;
