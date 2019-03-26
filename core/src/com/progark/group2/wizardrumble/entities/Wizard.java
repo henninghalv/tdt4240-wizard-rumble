@@ -4,10 +4,11 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
 
-public class Wizard extends Entity {
-    private int playerID;
-    private int health;
-    private int maxHealth;
+public abstract class Wizard extends Entity {
+    protected int playerID;
+    protected int health;
+    protected int maxHealth;
+    public final static int DEFAULT_HEALTH = 100;
     private Touchpad leftJoy; // importer touchpad-objektet som Bjørn lager
     private Touchpad rightJoy; // importer touchpad-objektet som Bjørn lager
     private final float ANGLE_OFFSET = 270;
@@ -15,6 +16,23 @@ public class Wizard extends Entity {
 
     public Wizard(Vector2 spawnPoint){
         position = spawnPoint;
+    }
+
+    public Wizard(int maxHealth, Vector2 spawnPoint){
+        this.position = spawnPoint;
+        this.maxHealth = maxHealth;
+    }
+
+    public int getPlayerID() {
+        return playerID;
+    }
+
+    public void setPlayerID(int playerID) {
+        this.playerID = playerID;
+    }
+
+    public void setHealth(int health) {
+        this.health = health;
     }
 
     public void attack(){
