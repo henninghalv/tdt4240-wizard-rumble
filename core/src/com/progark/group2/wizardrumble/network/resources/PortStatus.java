@@ -1,4 +1,4 @@
-package com.progark.group2.gameserver.resources;
+package com.progark.group2.wizardrumble.network.resources;
 
 public enum PortStatus {
     OPEN,

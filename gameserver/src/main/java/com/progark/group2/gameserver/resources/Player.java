@@ -1,19 +1,29 @@
-package com.progark.group2.gameserver;
+package com.progark.group2.gameserver.resources;
 
 public class Player {
 
+    private int id;
     private String name;
     private int kills;
     private int health;
     private int rank;
     private int timeAliveInMilliseconds;
 
-    public Player(String name, int kills, int health, int rank, int timeAliveInMilliseconds) {
+    public Player(int id, String name, int kills, int health, int rank, int timeAliveInMilliseconds) {
+        this.id = id;
         this.name = name;
         this.kills = kills;
         this.health = health;
         this.rank = rank;
         this.timeAliveInMilliseconds = timeAliveInMilliseconds;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getName() {

@@ -1,4 +1,5 @@
-package com.progark.group2.wizardrumble.network;
+package com.progark.group2.wizardrumble.network.requests;
 
-class GameStartRequest {
+public class GameStartRequest extends Request {
+    // TODO
 }

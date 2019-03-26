@@ -1,7 +1,8 @@
-package com.progark.group2.wizardrumble.network.responses;
+package com.progark.group2.wizardrumble.network.requests;
 
-public class PlayerNameResponse extends Response {
+public class CreatePlayerRequest extends Request {
     private String playerName;
+
 
     public String getPlayerName() {
         return playerName;
@@ -10,5 +11,4 @@ public class PlayerNameResponse extends Response {
     public void setPlayerName(String playerName) {
         this.playerName = playerName;
     }
-
 }

@@ -1,6 +1,6 @@
 package com.progark.group2.wizardrumble.network.responses;
 
-public class PlayerJoinedResponse {
+public class CreateGameResponse extends Response {
     private int tcpPort;
     private int udpPort;
 
@@ -19,4 +19,5 @@ public class PlayerJoinedResponse {
     public void setUdpPort(int udpPort) {
         this.udpPort = udpPort;
     }
+
 }

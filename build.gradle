@@ -13,8 +13,6 @@ buildscript {
         classpath 'org.wisepersist:gwt-gradle-plugin:1.0.6'
         classpath 'com.android.tools.build:gradle:3.3.2'
         classpath 'com.mobidevelop.robovm:robovm-gradle-plugin:2.3.5'
-        
-
     }
 }
 
@@ -52,6 +50,8 @@ project(":desktop") {
         implementation "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
         // https://mvnrepository.com/artifact/com.esotericsoftware/kryonet
         implementation group: 'com.esotericsoftware', name: 'kryonet', version: '2.22.0-RC1'
+        // https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
+        implementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.7.2'
         
     }
 }
@@ -77,6 +77,8 @@ project(":android") {
         natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-x86_64"
         // https://mvnrepository.com/artifact/com.esotericsoftware/kryonet
         implementation group: 'com.esotericsoftware', name: 'kryonet', version: '2.22.0-RC1'
+        // https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
+        implementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.7.2'
         
     }
 }
@@ -95,6 +97,8 @@ project(":ios") {
         implementation "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-ios"
         // https://mvnrepository.com/artifact/com.esotericsoftware/kryonet
         implementation group: 'com.esotericsoftware', name: 'kryonet', version: '2.22.0-RC1'
+        // https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
+        implementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.7.2'
         
     }
 }
@@ -113,6 +117,8 @@ project(":html") {
         implementation "com.badlogicgames.gdx:gdx-box2d-gwt:$gdxVersion:sources"
         // https://mvnrepository.com/artifact/com.esotericsoftware/kryonet
         implementation group: 'com.esotericsoftware', name: 'kryonet', version: '2.22.0-RC1'
+        // https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
+        implementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.7.2'
         
     }
 }
@@ -126,6 +132,8 @@ project(":core") {
         implementation "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
         // https://mvnrepository.com/artifact/com.esotericsoftware/kryonet
         implementation group: 'com.esotericsoftware', name: 'kryonet', version: '2.22.0-RC1'
+        // https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
+        implementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.7.2'
 
 
     }
@@ -140,6 +148,8 @@ project(":gameserver") {
         implementation "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
         // https://mvnrepository.com/artifact/com.esotericsoftware/kryonet
         implementation group: 'com.esotericsoftware', name: 'kryonet', version: '2.22.0-RC1'
+        // https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
+        implementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.7.2'
 
     }
 }

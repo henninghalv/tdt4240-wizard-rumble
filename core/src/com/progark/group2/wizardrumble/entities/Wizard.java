@@ -1,45 +1,70 @@
 package com.progark.group2.wizardrumble.entities;
 
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
 
 public abstract class Wizard extends Entity {
-
-    public static int DEFAULT_HEALTH = 100;
-
     protected int playerID;
     protected int health;
     protected int maxHealth;
+    public final static int DEFAULT_HEALTH = 100;
+    private Touchpad leftJoy; // importer touchpad-objektet som Bjørn lager
+    private Touchpad rightJoy; // importer touchpad-objektet som Bjørn lager
+    private final float ANGLE_OFFSET = 270;
 
-    protected Wizard(int maxHealth, Vector2 spawnPoint) {
+
+    public Wizard(Vector2 spawnPoint){
         position = spawnPoint;
-
-        if (maxHealth <= 0) {
-            throw new IllegalArgumentException("Max health must be set to a positive integer");
-        }
-        // Replenishes health to full
-        this.maxHealth = maxHealth;
-        health = maxHealth;
     }
 
-    public void updatePosition(Vector2 direction){
-        position.x += direction.x;
-        position.y += direction.y;
+    public Wizard(int maxHealth, Vector2 spawnPoint){
+        this.position = spawnPoint;
+        this.maxHealth = maxHealth;
+    }
+
+    public int getPlayerID() {
+        return playerID;
+    }
+
+    public void setPlayerID(int playerID) {
+        this.playerID = playerID;
+    }
+
+    public void setHealth(int health) {
+        this.health = health;
+    }
+
+    public void attack(){
+
+    }
+
+    public void updatePosition(Vector2 velocity){
+        position.x += velocity.x;
+        position.y += velocity.y;
+
+    }
+
+    public void takeDamage(int damage){
+
     }
 
     public void updateRotation(Vector2 direction){
         // Rotation is set with an offset, since the rotation-argument in SpriteBatch.draw() starts
         // at zero to the right, but we want it to be at zero upwards.
-        float ANGLE_OFFSET = 270;
+        // This can also be fixed by rotating the image. TODO Look into this when stuff starts to look ready.
         rotation = (direction.angle() + ANGLE_OFFSET);
-    }
-
-    public Vector2 getPosition(){
-        return this.position;
     }
 
     public float getRotation(){
         return this.rotation;
     }
+
+    public Vector2 getGlobalPosition(){
+        // TODO return global position, if that's even needed
+        return null;
+    }
+
 
     @Override
     public void onCollision() {
@@ -52,7 +77,7 @@ public abstract class Wizard extends Entity {
     }
 
     @Override
-    public void render() {
+    public void render(SpriteBatch sb) {
 
     }
 

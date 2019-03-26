@@ -1,6 +1,6 @@
-package com.progark.group2.wizardrumble.network;
+package com.progark.group2.wizardrumble.network.requests;
 
-public class PlayerDeadRequest {
+public class PlayerDeadRequest extends Request {
     private int playerID;
 
     public int getPlayerID() {

@@ -1,8 +1,8 @@
-package com.progark.group2.wizardrumble.network;
+package com.progark.group2.wizardrumble.network.requests;
 
 import java.util.HashMap;
 
-public class PlayersHealthStatusRequest {
+public class PlayersHealthStatusRequest extends Request {
 
     private HashMap<Integer, Integer> map;
 
