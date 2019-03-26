@@ -8,9 +8,10 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 
-public class SpellSelector2 {
+public class SpellSelector1 {
 
     private TextButton spellButton;
+
 
     public Skin getSkin() {
         Skin skin = new Skin();
@@ -31,12 +32,13 @@ public class SpellSelector2 {
     }
 
 
-    public TextButton createSpellButton() {
+    public TextButton createSpellButton(String str, int x, int y) {
 
-        spellButton = new TextButton("RESET", getSkin());
-        spellButton.setX(5);
-        spellButton.setY(Gdx.graphics.getHeight() - 25);
+        spellButton = new TextButton(str, getSkin());
+        spellButton.setX(x);
+        spellButton.setY(y);
         spellButton.setWidth(60);
+        spellButton.setHeight(40);
         spellButton.setVisible(true);
         return spellButton;
     }

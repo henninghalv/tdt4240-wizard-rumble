@@ -11,7 +11,7 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.progark.group2.wizardrumble.controllers.AimInput1;
 import com.progark.group2.wizardrumble.controllers.MovementInput1;
 //import com.progark.group2.wizardrumble.controllers.SpellSelector1;
-import com.progark.group2.wizardrumble.controllers.SpellSelector2;
+import com.progark.group2.wizardrumble.controllers.SpellSelector1;
 import com.progark.group2.wizardrumble.entities.Wizard;
 
 import static com.progark.group2.wizardrumble.Application.WIDTH;
@@ -25,8 +25,8 @@ public class InGameState extends State {
     private SpriteBatch sb;
     private MovementInput1 leftJoyStick;
     private AimInput1 rightJoyStick;
-    private SpellSelector2 spellButtons;
-    private TextButton testButton;
+    private SpellSelector1 spellButtons;
+    private TextButton button1, button2, button3;
     private Stage stage;
 
 
@@ -41,14 +41,19 @@ public class InGameState extends State {
         leftJoyStick = new MovementInput1(15, 15);
         rightJoyStick = new AimInput1(WIDTH-15- AimInput1.diameter, 15);
 
-        spellButtons = new SpellSelector2();
-        testButton = spellButtons.createSpellButton();
+        spellButtons = new SpellSelector1();
+        button1 = spellButtons.createSpellButton("Fire", 540, 150);
+        button2 = spellButtons.createSpellButton("Ice", 515, 100);
+        button3 = spellButtons.createSpellButton("Blast", 540, 50);
 
         Gdx.input.setInputProcessor(stage);
         stage = new Stage(new ScreenViewport(), sb);
         stage.addActor(leftJoyStick);
         stage.addActor(rightJoyStick);
-        stage.addActor(testButton);
+        stage.addActor(button1);
+        stage.addActor(button2);
+        stage.addActor(button3);
+
         Gdx.input.setInputProcessor(stage);
     }
 
