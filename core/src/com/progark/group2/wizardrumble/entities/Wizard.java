@@ -1,17 +1,30 @@
 package com.progark.group2.wizardrumble.entities;
 
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
 
 public class Wizard extends Entity {
+    private World world;
+    private Body b2body; // the body that contains the wizard in the box2d world
     private int playerID;
     private int health;
     private int maxHealth;
+    private int speed = 100;
+    private Texture wizardSprite;
     private Touchpad leftJoy; // importer touchpad-objektet som Bjørn lager
     private Touchpad rightJoy; // importer touchpad-objektet som Bjørn lager
 
-    public Wizard(Vector2 spawnPoint){
+    public Wizard(Vector2 spawnPoint, World world){
+        wizardSprite = new Texture("wizard_front.png");
         position = spawnPoint;
+        this.world = world;
+        defineWizard();
 
     }
 
@@ -19,9 +32,30 @@ public class Wizard extends Entity {
 
     }
 
+    // Method to make the wizard's box2d body and place it in the world
+    private void defineWizard(){
+        BodyDef bdef = new BodyDef();
+        bdef.position.set(position.x + (1/2f * wizardSprite.getWidth()), position.y + (1/2f * wizardSprite.getHeight()));
+        bdef.type = BodyDef.BodyType.DynamicBody;
+        b2body = world.createBody(bdef);
+
+        FixtureDef fdef = new FixtureDef();
+        PolygonShape shape = new PolygonShape();
+        shape.setAsBox(wizardSprite.getWidth() / 2f, wizardSprite.getHeight() / 2f);
+
+        fdef.shape = shape;
+        b2body.createFixture(fdef);
+    }
+
+
     public void updatePosition(Vector2 direction){
-        position.x += direction.x;
-        position.y += direction.y;
+        // Stops the wizard from moving when you're not using the left joystick.
+        if(direction == new Vector2(0,0)){
+            b2body.setLinearVelocity(0,0);
+        }
+        b2body.setLinearVelocity(speed * direction.x, speed * direction.y);
+        position.x = b2body.getPosition().x - (wizardSprite.getWidth() / 2f);
+        position.y = b2body.getPosition().y - (wizardSprite.getHeight() / 2f);
 
     }
 
@@ -42,6 +76,14 @@ public class Wizard extends Entity {
 
     public float getRotation(){
         return this.rotation;
+    }
+
+    public Body getB2body(){
+        return b2body;
+    }
+
+    public Texture getSprite(){
+        return wizardSprite;
     }
 
     @Override
