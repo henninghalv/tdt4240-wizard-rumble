@@ -1,5 +1,6 @@
 package com.progark.group2.wizardrumble.states;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import java.util.EmptyStackException;
@@ -31,10 +32,14 @@ public class GameStateManager {
         this.states.push(state);
     }
 
-    // Prints error message if stack is empty
+    /**
+     * Prints error message if stack is empty. Also tries to activate
+     * the previous state.
+     */
     public void pop(){
         try {
             this.states.pop();
+            this.states.peek().activate();
         } catch(EmptyStackException e){
             System.out.println(e.getMessage());
         }
@@ -46,8 +51,13 @@ public class GameStateManager {
      * @param state The new state to be pushed
      */
     public void set(State state){
-        // Use own pop method for error handling
-        this.pop();
+
+        try {
+            this.states.pop();
+        } catch(EmptyStackException e){
+            System.out.println(e.getMessage());
+        }
+
         this.states.push(state);
     }
 

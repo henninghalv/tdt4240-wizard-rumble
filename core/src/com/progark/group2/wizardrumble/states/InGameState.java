@@ -41,13 +41,13 @@ public class InGameState extends State {
 
     private MovementInput1 leftJoyStick;
     private AimInput1 rightJoyStick;
-    private Stage stage;
 
     // Used for testing spells
     private List<Spell> spells;
     private String selectedSpell;
 
-    private OrthographicCamera camera;
+    //private OrthographicCamera camera;
+    private Viewport gamePort;
     private MapHandler mapHandler;
 
     //Box2d variables
@@ -66,8 +66,8 @@ public class InGameState extends State {
     private InGameState(GameStateManager gameStateManager) {
         super(gameStateManager);
 
-        camera = new OrthographicCamera();
-        Viewport gamePort = new FitViewport(WIDTH, HEIGHT, camera);
+        this.camera = new OrthographicCamera();
+        gamePort = new FitViewport(WIDTH, HEIGHT, camera);
 
         //Box2d
         b2dr = new Box2DDebugRenderer();
@@ -80,14 +80,15 @@ public class InGameState extends State {
 
         SpriteBatch sb = new SpriteBatch();
         stage = new Stage();
+
         leftJoyStick = new MovementInput1(15, 15);
         rightJoyStick = new AimInput1(WIDTH-15- AimInput1.diameter, 15);
 
-        Gdx.input.setInputProcessor(stage);
-        stage = new Stage(gamePort, sb);
-        stage.addActor(leftJoyStick);
-        stage.addActor(rightJoyStick);
-        Gdx.input.setInputProcessor(stage);
+        //Gdx.input.setInputProcessor(this.stage);
+        this.stage = new Stage(gamePort, sb);
+        this.stage.addActor(leftJoyStick);
+        this.stage.addActor(rightJoyStick);
+        Gdx.input.setInputProcessor(this.stage);
 
 
         // Makes objects into bodies in the box2d world.
@@ -230,9 +231,9 @@ public class InGameState extends State {
     }
 
     @Override
-    public void render(SpriteBatch sb) {
+    public void render(SpriteBatch spriteBatch) {
         //Combines camera's coordinate system with world coordinate system.
-        sb.setProjectionMatrix(camera.combined);
+        spriteBatch.setProjectionMatrix(camera.combined);
 
         Gdx.gl.glClearColor(0,0,0,1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -242,9 +243,9 @@ public class InGameState extends State {
         // Renders visible boxes around all collidable objects.
         b2dr.render(world, camera.combined);
 
-        sb.begin();
+        spriteBatch.begin();
 
-        sb.draw(region, wizard.getPosition().x,wizard.getPosition().y,
+        spriteBatch.draw(region, wizard.getPosition().x,wizard.getPosition().y,
                 wizard.getSprite().getWidth()/2f,
                 wizard.getSprite().getHeight()/2f,
                 wizard.getSprite().getWidth(), wizard.getSprite().getHeight(),
@@ -252,11 +253,11 @@ public class InGameState extends State {
 
         // Iterate spells to render
         for (Spell spell : spells){
-            spell.render(sb);
+            spell.render(spriteBatch);
         }
 
-        sb.end();
-        stage.act(Gdx.graphics.getDeltaTime());
+        spriteBatch.end();
+
         stage.draw();
 
     }

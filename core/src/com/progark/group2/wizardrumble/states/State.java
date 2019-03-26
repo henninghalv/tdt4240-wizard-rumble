@@ -30,4 +30,14 @@ public abstract class State{
 
     // No designated button for this method, use the back button on the device
     public abstract void onBackButtonPress();
+
+    public Stage getStage() {
+        return stage;
+    }
+
+    public void activate(){
+        Gdx.input.setInputProcessor(stage);
+        this.stage.getViewport().update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+    }
 }
