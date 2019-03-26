@@ -31,6 +31,11 @@ public class PlayerStatsState extends State {
     }
 
     @Override
+    public void handleInput() {
+
+    }
+
+    @Override
     public void onBackButtonPress() {
 
     }

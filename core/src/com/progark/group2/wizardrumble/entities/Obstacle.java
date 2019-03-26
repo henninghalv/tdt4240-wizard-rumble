@@ -1,5 +1,7 @@
 package com.progark.group2.wizardrumble.entities;
 
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+
 public class Obstacle extends Entity {
 
 
@@ -14,7 +16,7 @@ public class Obstacle extends Entity {
     }
 
     @Override
-    public void render() {
+    public void render(SpriteBatch sb) {
 
     }
 
