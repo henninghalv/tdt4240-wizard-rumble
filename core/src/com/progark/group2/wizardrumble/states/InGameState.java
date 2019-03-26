@@ -10,6 +10,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.progark.group2.wizardrumble.controllers.AimInput;
 import com.progark.group2.wizardrumble.entities.Wizard;
 import com.progark.group2.wizardrumble.handlers.MapHandler;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
@@ -158,9 +159,12 @@ public class InGameState extends State {
         lastAimY = rightJoyStick.getKnobPercentY();
 
         // Jank solution that takes in Wizards position and offsets by half screen size etc.
-        // TODO Bind joysticks to actual screen (suspect something with viewPort and/or stage)
+        // TODO Bind joysticks position to actual screen (suspect something with viewPort and/or stage)
+
+        // The offsets might be off as well. Adding 30 to the rightJoySticks X seems wrong. #MagicNumbersBTW
+
         leftJoyStick.updatePosition(wizard.getPosition().x - WIDTH/2f + 15, wizard.getPosition().y  - HEIGHT/2f + 15);
-        rightJoyStick.updatePosition(wizard.getPosition().x + WIDTH/2f - MovementInput1.diameter - 15, wizard.getPosition().y  - HEIGHT/2f + 15);
+        rightJoyStick.updatePosition(wizard.getPosition().x + WIDTH/2f + 35 - AimInput1.diameter, wizard.getPosition().y  - HEIGHT/2f + 15);
 
         // Iterate spells to update
         for (Spell spell : spells){
