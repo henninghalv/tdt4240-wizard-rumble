@@ -24,6 +24,11 @@ public class InGameSettings extends SettingsState {
     }
 
     @Override
+    public void handleInput() {
+
+    }
+
+    @Override
     public void dispose() {
 
     }

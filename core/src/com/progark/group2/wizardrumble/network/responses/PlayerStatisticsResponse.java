@@ -1,8 +1,8 @@
-package com.progark.group2.wizardrumble.network;
+package com.progark.group2.wizardrumble.network.responses;
 
 import java.util.HashMap;
 
-public class PlayerStatisticsResponse {
+public class PlayerStatisticsResponse extends Response {
 
     private int playerID;
     private HashMap<String, Object> map;

@@ -18,11 +18,18 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.progark.group2.wizardrumble.Application;
 import com.progark.group2.wizardrumble.entities.Wizard;
+import com.progark.group2.wizardrumble.entities.WizardPlayer;
 import com.progark.group2.wizardrumble.handlers.MapHandler;
 import com.progark.group2.wizardrumble.controllers.AimInput1;
 import com.progark.group2.wizardrumble.controllers.MovementInput1;
+import com.progark.group2.wizardrumble.entities.Spell;
+import com.progark.group2.wizardrumble.entities.spells.FireBall;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.progark.group2.wizardrumble.Application.HEIGHT;
 import static com.progark.group2.wizardrumble.Application.WIDTH;
 
 public class InGameState extends State {
@@ -34,6 +41,9 @@ public class InGameState extends State {
     private AimInput1 rightJoyStick;
     private Stage stage;
 
+    // Used for testing spells
+    private List<Spell> spells;
+
     private OrthographicCamera camera;
     private MapHandler mapHandler;
 
@@ -41,13 +51,14 @@ public class InGameState extends State {
     private World world;
     private Box2DDebugRenderer b2dr;
 
+    private static InGameState instance = null;
 
 
-    public InGameState(GameStateManager gameStateManager) {
+    private InGameState(GameStateManager gameStateManager) {
         super(gameStateManager);
 
         camera = new OrthographicCamera();
-        Viewport gamePort = new FitViewport(Application.WIDTH, Application.HEIGHT, camera);
+        Viewport gamePort = new FitViewport(WIDTH, HEIGHT, camera);
 
         //Box2d
         world = new World(new Vector2(0,0), true);
@@ -56,7 +67,7 @@ public class InGameState extends State {
         mapHandler = new MapHandler();
 
         //Startposition must be changed. It is only like this while the user input moves.
-        wizard = new Wizard(new Vector2(Application.WIDTH / 2f, Application.HEIGHT / 2f + (32 * 4)), world);
+        wizard = new WizardPlayer(Wizard.DEFAULT_HEALTH, new Vector2(WIDTH / 2f, HEIGHT / 2f + (32 * 4)), world);
         region = new TextureRegion(wizard.getSprite());
 
         SpriteBatch sb = new SpriteBatch();
@@ -71,13 +82,13 @@ public class InGameState extends State {
         Gdx.input.setInputProcessor(stage);
 
 
-
         // Makes objects into bodies in the box2d world.
         // This makes them collidable.
         BodyDef bdef = new BodyDef();
         PolygonShape shape = new PolygonShape();
         FixtureDef fdef = new FixtureDef();
         Body body;
+        // The number 3 is the index of the object layer in the TiledMap.
         for (MapObject object : mapHandler.getMap().getLayers().get(3).getObjects().getByType(RectangleMapObject.class)) {
             Rectangle rectangle = ((RectangleMapObject) object).getRectangle();
 
@@ -93,6 +104,21 @@ public class InGameState extends State {
 
         // Set camera to initial wizard position
         camera.position.set(wizard.getPosition().x + wizard.getSprite().getWidth()/2f, wizard.getPosition().y + wizard.getSprite().getHeight()/2f, 0);
+
+        // Used for testing spells.
+        spells = new ArrayList<Spell>();
+
+    }
+
+    public static InGameState getInstance(){
+        if (instance == null){
+            instance = new InGameState(GameStateManager.getInstance());
+        }
+        return instance;
+    }
+
+    public World getWorld(){
+        return world;
     }
 
     private void updateWizardRotation(){
@@ -103,10 +129,38 @@ public class InGameState extends State {
         );
     }
 
+    @Override
+    public void handleInput() {
+
+    }
+
     private void updateWizardPosition(){
         //GetKnobPercentX and -Y returns cos and sin values of the touchpad in question
         Vector2 leftJoyPosition = new Vector2(leftJoyStick.getKnobPercentX(),leftJoyStick.getKnobPercentY());
         wizard.updatePosition(leftJoyPosition);
+    }
+
+    private void castSpell() {
+        // Computes x and y from right joystick input making the speed the same regardless of
+        // where on the joystick you touch.
+        float x1 = rightJoyStick.getKnobPercentX();
+        float y1 = rightJoyStick.getKnobPercentY();
+        float hypotenuse = (float) Math.sqrt(x1 * x1 + y1 * y1);
+        float ratio = (float) Math.sqrt(2) / hypotenuse;
+        float x = x1 * ratio;
+        float y = y1 * ratio;
+
+        FireBall fb = new FireBall( // spawnPoint, rotation, velocity
+                new Vector2(
+                        // TODO: offsetting spell position by screen width and height is not desirable, but it works for now.
+                        // Need to further look into how spell position or rendering is decided.
+                        wizard.getPosition().x - (WIDTH + wizard.getSprite().getWidth())/2f ,
+                        wizard.getPosition().y - (HEIGHT + wizard.getSprite().getHeight())/2f
+                        ),
+                wizard.getRotation(), // rotation
+                new Vector2(x, y)  // velocity
+        );
+        spells.add(fb); // THIS IS ONLY FOR FIREBALL AT THE MOMENT
     }
 
     private void updateCamera(float x, float y){
@@ -126,13 +180,25 @@ public class InGameState extends State {
         if (leftJoyStick.isTouched()){
             updateWizardRotation();
             //Update camera to follow player. If we move player sprite to player, we have to fix this method.
+
             updateCamera(wizard.getPosition().x + wizard.getSprite().getWidth() / 2f, wizard.getPosition().y + wizard.getSprite().getHeight() / 2f);
+            System.out.println(wizard.getPosition());
         }
         if (rightJoyStick.isTouched()){
             wizard.updateRotation(new Vector2(rightJoyStick.getKnobPercentX(),rightJoyStick.getKnobPercentY()));
         }
 
-
+        // Probably temporary code. Written to test functionality.
+        if (Gdx.input.justTouched()){
+            // I think that spells should be cast when the player releases the right
+            if (rightJoyStick.isTouched()){
+                castSpell();
+            }
+        }
+        // Iterate spells to update
+        for (Spell spell : spells){
+            spell.update();
+        }
     }
 
     @Override
@@ -149,11 +215,18 @@ public class InGameState extends State {
         b2dr.render(world, camera.combined);
 
         sb.begin();
+
         sb.draw(region, wizard.getPosition().x,wizard.getPosition().y,
-                wizard.getSprite().getWidth()/(float)2,
-                wizard.getSprite().getHeight()/(float)2,
+                wizard.getSprite().getWidth()/2f,
+                wizard.getSprite().getHeight()/2f,
                 wizard.getSprite().getWidth(), wizard.getSprite().getHeight(),
                 1,1, wizard.getRotation());
+
+        // Iterate spells to render
+        for (Spell spell : spells){
+            spell.render(sb);
+        }
+
         sb.end();
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();
