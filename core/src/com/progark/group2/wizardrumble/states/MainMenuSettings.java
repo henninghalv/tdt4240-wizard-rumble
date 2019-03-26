@@ -18,6 +18,11 @@ public class MainMenuSettings extends SettingsState {
     }
 
     @Override
+    public void handleInput() {
+
+    }
+
+    @Override
     public void render(SpriteBatch spriteBatch) {
 
     }

@@ -52,11 +52,11 @@ public class GameStateManager {
     }
 
     public void update(float dt){
-        states.peek().update(dt);
+        this.states.peek().update(dt);
     }
 
     public void render(SpriteBatch spriteBatch){
-        states.peek().render(spriteBatch);
+        this.states.peek().render(spriteBatch);
     }
 
 

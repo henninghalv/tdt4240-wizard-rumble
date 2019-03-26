@@ -26,6 +26,11 @@ public class PostGameState extends State {
     }
 
     @Override
+    public void handleInput() {
+
+    }
+
+    @Override
     public void dispose() {
 
     }
