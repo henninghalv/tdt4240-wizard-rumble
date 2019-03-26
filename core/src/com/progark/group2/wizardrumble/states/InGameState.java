@@ -45,6 +45,8 @@ public class InGameState extends State {
     private Viewport gamePort;
     private MapHandler mapHandler;
 
+    // Last touch boolean for when rightJoyStick
+
 
     public InGameState(GameStateManager gameStateManager) {
         super(gameStateManager);
@@ -140,12 +142,17 @@ public class InGameState extends State {
         }
 
         // Probably temporary code. Written to test functionality.
-        if (Gdx.input.justTouched()){
-            // I think that spells should be cast when the player releases the right
-            if (rightJoyStick.isTouched()){
+        boolean lastTouch = rightJoyStick.isTouched();
+        if (lastTouch && !rightJoyStick.isTouched()){
+            // I think that spells should be cast when the player releases the right joystick, so that you can
+            // see the rotation of the player character and not rely on hopefully having touched the joystick correctly
                 castSpell();
-            }
         }
+        // 15,15
+        // WIDTH - diameter - 15
+        leftJoyStick.updatePosition(wizard.getPosition().x - WIDTH/2f + 15, wizard.getPosition().y  - HEIGHT/2f + 15);
+        rightJoyStick.updatePosition(wizard.getPosition().x + WIDTH/2f - MovementInput1.diameter - 15, wizard.getPosition().y  - HEIGHT/2f + 15);
+
         // Iterate spells to update
         for (Spell spell : spells){
             spell.update();
