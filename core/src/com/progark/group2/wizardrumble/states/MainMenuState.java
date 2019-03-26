@@ -89,7 +89,7 @@ public class MainMenuState extends MenuState {
     }
 
     private void startGame(){
-        this.gameStateManager.set(new InGameState(this.gameStateManager));
+        this.gameStateManager.set(InGameState.getInstance());
     }
 
     private void openSettings(){
