@@ -1,6 +1,6 @@
 package com.progark.group2.wizardrumble.network.requests;
 
-public class CreatePlayerRequest extends Request{
+public class CreatePlayerRequest extends Request {
     private String playerName;
 
 

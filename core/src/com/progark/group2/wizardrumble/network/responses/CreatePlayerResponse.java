@@ -1,6 +1,6 @@
 package com.progark.group2.wizardrumble.network.responses;
 
-public class CreatePlayerResponse extends Response{
+public class CreatePlayerResponse extends Response {
     private int playerId;
     private String username;
 

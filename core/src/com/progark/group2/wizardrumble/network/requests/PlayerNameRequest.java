@@ -1,6 +1,6 @@
 package com.progark.group2.wizardrumble.network.requests;
 
-public class PlayerNameRequest {
+public class PlayerNameRequest extends Request {
     private int playerID;
 
     public int getPlayerID() {
