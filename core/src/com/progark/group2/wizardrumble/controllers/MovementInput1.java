@@ -25,7 +25,10 @@ public class MovementInput1 extends Touchpad {
 
     }
 
-
+    public void updatePosition(float x, float y){
+        setBounds(15, 15, diameter, diameter);
+        setPosition(x, y);
+    }
 
     private static Touchpad.TouchpadStyle getTouchpadStyle() {
 

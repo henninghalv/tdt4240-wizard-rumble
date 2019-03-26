@@ -10,6 +10,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.progark.group2.wizardrumble.controllers.AimInput;
 import com.progark.group2.wizardrumble.entities.Wizard;
 import com.progark.group2.wizardrumble.entities.WizardPlayer;
 import com.progark.group2.wizardrumble.handlers.MapHandler;
@@ -41,10 +42,17 @@ public class InGameState extends State {
 
     // Used for testing spells
     private List<Spell> spells;
+    private String selectedSpell;
 
     private OrthographicCamera camera;
     private Viewport gamePort;
     private MapHandler mapHandler;
+
+    // Last touch boolean for when rightJoyStick was touched last frame.
+    // For when you release the right joystick, the spell should fire, instead of on justTouched().
+    private boolean lastTouch;
+    private float lastAimX;
+    private float lastAimY;
 
 
     public InGameState(GameStateManager gameStateManager) {
@@ -70,6 +78,7 @@ public class InGameState extends State {
 
         // Used for testing spells.
         spells = new ArrayList<Spell>();
+        lastTouch = false;
 
         mapHandler = new MapHandler();
 
@@ -96,11 +105,11 @@ public class InGameState extends State {
         wizard.updatePosition(leftJoyPosition);
     }
 
-    private void castSpell() {
+    private void castSpell(String selectedSpell) {
         // Computes x and y from right joystick input making the speed the same regardless of
         // where on the joystick you touch.
-        float x1 = rightJoyStick.getKnobPercentX();
-        float y1 = rightJoyStick.getKnobPercentY();
+        float x1 = lastAimX;
+        float y1 = lastAimY;
         float hypotenuse = (float) Math.sqrt(x1 * x1 + y1 * y1);
         float ratio = (float) Math.sqrt(2) / hypotenuse;
         float x = x1 * ratio;
@@ -134,19 +143,30 @@ public class InGameState extends State {
             updateWizardRotation();
             //Update camera to follow player. If we move player sprite to player, we have to fix this method.
             updateCamera(wizard.getPosition().x + wizardSprite.getWidth() / 2f, wizard.getPosition().y + wizardSprite.getHeight() / 2f);
-            System.out.println(wizard.getPosition());
         }
         if (rightJoyStick.isTouched()){
             wizard.updateRotation(new Vector2(rightJoyStick.getKnobPercentX(),rightJoyStick.getKnobPercentY()));
         }
 
         // Probably temporary code. Written to test functionality.
-        if (Gdx.input.justTouched()){
-            // I think that spells should be cast when the player releases the right
-            if (rightJoyStick.isTouched()){
-                castSpell();
-            }
+        if (lastTouch && !rightJoyStick.isTouched()){
+        // if (rightJoyStick.isTouched()){
+            // I think that spells should be cast when the player releases the right joystick, so that you can
+            // see the rotation of the player character and not rely on hopefully having touched the joystick correctly
+            castSpell("fireball");
         }
+        lastTouch = rightJoyStick.isTouched();
+        lastAimX = rightJoyStick.getKnobPercentX();
+        lastAimY = rightJoyStick.getKnobPercentY();
+
+        // Jank solution that takes in Wizards position and offsets by half screen size etc.
+        // TODO Bind joysticks position to actual screen (suspect something with viewPort and/or stage)
+
+        // The offsets might be off as well. Adding 30 to the rightJoySticks X seems wrong. #MagicNumbersBTW
+
+        leftJoyStick.updatePosition(wizard.getPosition().x - WIDTH/2f + 15, wizard.getPosition().y  - HEIGHT/2f + 15);
+        rightJoyStick.updatePosition(wizard.getPosition().x + WIDTH/2f + 35 - AimInput1.diameter, wizard.getPosition().y  - HEIGHT/2f + 15);
+
         // Iterate spells to update
         for (Spell spell : spells){
             spell.update();
