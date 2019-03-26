@@ -3,6 +3,7 @@ package com.progark.group2.gameserver;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
+import com.esotericsoftware.minlog.Log;
 import com.progark.group2.gameserver.resources.GameStatus;
 import com.progark.group2.gameserver.resources.Player;
 import com.progark.group2.gameserver.resources.PortStatus;
@@ -38,13 +39,13 @@ public class GameServer {
 
         // Add ports for reference
         // Create one kryo server object per tcp port and add to list of servers
+        Log.info("Creating KryoNet Servers for each player...");
         for (int i = 0; i < tcpPorts.size(); i++) {
             TCP_PORTS.put(tcpPorts.get(i), PortStatus.OPEN);
             UDP_PORTS.put(udpPorts.get(i), PortStatus.OPEN);
-            System.out.println("Creating KryoNet Servers for each player...");
             servers.add(createNewServer(tcpPorts.get(i), udpPorts.get(i)));
-            System.out.println("Done!");
         }
+        Log.info("Done!\n");
     }
 
     // CREATION
@@ -176,9 +177,9 @@ public class GameServer {
         }
         if(players.keySet().size() == MasterServer.getMaximumPlayers()){
             // TODO: Set GameServerStatus to "Full" or "In Progress"
-            System.out.println("Server full! Updating status...");
+            Log.info("Server full! Updating status...");
             MasterServer.getInstance().updateGameServerStatus(this, GameStatus.IN_PROGRESS);
-            System.out.println("Done!");
+            Log.info("Done!\n");
         }
     }
 
@@ -240,14 +241,14 @@ public class GameServer {
      * @param request
      */
     private void broadcastRequest(Request request){
-        System.out.println("Broadcasting request...");
+        Log.info("Broadcasting request...");
         for(Server server : servers){
             // If one of the players are missing, then that player's server has no connection
             if(server.getConnections().length > 0){
                 server.getConnections()[0].sendTCP(request);
             }
         }
-        System.out.println("Done!");
+        Log.info("Done!\n");
     }
 
     /**
@@ -343,7 +344,7 @@ public class GameServer {
         // Send the response back to client
         //connection.sendTCP(response);
 
-        System.out.println("ALL PLAYERS ARE DEAD. STOPPING GAMESERVER: GOODBYE WORLD");
+        Log.info("ALL PLAYERS ARE DEAD. STOPPING GAMESERVER: GOODBYE WORLD");
         // Stop the server connection for all servers
         for (Server server : servers) {
             server.stop();

@@ -1,6 +1,8 @@
 package com.progark.group2.gameserver.database;
 
 
+import com.esotericsoftware.minlog.Log;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -43,14 +45,14 @@ public class SQLiteDBConnector {
         try {
             // Create a connection to the database
             conn = DriverManager.getConnection(DB_URL);
-            System.out.println("Connection to SQLite has been established.");
+            Log.info("DATABASE: Connection to SQLite has been established.");
             // Checks if the players table is missing, aka. the DB is empty
             DatabaseMetaData metaData = conn.getMetaData();
             ResultSet resultSet = metaData.getTables(null, null, "players", null);
             // If the DB is empty, run initial setup
             if (!resultSet.isBeforeFirst() ) {
-                System.out.println("No data...");
-                System.out.println("Setting up DB...");
+                Log.info("DATABASE: No data...");
+                Log.info("DATABASE: Setting up DB...");
                 setup();
             }
         } catch (SQLException e) {
@@ -66,9 +68,8 @@ public class SQLiteDBConnector {
     private void setup() throws SQLException {
         String query = "CREATE TABLE players (id int, username varchar(255))";
         Statement stmt = conn.createStatement();
-        ResultSet resultSet = stmt.executeQuery(query);
-        resultSet.close();
-        System.out.println("Done!");
+        stmt.executeUpdate(query);
+        Log.info("DATABASE: Done!");
     }
 
     // TODO: Update when players get more fields than id and username

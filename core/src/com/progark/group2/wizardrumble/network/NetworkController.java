@@ -5,6 +5,7 @@ import com.badlogic.gdx.Preferences;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
+import com.esotericsoftware.minlog.Log;
 import com.progark.group2.wizardrumble.network.requests.CreateGameRequest;
 import com.progark.group2.wizardrumble.network.requests.CreatePlayerRequest;
 import com.progark.group2.wizardrumble.network.requests.GameStartRequest;
@@ -26,23 +27,23 @@ public class NetworkController {
     private static int playerId;
     // Master server configuration constants
     private final static int TIMEOUT = 5000;
-    private final static String MASTER_SERVER_HOST = "localhost";
+    private final static String MASTER_SERVER_HOST = "localhost";  // Set this to the local IP address of your computer when running the server
     private final static int MASTER_SERVER_TCP_PORT = 54555;
     private final static int MASTER_SERVER_UDP_PORT = 54777;
 
     private NetworkController() throws IOException {
         // Client for handling communication with master server
-        System.out.println("Creating connection to MasterServer...");
+        Log.info("Creating connection to MasterServer...");
         masterServerClient = createAndConnectClient(
                 TIMEOUT,
                 MASTER_SERVER_HOST,
                 MASTER_SERVER_TCP_PORT,
                 MASTER_SERVER_UDP_PORT
         );
-        System.out.println("Done!");
-        System.out.println("Adding listeners...");
+        Log.info("Done!\n");
+        Log.info("Adding listeners...");
         addMasterServerListener();
-        System.out.println("Getting local data...");
+        Log.info("Getting local data...");
         getLocalData();
     }
 
@@ -73,12 +74,12 @@ public class NetworkController {
     /**
      * Sends a request to create a new game.
      */
-    void requestGameCreation(){
-        System.out.println("Sending PlayerJoinedRequest to MasterServer...");
+    public void requestGameCreation(){
+        Log.info("Sending PlayerJoinedRequest to MasterServer...");
         CreateGameRequest request = new CreateGameRequest();
         request.setPlayerId(playerId); // TODO: ID is generated through name registering
         masterServerClient.sendTCP(request);
-        System.out.println("Done!");
+        Log.info("Done!\n");
     }
 
     // =====
@@ -104,24 +105,24 @@ public class NetworkController {
     private void connectToGame(CreateGameResponse response){
         try {
             // Client tries to connect to the given GameServer
-            System.out.println("Creating connection to assigned GameServer...");
+            Log.info("Creating connection to assigned GameServer...");
             Client client = createAndConnectClient(
                     TIMEOUT,
                     MASTER_SERVER_HOST,
                     response.getTcpPort(),
                     response.getUdpPort()
             );
-            System.out.println("Done!");
+            Log.info("Done!\n");
             // Add listeners to the connection
-            System.out.println("Adding listeners...");
+            Log.info("Adding listeners...");
             addGameServerListener(client);
-            System.out.println("Done!");
+            Log.info("Done!\n");
             // Player asks to join gameserver
-            System.out.println("Sending PlayerJoinedRequest to GameServer...");
+            Log.info("Sending PlayerJoinedRequest to GameServer...");
             PlayerJoinedRequest request = new PlayerJoinedRequest();
             request.setPlayerID(playerId);
             client.sendTCP(request);
-            System.out.println("Done!");
+            Log.info("Done!\n");
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -148,18 +149,18 @@ public class NetworkController {
         masterServerClient.addListener(new Listener() {
             public void received(Connection connection, Object object) {
                 if (object instanceof CreateGameResponse) {
-                    System.out.println("Received PlayerJoinedResponse");
+                    Log.info("Received PlayerJoinedResponse");
                     CreateGameResponse response = (CreateGameResponse) object;
-                    System.out.println("Requesting Game Creation...");
+                    Log.info("Requesting Game Creation...");
                     connectToGame(response);
-                    System.out.println("Done!");
+                    Log.info("Done!\n");
                     // Creating game server, the closing the master server connection
-                    System.out.println("Closing connection to MasterServer...");
+                    Log.info("Closing connection to MasterServer...");
                     closeClientConnection(masterServerClient);
-                    System.out.println("Done!");
+                    Log.info("Done!\n");
                 }
                 else if (object instanceof CreatePlayerResponse){
-                    System.out.println("Received CreatePlayerResponse");
+                    Log.info("Received CreatePlayerResponse");
                     CreatePlayerResponse response = (CreatePlayerResponse) object;
                     playerId = response.getPlayerId();
                     userPreferences.putInteger("playerId", playerId);
@@ -168,12 +169,12 @@ public class NetworkController {
                 else if (object instanceof ServerErrorResponse) {
                     // If there is a server error
                     ServerErrorResponse response = (ServerErrorResponse) object;
-                    System.out.println("Client got this error message: " + response.getErrorMsg());
+                    Log.info("Client got this error message: " + response.getErrorMsg());
                     // TODO: Handle server error on client side. Give error message to interface
                 }
             }
         });
-        System.out.println("Done!");
+        Log.info("Done!\n");
     }
 
     private void addGameServerListener(Client client){
@@ -181,7 +182,7 @@ public class NetworkController {
             public void received(Connection connection, Object object) {
                 if (object instanceof ServerSuccessResponse) {
                     // TODO: Wait for game to start.
-                    System.out.println("Game created and connected! Waiting for players...");
+                    Log.info("Game created and connected! Waiting for players...");
                 }
                 else if (object instanceof GameStartRequest){
                     // TODO: Start game
