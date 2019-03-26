@@ -13,6 +13,7 @@ public class GameStateManager {
 
     private static GameStateManager instance;
 
+    //TODO Change from stack to some sort of list to enable game render while the in-game pause is active
     private Stack<State> states;
 
     private GameStateManager(){

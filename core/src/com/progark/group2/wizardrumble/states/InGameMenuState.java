@@ -1,5 +1,7 @@
 package com.progark.group2.wizardrumble.states;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -34,13 +36,47 @@ public class InGameMenuState extends MenuState {
         this.table.add(resumeButton).pad(10f);
         this.table.row();
 
+        // settingsButton
+        Stack settingsButton = this.menuButton("Settings");
+        settingsButton.addListener(new InputListener(){
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                return true;
+            }
+
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                openSettings();
+            }
+        });
+        this.table.add(settingsButton).pad(10f);
+        this.table.row();
+
+        // exitButton
+        Stack exitButton = this.menuButton("Exit");
+        exitButton.addListener(new InputListener(){
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                return true;
+            }
+
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                exitToMainMenu();
+            }
+        });
+        this.table.add(exitButton).pad(10f);
+        this.table.row();
+
         this.stage.addActor(table);
     }
 
 
     @Override
     public void update(float dt) {
-
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
+            this.onBackButtonPress();
+        }
     }
 
     @Override
@@ -61,5 +97,14 @@ public class InGameMenuState extends MenuState {
     @Override
     public void onBackButtonPress() {
         this.gameStateManager.pop();
+    }
+
+    private void openSettings(){
+        System.out.println("Settings");
+        //this.gameStateManager.push(new InGameSettings(this.gameStateManager));
+    }
+
+    private void exitToMainMenu(){
+        this.gameStateManager.set(new MainMenuState(this.gameStateManager));
     }
 }

@@ -33,14 +33,7 @@ public class Application extends Game {
 	private GameStateManager gameStateManager;
 	private NetworkController networkController;
 
-	// TODO remove
-	private Texture img;
 
-	// TODO move to inGameSate
-	private List<Spell> spellList;
-
-
-	
 	@Override
 	public void create () {
 		Gdx.graphics.setTitle(TITLE);
@@ -63,15 +56,6 @@ public class Application extends Game {
 
 	@Override
 	public void render () {
-		//TODO remove
-		/*
-		Gdx.gl.glClearColor(1, 0, 0, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		spriteBatch.begin();
-		//spriteBatch.draw(img, 0, 0);
-		spriteBatch.end();
-		*/
-
 		gameStateManager.update(Gdx.graphics.getDeltaTime());
 		gameStateManager.render(spriteBatch);
 	}
@@ -79,7 +63,5 @@ public class Application extends Game {
 	@Override
 	public void dispose () {
 		spriteBatch.dispose();
-		//img.dispose();
-		//gameStateManager.dispose();
 	}
 }

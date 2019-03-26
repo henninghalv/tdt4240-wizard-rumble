@@ -79,12 +79,10 @@ public class InGameState extends State {
         region = new TextureRegion(wizard.getSprite());
 
         SpriteBatch sb = new SpriteBatch();
-        stage = new Stage();
 
         leftJoyStick = new MovementInput1(15, 15);
         rightJoyStick = new AimInput1(WIDTH-15- AimInput1.diameter, 15);
 
-        //Gdx.input.setInputProcessor(this.stage);
         this.stage = new Stage(gamePort, sb);
         this.stage.addActor(leftJoyStick);
         this.stage.addActor(rightJoyStick);
