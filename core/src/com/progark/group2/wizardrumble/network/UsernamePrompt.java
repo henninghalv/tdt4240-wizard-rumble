@@ -18,6 +18,7 @@ public class UsernamePrompt implements Input.TextInputListener {
         preferences.flush();
         try {
             NetworkController.getInstance().requestPlayerCreation(text);
+            NetworkController.getInstance().requestGameCreation();
         } catch (IOException e) {
             e.printStackTrace();
         }

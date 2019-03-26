@@ -2,6 +2,7 @@ package com.progark.group2.gameserver.database;
 
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -43,11 +44,31 @@ public class SQLiteDBConnector {
             // Create a connection to the database
             conn = DriverManager.getConnection(DB_URL);
             System.out.println("Connection to SQLite has been established.");
-
+            // Checks if the players table is missing, aka. the DB is empty
+            DatabaseMetaData metaData = conn.getMetaData();
+            ResultSet resultSet = metaData.getTables(null, null, "players", null);
+            // If the DB is empty, run initial setup
+            if (!resultSet.isBeforeFirst() ) {
+                System.out.println("No data...");
+                System.out.println("Setting up DB...");
+                setup();
+            }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
             // TODO: Send ServerErrorResponse that something went wrong.
         }
+    }
+
+    /**
+     * Creates the "players" table in the DB if it does not exist to avoid SQL Exceptions.
+     * @throws SQLException
+     */
+    private void setup() throws SQLException {
+        String query = "CREATE TABLE players (id int, username varchar(255))";
+        Statement stmt = conn.createStatement();
+        ResultSet resultSet = stmt.executeQuery(query);
+        resultSet.close();
+        System.out.println("Done!");
     }
 
     // TODO: Update when players get more fields than id and username
@@ -85,16 +106,17 @@ public class SQLiteDBConnector {
 
         Statement stmt = conn.createStatement();
         ResultSet resultSet = stmt.executeQuery(query);
-
         HashMap<Integer, String> player = new HashMap<Integer, String>();
-        player.put(resultSet.getInt("id"), resultSet.getString("username"));
+        if(resultSet.next()){
+            player.put(resultSet.getInt("id"), resultSet.getString("username"));
+        }
 
         return player;
     }
 
     /**
      * Queries the database for the highest id in the "players" table.
-     * @return The highest id in the DB as an int > 0
+     * @return The highest id in the DB as an int > 0, or 0 if the table is empty
      * @throws SQLException
      */
     public int getHighestId() throws SQLException {
@@ -102,8 +124,11 @@ public class SQLiteDBConnector {
 
         Statement stmt = conn.createStatement();
         ResultSet resultSet = stmt.executeQuery(query);
-
-        return resultSet.getInt("id");
+        // If there are no players in the DB, return highest id = 0
+        if(resultSet.next()){
+            return resultSet.getInt("id");
+        }
+        return 0;
     }
 
     /**
