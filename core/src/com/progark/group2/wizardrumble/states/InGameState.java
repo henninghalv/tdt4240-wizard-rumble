@@ -42,9 +42,9 @@ public class InGameState extends State {
         rightJoyStick = new AimInput1(WIDTH-15- AimInput1.diameter, 15);
 
         spellButtons = new SpellSelector1();
-        button1 = spellButtons.createSpellButton("Fire", 540, 150);
-        button2 = spellButtons.createSpellButton("Ice", 515, 100);
-        button3 = spellButtons.createSpellButton("Blast", 540, 50);
+        button1 = spellButtons.createSpellButton("Fire", WIDTH- AimInput1.diameter-50, 150);
+        button2 = spellButtons.createSpellButton("Ice", WIDTH- AimInput1.diameter-80, 100);
+        button3 = spellButtons.createSpellButton("Blast", WIDTH- AimInput1.diameter-60, 50);
 
         Gdx.input.setInputProcessor(stage);
         stage = new Stage(new ScreenViewport(), sb);
