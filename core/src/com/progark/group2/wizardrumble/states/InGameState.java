@@ -18,14 +18,15 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.progark.group2.wizardrumble.controllers.AimInput;
+
 import com.progark.group2.wizardrumble.entities.Wizard;
 import com.progark.group2.wizardrumble.entities.WizardPlayer;
 import com.progark.group2.wizardrumble.handlers.MapHandler;
 import com.progark.group2.wizardrumble.controllers.AimInput1;
 import com.progark.group2.wizardrumble.controllers.MovementInput1;
-import com.progark.group2.wizardrumble.entities.Spell;
+import com.progark.group2.wizardrumble.entities.spells.Spell;
 import com.progark.group2.wizardrumble.entities.spells.FireBall;
+import com.progark.group2.wizardrumble.listeners.WorldContactListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -115,6 +116,9 @@ public class InGameState extends State {
         // Used for testing spells.
         spells = new ArrayList<Spell>();
         lastTouch = false;
+
+        // Adds a world contact listener
+        world.setContactListener(new WorldContactListener());
 
     }
 

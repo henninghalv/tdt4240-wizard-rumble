@@ -9,6 +9,7 @@ import com.progark.group2.wizardrumble.network.requests.CreateGameRequest;
 import com.progark.group2.wizardrumble.network.requests.CreatePlayerRequest;
 import com.progark.group2.wizardrumble.network.requests.GameStartRequest;
 import com.progark.group2.wizardrumble.network.requests.PlayerJoinedRequest;
+import com.progark.group2.wizardrumble.network.requests.PlayerTookDamageRequest;
 import com.progark.group2.wizardrumble.network.responses.CreateGameResponse;
 import com.progark.group2.wizardrumble.network.responses.CreatePlayerResponse;
 import com.progark.group2.wizardrumble.network.responses.ServerErrorResponse;
@@ -22,6 +23,7 @@ public class NetworkController {
 
     private static NetworkController instance;
     private static Client masterServerClient;
+    private static Client gameServerClient;
     private static Preferences userPreferences = Gdx.app.getPreferences("user");
     private static int playerId;
     // Master server configuration constants
@@ -105,7 +107,7 @@ public class NetworkController {
         try {
             // Client tries to connect to the given GameServer
             System.out.println("Creating connection to assigned GameServer...");
-            Client client = createAndConnectClient(
+             gameServerClient = createAndConnectClient(
                     TIMEOUT,
                     MASTER_SERVER_HOST,
                     response.getTcpPort(),
@@ -114,18 +116,31 @@ public class NetworkController {
             System.out.println("Done!");
             // Add listeners to the connection
             System.out.println("Adding listeners...");
-            addGameServerListener(client);
+            addGameServerListener(gameServerClient);
             System.out.println("Done!");
-            // Player asks to join gameserver
-            System.out.println("Sending PlayerJoinedRequest to GameServer...");
-            PlayerJoinedRequest request = new PlayerJoinedRequest();
-            request.setPlayerID(playerId);
-            client.sendTCP(request);
-            System.out.println("Done!");
+
+            sendPlayerJoinedRequest(gameServerClient);
+
 
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void sendPlayerTookDamageRequest(int damage) {
+        PlayerTookDamageRequest request = new PlayerTookDamageRequest();
+        request.setDamage(damage);
+        request.setPlayerId(playerId);
+        gameServerClient.sendTCP(request);
+    }
+
+    private void sendPlayerJoinedRequest(Client client) {
+        // Player asks to join gameserver
+        System.out.println("Sending PlayerJoinedRequest to GameServer...");
+        PlayerJoinedRequest request = new PlayerJoinedRequest();
+        request.setPlayerID(playerId);
+        client.sendTCP(request);
+        System.out.println("Done!");
     }
 
     private Client createAndConnectClient(Integer timeout, String host, Integer tcp, Integer udp) throws IOException {
