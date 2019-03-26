@@ -1,7 +1,6 @@
-package com.progark.group2.wizardrumble.network;
+package com.progark.group2.wizardrumble.network.requests;
 
-public class CreateGameRequest {
-
+public class PlayerDeadRequest extends Request {
     private int playerID;
 
     public int getPlayerID() {
@@ -11,5 +10,5 @@ public class CreateGameRequest {
     public void setPlayerID(int playerID) {
         this.playerID = playerID;
     }
-
 }
+
