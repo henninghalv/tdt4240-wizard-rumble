@@ -12,18 +12,18 @@ public class WizardPlayer extends Wizard {
     private Touchpad leftJoy; // importer touchpad-objektet som Bjørn lager
     private Touchpad rightJoy; // importer touchpad-objektet som Bjørn lager
 
-    public WizardPlayer(int maxHealth, Vector2 spawnPoint, World world) {
-        super(maxHealth, spawnPoint, world);
+    public WizardPlayer(int maxHealth, Vector2 spawnPoint) {
+        super(maxHealth, spawnPoint);
     }
 
-    public WizardPlayer(Vector2 spawnPoint, World world) {
-        super(Wizard.DEFAULT_HEALTH, spawnPoint, world);
+    public WizardPlayer(Vector2 spawnPoint) {
+        super(Wizard.DEFAULT_HEALTH, spawnPoint);
     }
 
     public static WizardPlayer getInstance() {
         if (instance == null) {
             // TODO: Find a safe position for the exception when a player hasn't been instansiated
-            instance = new WizardPlayer(new Vector2(0,0), InGameState.getInstance().getWorld());
+            instance = new WizardPlayer(new Vector2(0,0));
         }
         return instance;
     }

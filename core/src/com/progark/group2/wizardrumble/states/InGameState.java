@@ -50,7 +50,7 @@ public class InGameState extends State {
     private MapHandler mapHandler;
 
     //Box2d variables
-    private World world;
+    public final static World world = new World(new Vector2(0,0), true);
     private Box2DDebugRenderer b2dr;
 
     private static InGameState instance = null;
@@ -69,13 +69,12 @@ public class InGameState extends State {
         Viewport gamePort = new FitViewport(WIDTH, HEIGHT, camera);
 
         //Box2d
-        world = new World(new Vector2(0,0), true);
         b2dr = new Box2DDebugRenderer();
 
         mapHandler = new MapHandler();
 
         //Startposition must be changed. It is only like this while the user input moves.
-        wizard = new WizardPlayer(Wizard.DEFAULT_HEALTH, new Vector2(WIDTH / 2f, HEIGHT / 2f + (32 * 4)), world);
+        wizard = new WizardPlayer(Wizard.DEFAULT_HEALTH, new Vector2(WIDTH / 2f, HEIGHT / 2f + (32 * 4)));
         region = new TextureRegion(wizard.getSprite());
 
         SpriteBatch sb = new SpriteBatch();

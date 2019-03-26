@@ -9,10 +9,10 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
+import com.progark.group2.wizardrumble.states.InGameState;
 
 
 public abstract class Wizard extends Entity {
-    private World world;
     private Body b2body; // the body that contains the wizard in the box2d world
     protected int playerID;
     protected int health;
@@ -25,11 +25,10 @@ public abstract class Wizard extends Entity {
     private final float ANGLE_OFFSET = 270;
 
 
-    public Wizard(int maxHealth, Vector2 spawnPoint, World world) {
+    public Wizard(int maxHealth, Vector2 spawnPoint) {
         wizardSprite = new Texture("wizard_front.png");
         this.position = spawnPoint;
         this.maxHealth = maxHealth;
-        this.world = world;
         defineWizard();
     }
 
@@ -53,7 +52,7 @@ public abstract class Wizard extends Entity {
         BodyDef bdef = new BodyDef();
         bdef.position.set(position.x + (1/2f * wizardSprite.getWidth()), position.y + (1/2f * wizardSprite.getHeight()));
         bdef.type = BodyDef.BodyType.DynamicBody;
-        b2body = world.createBody(bdef);
+        b2body = InGameState.world.createBody(bdef);
 
         FixtureDef fdef = new FixtureDef();
         PolygonShape shape = new PolygonShape();
