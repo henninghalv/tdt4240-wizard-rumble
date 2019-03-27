@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
+import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -40,7 +41,7 @@ public class InGameState extends State {
     private MovementInput1 leftJoyStick;
     private AimInput1 rightJoyStick;
     private SpellSelector1 spellButtons;
-    private TextButton button1, button2, button3;
+    private CheckBox button1, button2, button3, button4, bugfixer;
     private Stage stage;
 
     // Used for testing spells
@@ -70,11 +71,10 @@ public class InGameState extends State {
         button1 = spellButtons.createSpellButton("Fire", WIDTH- AimInput1.diameter-50, 150);
         button2 = spellButtons.createSpellButton("Ice", WIDTH- AimInput1.diameter-80, 100);
         button3 = spellButtons.createSpellButton("Blast", WIDTH- AimInput1.diameter-60, 50);
+        button4 = spellButtons.createSpellButton("Shock", WIDTH- AimInput1.diameter-20, 200);
 
-        ButtonGroup buttonGroup = new ButtonGroup(button1, button2, button3);
-        buttonGroup.setMaxCheckCount(1);
-        buttonGroup.setMinCheckCount(0);
-        buttonGroup.setUncheckLast(true);
+        bugfixer = spellButtons.createSpellButton(null, 0, 0);
+
 
 
         Gdx.input.setInputProcessor(stage);
@@ -84,7 +84,15 @@ public class InGameState extends State {
         stage.addActor(button1);
         stage.addActor(button2);
         stage.addActor(button3);
+        stage.addActor(button4);
+
+        
         Gdx.input.setInputProcessor(stage);
+        ButtonGroup buttonGroup = new ButtonGroup(button1, button2, button3, button4);
+        buttonGroup.setMaxCheckCount(1);
+        buttonGroup.setMinCheckCount(1);
+        buttonGroup.setUncheckLast(true);
+        button1.setChecked(true);
 
         // Used for testing spells.
         spells = new ArrayList<Spell>();

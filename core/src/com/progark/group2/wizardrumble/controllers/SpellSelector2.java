@@ -6,12 +6,12 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
-import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 
-public class SpellSelector1 {
+public class SpellSelector2 {
 
-    private CheckBox spellButton;
+    private TextButton spellButton;
 
     public Skin getSkin() {
         Skin skin = new Skin();
@@ -23,25 +23,22 @@ public class SpellSelector1 {
 
         skin.add("default", new BitmapFont());
 
-        CheckBox.CheckBoxStyle checkBoxStyle = new CheckBox.CheckBoxStyle();
-        checkBoxStyle.up = skin.newDrawable("black", new
+        TextButton.TextButtonStyle textButtonStyle = new TextButton.TextButtonStyle();
+        textButtonStyle.up = skin.newDrawable("black", new
 
                 Color(0, 0, 0, 0.5f));
-        checkBoxStyle.down = skin.newDrawable("green", new
+        textButtonStyle.down = skin.newDrawable("green", new
 
                 Color(0, 0.5f, 0.5f, 0.75f));
-        checkBoxStyle.checked = skin.newDrawable("green", new
-
-                Color(0, 0.5f, 0.5f, 0.75f));
-        checkBoxStyle.font = skin.getFont("default");
-        skin.add("default", checkBoxStyle);
+        textButtonStyle.font = skin.getFont("default");
+        skin.add("default", textButtonStyle);
         return skin;
 
     }
 
-    public CheckBox createSpellButton(final String str, int x, int y) {
+    public TextButton createSpellButton(final String str, int x, int y) {
 
-        spellButton = new CheckBox(str, getSkin());
+        spellButton = new TextButton(str, getSkin());
         spellButton.setX(x);
         spellButton.setY(y);
         spellButton.setWidth(60);
@@ -49,16 +46,17 @@ public class SpellSelector1 {
         spellButton.setVisible(true);
 
         spellButton.addListener(new InputListener() {
-            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                spellButton.setChecked(false);
-                System.out.println(str + " deselected, " + "checked="+spellButton.isChecked());
 
+            //This does not work. Try Checkboxes.
+            //@Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                //spellButton.setChecked(true);
+                //System.out.println("UP");
             }
 
 
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                spellButton.setChecked(true);
-                System.out.println(str + " selected, " + "checked="+spellButton.isChecked());
+                System.out.println(str + " pressed down");
                 return true;
             }
         });
