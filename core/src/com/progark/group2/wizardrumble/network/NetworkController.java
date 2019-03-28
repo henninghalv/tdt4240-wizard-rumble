@@ -9,10 +9,12 @@ import com.progark.group2.wizardrumble.network.requests.CreateGameRequest;
 import com.progark.group2.wizardrumble.network.requests.CreatePlayerRequest;
 import com.progark.group2.wizardrumble.network.requests.GameStartRequest;
 import com.progark.group2.wizardrumble.network.requests.PlayerJoinedRequest;
+import com.progark.group2.wizardrumble.network.requests.PlayerNamesRequest;
 import com.progark.group2.wizardrumble.network.responses.CreateGameResponse;
 import com.progark.group2.wizardrumble.network.responses.CreatePlayerResponse;
 import com.progark.group2.wizardrumble.network.responses.ServerErrorResponse;
 import com.progark.group2.wizardrumble.network.responses.ServerSuccessResponse;
+import com.progark.group2.wizardrumble.states.LobbyState;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -29,6 +31,8 @@ public class NetworkController {
     private final static String MASTER_SERVER_HOST = "localhost";
     private final static int MASTER_SERVER_TCP_PORT = 54555;
     private final static int MASTER_SERVER_UDP_PORT = 54777;
+
+    private HashMap<Integer, String> players;
 
     private NetworkController() throws IOException {
         // Client for handling communication with master server
@@ -185,6 +189,10 @@ public class NetworkController {
                 }
                 else if (object instanceof GameStartRequest){
                     // TODO: Start game
+                } else if (object instanceof PlayerNamesRequest) {
+                    PlayerNamesRequest request = (PlayerNamesRequest) object;
+                    LobbyState.getInstance().createPanels(request.getPlayersInLobby());
+                    // TODO: Render playernames in lobby state
                 }
                 // TODO: Add listeners for game status.
             }

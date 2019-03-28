@@ -1,15 +1,15 @@
 package com.progark.group2.wizardrumble.network.requests;
 
-import java.util.List;
+import java.util.HashMap;
 
 public class PlayerNamesRequest extends Request {
-    private List<String> playersInLobby;
+    private HashMap<Integer, String> playersInLobby;
 
-    public List<String> getPlayersInLobby() {
+    public HashMap<Integer, String> getPlayersInLobby() {
         return playersInLobby;
     }
 
-    public void setPlayersInLobby(List<String> playersInLobby) {
+    public void setPlayersInLobby(HashMap<Integer, String>playersInLobby) {
         this.playersInLobby = playersInLobby;
     }
 }

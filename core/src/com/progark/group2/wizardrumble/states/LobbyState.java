@@ -3,6 +3,7 @@ package com.progark.group2.wizardrumble.states;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -13,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import java.util.HashMap;
 
 public class LobbyState extends MenuState {
 
@@ -27,42 +29,28 @@ public class LobbyState extends MenuState {
     private LobbyState(GameStateManager gameStateManager) {
         super(gameStateManager);
         initialize();
+    }
 
+    public static LobbyState getInstance() {
+        if (instance == null) {
+            instance = new LobbyState(GameStateManager.getInstance());
+        }
+        return instance;
+    }
 
-        // Panel1
-        Stack panel1 = menuButton("");
-        this.table.add(panel1).pad(0F);
-        this.table.row();
+    public void createPanels(HashMap<Integer, String> playerNames) {
 
+        for (Integer playerId : playerNames.keySet()) {
+            // Panel
+            Stack panel1 = menuButton(playerNames.get(playerId));
+            this.table.add(panel1).pad(0F);
+            this.table.row();
+        }
+        createBackButton();
+        table.debug();
+    }
 
-        // Panel2
-        Stack panel2 = menuButton("");
-        this.table.add(panel2).pad(0F);
-        this.table.row();
-
-
-        // Panel3
-        Stack panel3 = menuButton("");
-        this.table.add(panel3).pad(0F);
-        this.table.row();
-
-
-        // Panel4
-        Stack panel4 = menuButton("");
-        this.table.add(panel4).pad(0F);
-        this.table.row();
-
-
-        // Panel5
-        Stack panel5 = menuButton("");
-        this.table.add(panel5).pad(0F);
-        this.table.row();
-
-        // Panel5
-        Stack panel6 = menuButton("");
-        this.table.add(panel6).pad(0F);
-        this.table.row();
-
+    private void createBackButton() {
         // back button
         Stack startButton = this.menuButton("Back");
         startButton.addListener(new InputListener(){
@@ -76,17 +64,9 @@ public class LobbyState extends MenuState {
                 backToMainMenu();
             }
         });
+
         this.table.add(startButton).pad(100f);
-        this.table.row();
-
         stage.addActor(table);
-    }
-
-    public static LobbyState getInstance() {
-        if (instance == null) {
-            instance = new LobbyState(GameStateManager.getInstance());
-        }
-        return instance;
     }
 
     private void backToMainMenu(){
@@ -104,7 +84,6 @@ public class LobbyState extends MenuState {
     }
 
     @Override
-
     public void render(SpriteBatch spriteBatch) {
         Gdx.gl.glClearColor(0, 1, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -145,5 +124,11 @@ public class LobbyState extends MenuState {
         label.setSize((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/4);
         table.add(label).size((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/4);
         table.row();
+
+        HashMap<Integer, String> map = new HashMap<Integer, String>();
+        map.put(1, "name1");
+        map.put(2, "name2");
+        map.put(3, "name3");
+        createPanels(map);
     }
 }
