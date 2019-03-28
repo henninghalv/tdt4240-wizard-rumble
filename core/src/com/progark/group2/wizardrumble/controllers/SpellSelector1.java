@@ -48,17 +48,17 @@ public class SpellSelector1 {
         spellButton.setHeight(40);
         spellButton.setVisible(true);
 
+
         spellButton.addListener(new InputListener() {
-            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                spellButton.setChecked(false);
-                System.out.println(str + " deselected, " + "checked="+spellButton.isChecked());
-
-            }
 
 
+
+
+            @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                spellButton.setChecked(true);
-                System.out.println(str + " selected, " + "checked="+spellButton.isChecked());
+                //System.out.println(str + " selected, " + "checked="+spellButton.isChecked());
+                //System.out.println("getAllChecked: "+spellButton.getButtonGroup().getAllChecked()+ "\n");
+                //System.out.println("getChecked: "+spellButton.getButtonGroup().getChecked()+ "\n");
                 return true;
             }
         });

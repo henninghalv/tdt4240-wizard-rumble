@@ -73,7 +73,7 @@ public class InGameState extends State {
         button3 = spellButtons.createSpellButton("Blast", WIDTH- AimInput1.diameter-60, 50);
         button4 = spellButtons.createSpellButton("Shock", WIDTH- AimInput1.diameter-20, 200);
 
-        bugfixer = spellButtons.createSpellButton(null, 0, 0);
+        //bugfixer = spellButtons.createSpellButton(null, 0, 0);
 
 
 
@@ -88,10 +88,13 @@ public class InGameState extends State {
 
         
         Gdx.input.setInputProcessor(stage);
-        ButtonGroup buttonGroup = new ButtonGroup(button1, button2, button3, button4);
+        //ButtonGroup buttonGroup = new ButtonGroup(button1, button2, button3, button4);
+        ButtonGroup buttonGroup = new ButtonGroup();
+        buttonGroup.add(button1, button2, button3, button4);
+
         buttonGroup.setMaxCheckCount(1);
         buttonGroup.setMinCheckCount(1);
-        buttonGroup.setUncheckLast(true);
+        //buttonGroup.setUncheckLast(true);
         button1.setChecked(true);
 
         // Used for testing spells.
