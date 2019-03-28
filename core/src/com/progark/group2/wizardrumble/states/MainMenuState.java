@@ -16,6 +16,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.progark.group2.wizardrumble.network.NetworkController;
+
+import java.io.IOException;
 
 
 /** The main menu that is shown when the game is launched. The listeners must be added individually
@@ -46,6 +49,11 @@ public class MainMenuState extends MenuState {
 
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                try {
+                    NetworkController.getInstance().requestGameCreation();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 startGame();
             }
         });
