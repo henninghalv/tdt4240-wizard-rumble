@@ -55,6 +55,7 @@ public class InGameState extends State {
     private OrthographicCamera camera;
     private Viewport gamePort;
     private MapHandler mapHandler;
+    private ArrayList<String> spellNames;
 
 
     public InGameState(GameStateManager gameStateManager) {
@@ -95,6 +96,12 @@ public class InGameState extends State {
         //ButtonGroup buttonGroup = new ButtonGroup(button1, button2, button3, button4);
         buttonGroup = new ButtonGroup();
         buttonGroup.add(button1, button2);//, button3, button4);
+
+        // This is a(nother) jank solution, instead of fetching the label/text from the selected button.
+        // Instead of that, I  fetch the index of the checked button, and use that to find the right string in spellNames.
+        spellNames = new ArrayList<String>();
+        spellNames.add("FireBall");
+        spellNames.add("Ice");
 
         buttonGroup.setMaxCheckCount(1);
         buttonGroup.setMinCheckCount(1);
@@ -139,36 +146,34 @@ public class InGameState extends State {
         float x = x1 * ratio;
         float y = y1 * ratio;
 
-        switch (spell) {
-            case ("FireBall"):
 
-                FireBall fb = new FireBall( // spawnPoint, rotation, velocity
-                        new Vector2(
-                                // TODO: offsetting spell position by screen width and height is not desirable, but it works for now.
-                                // Need to further look into how spell position or rendering is decided.
-                                wizard.getPosition().x - (WIDTH + wizardSprite.getWidth()) / 2f,
-                                wizard.getPosition().y - (HEIGHT + wizardSprite.getHeight()) / 2f
-                        ),
-                        wizard.getRotation(), // rotation
-                        new Vector2(x, y)  // velocity
-                );
-                spells.add(fb); // THIS IS ONLY FOR FIREBALL AT THE MOMENT
+        if (spell.equals("FireBall")) {
+            FireBall fb = new FireBall( // spawnPoint, rotation, velocity
+                    new Vector2(
+                            // TODO: offsetting spell position by screen width and height is not desirable, but it works for now.
+                            // Need to further look into how spell position or rendering is decided.
+                            wizard.getPosition().x - (WIDTH + wizardSprite.getWidth()) / 2f,
+                            wizard.getPosition().y - (HEIGHT + wizardSprite.getHeight()) / 2f
+                    ),
+                    wizard.getRotation(), // rotation
+                    new Vector2(x, y)  // velocity
+            );
+            spells.add(fb);
+        }
 
-            case ("Ice"):
+        if (spell.equals("Ice")) {
 
-                Ice ic = new Ice( // spawnPoint, rotation, velocity
-                        new Vector2(
-                                // TODO: offsetting spell position by screen width and height is not desirable, but it works for now.
-                                // Need to further look into how spell position or rendering is decided.
-                                wizard.getPosition().x - (WIDTH + wizardSprite.getWidth()) / 2f,
-                                wizard.getPosition().y - (HEIGHT + wizardSprite.getHeight()) / 2f
-                        ),
-                        wizard.getRotation(), // rotation
-                        new Vector2(x, y)  // velocity
-                );
-                spells.add(ic); // THIS IS ONLY FOR FIREBALL AT THE MOMENT
-
-
+            Ice ic = new Ice( // spawnPoint, rotation, velocity
+                    new Vector2(
+                            // TODO: offsetting spell position by screen width and height is not desirable, but it works for now.
+                            // Need to further look into how spell position or rendering is decided.
+                            wizard.getPosition().x - (WIDTH + wizardSprite.getWidth()) / 2f,
+                            wizard.getPosition().y - (HEIGHT + wizardSprite.getHeight()) / 2f
+                    ),
+                    wizard.getRotation(), // rotation
+                    new Vector2(x, y)  // velocity
+            );
+            spells.add(ic); // THIS IS ONLY FOR FIREBALL AT THE MOMENT
         }
     }
 
@@ -197,8 +202,7 @@ public class InGameState extends State {
         if (Gdx.input.justTouched()) {
             // I think that spells should be cast when the player releases the right
             if (rightJoyStick.isTouched()) {
-                activeSpell = buttonGroup.getChecked().getName();
-
+                activeSpell = spellNames.get(buttonGroup.getCheckedIndex());
                 castSpell(activeSpell);
             }
         }
