@@ -22,11 +22,9 @@ public class GameStateManager {
 
     public static GameStateManager getInstance(){
         if(instance == null){
-            return new GameStateManager();
+            instance = new GameStateManager();
         }
-        else{
-            return instance;
-        }
+        return instance;
     }
 
     public void push(State state){
