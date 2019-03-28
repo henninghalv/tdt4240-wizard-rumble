@@ -10,7 +10,7 @@ import java.util.Stack;
  */
 public class GameStateManager {
 
-    private static GameStateManager instance;
+    private static GameStateManager instance = null;
 
     private Stack<State> states;
 
@@ -20,11 +20,9 @@ public class GameStateManager {
 
     public static GameStateManager getInstance(){
         if(instance == null){
-            return new GameStateManager();
+            instance = new GameStateManager();
         }
-        else{
-            return instance;
-        }
+        return instance;
     }
 
     public void push(State state){
@@ -58,7 +56,4 @@ public class GameStateManager {
     public void render(SpriteBatch spriteBatch){
         this.states.peek().render(spriteBatch);
     }
-
-
-
 }
