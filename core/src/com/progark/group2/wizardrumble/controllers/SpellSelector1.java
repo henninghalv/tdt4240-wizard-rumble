@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.progark.group2.wizardrumble.entities.Spell;
 
 public class SpellSelector1 {
 
@@ -39,9 +40,9 @@ public class SpellSelector1 {
 
     }
 
-    public CheckBox createSpellButton(final String str, int x, int y) {
+    public CheckBox createSpellButton(String spellName, int x, int y) {
 
-        spellButton = new CheckBox(str, getSkin());
+        spellButton = new CheckBox(spellName, getSkin());
         spellButton.setX(x);
         spellButton.setY(y);
         spellButton.setWidth(60);
