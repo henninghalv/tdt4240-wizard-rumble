@@ -1,41 +1,40 @@
 package com.progark.group2.wizardrumble.network.resources;
 
+import com.badlogic.gdx.math.Vector2;
+
 public class Player {
 
-    private int id;
     private String name;
+    private int connectionId;
     private int kills;
-    private int health;
     private int rank;
     private int timeAliveInMilliseconds;
+    private boolean isAlive;
+    private Vector2 position;
+    private float rotation;
 
-    public Player(int id, String name, int kills, int health, int rank, int timeAliveInMilliseconds) {
-        this.id = id;
+    public Player(String name,  int connectionId, int kills, int rank, int timeAliveInMilliseconds, boolean isAlive, Vector2 position, float rotation) {
         this.name = name;
+        this.connectionId = connectionId;
         this.kills = kills;
-        this.health = health;
         this.rank = rank;
         this.timeAliveInMilliseconds = timeAliveInMilliseconds;
-    }
+        this.isAlive = isAlive;
+        this.position = position;
+        this.rotation = rotation;
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getName() {
         return name;
     }
 
-    public int getKills() {
-        return kills;
+    public int getConnectionId() {
+        return connectionId;
     }
 
-    public int getHealth() {
-        return health;
+    public int getKills() {
+        return kills;
     }
 
     public int getRank() {
@@ -50,12 +49,12 @@ public class Player {
         this.name = name;
     }
 
-    public void setKills(int kills) {
-        this.kills = kills;
+    public void setConnectionId(int connectionId) {
+        this.connectionId = connectionId;
     }
 
-    public void setHealth(int health) {
-        this.health = health;
+    public void setKills(int kills) {
+        this.kills = kills;
     }
 
     public void setRank(int rank) {
@@ -64,5 +63,29 @@ public class Player {
 
     public void setTimeAliveInMilliseconds(int timeAliveInMilliseconds) {
         this.timeAliveInMilliseconds = timeAliveInMilliseconds;
+    }
+
+    public boolean isAlive() {
+        return isAlive;
+    }
+
+    public void setAlive(boolean alive) {
+        isAlive = alive;
+    }
+
+    public Vector2 getPosition() {
+        return position;
+    }
+
+    public void setPosition(Vector2 position) {
+        this.position = position;
+    }
+
+    public float getRotation() {
+        return rotation;
+    }
+
+    public void setRotation(float rotation) {
+        this.rotation = rotation;
     }
 }

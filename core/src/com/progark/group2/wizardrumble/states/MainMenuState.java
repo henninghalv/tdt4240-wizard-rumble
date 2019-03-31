@@ -49,7 +49,12 @@ public class MainMenuState extends MenuState {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                startGame();
+                try {
+//                    startGame();
+                    NetworkController.getInstance().requestGameCreation();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
         this.table.add(startButton).pad(10f);
@@ -65,7 +70,12 @@ public class MainMenuState extends MenuState {
 
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                openSettings();
+//                openSettings();
+                try {
+                    startGame();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
         this.table.add(settingsButton).pad(10f);
@@ -90,7 +100,7 @@ public class MainMenuState extends MenuState {
         this.stage.addActor(table);
     }
 
-    private void startGame(){
+    private void startGame() throws IOException {
         this.gameStateManager.set(InGameState.getInstance());
     }
 
