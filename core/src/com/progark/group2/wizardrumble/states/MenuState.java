@@ -20,7 +20,14 @@ abstract class MenuState extends State{
 
     MenuState(GameStateManager gameStateManager){
         super(gameStateManager);
-        initializeVariables();
+
+        // Button styling
+        this.buttonTexture = new Texture("UI/blue_button00.png");
+
+        // Button text styling
+        BitmapFont font = new BitmapFont();
+        font.setColor(Color.BLACK);
+        this.labelStyle = new Label.LabelStyle(font, font.getColor());
     }
 
     /**
@@ -40,18 +47,5 @@ abstract class MenuState extends State{
         button.add(label);
 
         return button;
-    }
-
-    /**
-     * Initialize button and text styling
-     */
-    protected void initializeVariables(){
-        // Button styling
-        this.buttonTexture = new Texture("UI/blue_button00.png");
-
-        // Button text styling
-        BitmapFont font = new BitmapFont();
-        font.setColor(Color.BLACK);
-        this.labelStyle = new Label.LabelStyle(font, font.getColor());
     }
 }

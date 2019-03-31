@@ -1,6 +1,5 @@
 package com.progark.group2.wizardrumble.states;
 
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -10,35 +9,50 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import java.util.HashMap;
 
-
-/** The main menu that is shown when the game is launched. The listeners must be added individually
- * to the buttons that are created by the parent class MenuState.
- */
-public class MainMenuState extends MenuState {
+public class LobbyState extends MenuState {
 
     private Stage stage;
     private Table table;
     private Label.LabelStyle titleStyle;
 
-    private static MainMenuState instance = null;
+    private static LobbyState instance = null;
 
-    private final String title = "Wizard Rumble";
+    private final String title = "Lobby - waiting for players...";
 
-
-    //TODO Remove sout and uncomment method calls in the button listeners
-    private MainMenuState(GameStateManager gameStateManager){
+    private LobbyState(GameStateManager gameStateManager) {
         super(gameStateManager);
         initialize();
+    }
 
-        // startButton
-        Stack startButton = this.menuButton("Start");
+    public static LobbyState getInstance() {
+        if (instance == null) {
+            instance = new LobbyState(GameStateManager.getInstance());
+        }
+        return instance;
+    }
+
+    public void createPanels(HashMap<Integer, String> playerNames) {
+
+        for (Integer playerId : playerNames.keySet()) {
+            // Panel
+            Stack panel1 = menuButton(playerNames.get(playerId));
+            this.table.add(panel1).pad(0F);
+            this.table.row();
+        }
+        createBackButton();
+        table.debug();
+    }
+
+    private void createBackButton() {
+        // back button
+        Stack startButton = this.menuButton("Back");
         startButton.addListener(new InputListener(){
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -47,61 +61,16 @@ public class MainMenuState extends MenuState {
 
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                startGame();
+                backToMainMenu();
             }
         });
-        this.table.add(startButton).pad(10f);
-        this.table.row();
 
-        // Settings
-        Stack settingsButton = menuButton("Settings");
-        settingsButton.addListener(new InputListener(){
-            @Override
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                return true;
-            }
-
-            @Override
-            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                System.out.println("Settings");
-                openSettings();
-            }
-        });
-        this.table.add(settingsButton).pad(10f);
-        this.table.row();
-
-        // exitButton
-        Stack exitButton = menuButton("Exit");
-        exitButton.addListener(new InputListener(){
-            @Override
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                return true;
-            }
-
-            @Override
-            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                onBackButtonPress();
-            }
-        });
-        this.table.add(exitButton).pad(10f);
-        this.table.row();
-
+        this.table.add(startButton).pad(100f);
         stage.addActor(table);
     }
 
-    public static MainMenuState getInstance() {
-        if (instance == null) {
-            instance = new MainMenuState(GameStateManager.getInstance());
-        }
-        return instance;
-    }
-
-    private void startGame(){
-        this.gameStateManager.set(LobbyState.getInstance());
-    }
-
-    private void openSettings(){
-        this.gameStateManager.push(new MainMenuSettings(this.gameStateManager));
+    private void backToMainMenu(){
+        this.gameStateManager.set(MainMenuState.getInstance());
     }
 
     @Override
@@ -115,7 +84,6 @@ public class MainMenuState extends MenuState {
     }
 
     @Override
-
     public void render(SpriteBatch spriteBatch) {
         Gdx.gl.glClearColor(0, 1, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -156,5 +124,11 @@ public class MainMenuState extends MenuState {
         label.setSize((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/4);
         table.add(label).size((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/4);
         table.row();
+
+        HashMap<Integer, String> map = new HashMap<Integer, String>();
+        map.put(1, "name1");
+        map.put(2, "name2");
+        map.put(3, "name3");
+        createPanels(map);
     }
 }

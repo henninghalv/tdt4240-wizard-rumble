@@ -11,7 +11,7 @@ import java.util.Stack;
  */
 public class GameStateManager {
 
-    private static GameStateManager instance;
+    private static GameStateManager instance = null;
 
     //TODO Change from stack to some sort of list to enable game render while the in-game pause is active
     private Stack<State> states;
@@ -67,7 +67,4 @@ public class GameStateManager {
     public void render(SpriteBatch spriteBatch){
         this.states.peek().render(spriteBatch);
     }
-
-
-
 }
