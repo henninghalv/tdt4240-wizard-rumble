@@ -13,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.progark.group2.wizardrumble.controllers.SpellSelector;
 import com.progark.group2.wizardrumble.entities.Wizard;
 import com.progark.group2.wizardrumble.entities.spells.Ice;
 import com.progark.group2.wizardrumble.handlers.MapHandler;
@@ -56,6 +57,7 @@ public class InGameState extends State {
     private Viewport gamePort;
     private MapHandler mapHandler;
     private ArrayList<String> spellNames;
+    private SpellSelector spellSelector;
 
 
     public InGameState(GameStateManager gameStateManager) {
@@ -73,29 +75,29 @@ public class InGameState extends State {
         leftJoyStick = new MovementInput1(15, 15);
         rightJoyStick = new AimInput1(WIDTH - 15 - AimInput1.diameter, 15);
 
-        spellButtons = new SpellSelector1();
-        button1 = spellButtons.createSpellButton("FireBall", WIDTH - AimInput1.diameter - 50, 150);
-        button2 = spellButtons.createSpellButton("Ice", WIDTH - AimInput1.diameter - 80, 100);
-        //button3 = spellButtons.createSpellButton("Blast", WIDTH- AimInput1.diameter-60, 50);
-        //button4 = spellButtons.createSpellButton("Shock", WIDTH- AimInput1.diameter-20, 200);
 
-        //bugfixer = spellButtons.createSpellButton(null, 0, 0);
+
 
 
         Gdx.input.setInputProcessor(stage);
         stage = new Stage(gamePort, sb);
         stage.addActor(leftJoyStick);
         stage.addActor(rightJoyStick);
-        stage.addActor(button1);
-        stage.addActor(button2);
-        //stage.addActor(button3);
-        //stage.addActor(button4);
+
+
+        spellNames = new ArrayList<String>();
+        spellNames.add("FireBall");
+        spellNames.add("Ice");
+
+
+        spellSelector= new SpellSelector1(spellNames, stage);
+
+
 
 
         Gdx.input.setInputProcessor(stage);
         //ButtonGroup buttonGroup = new ButtonGroup(button1, button2, button3, button4);
-        buttonGroup = new ButtonGroup();
-        buttonGroup.add(button1, button2);//, button3, button4);
+
 
         // This is a(nother) jank solution, instead of fetching the label/text from the selected button.
         // Instead of that, I  fetch the index of the checked button, and use that to find the right string in spellNames.
@@ -103,10 +105,7 @@ public class InGameState extends State {
         spellNames.add("FireBall");
         spellNames.add("Ice");
 
-        buttonGroup.setMaxCheckCount(1);
-        buttonGroup.setMinCheckCount(1);
-        //buttonGroup.setUncheckLast(true);
-        button1.setChecked(true);
+
 
         // Used for testing spells.
         spells = new ArrayList<Spell>();
@@ -202,7 +201,13 @@ public class InGameState extends State {
         if (Gdx.input.justTouched()) {
             // I think that spells should be cast when the player releases the right
             if (rightJoyStick.isTouched()) {
-                activeSpell = spellNames.get(buttonGroup.getCheckedIndex());
+                //activeSpell = spellNames.get(spellSelector.getSpellSelected());
+                for(String spell : spellNames){
+                    if(spell.equals(spellSelector.getSpellSelected())){
+                        activeSpell=spell;
+                        break;
+                    }
+                }
                 castSpell(activeSpell);
             }
         }

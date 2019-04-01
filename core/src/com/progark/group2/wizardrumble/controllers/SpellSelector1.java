@@ -6,11 +6,24 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.progark.group2.wizardrumble.entities.Spell;
+import static com.progark.group2.wizardrumble.Application.WIDTH;
 
-public class SpellSelector1 {
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+public class SpellSelector1 extends SpellSelector {
+
+    public SpellSelector1(List<String> listOfSpells, Stage stage) {
+        super(listOfSpells, stage);
+        createSpellButtons();
+    }
 
     private CheckBox spellButton;
 
@@ -40,20 +53,50 @@ public class SpellSelector1 {
 
     }
 
-    public CheckBox createSpellButton(String spellName, int x, int y) {
+    public void createSpellButtons() {
+        if (listOfSpells.size() == 0) {
+            throw new IllegalArgumentException("yo peeps, listOfSpells cannot be 0");
+        }
 
-        spellButton = new CheckBox(spellName, getSkin());
-        spellButton.setX(x);
-        spellButton.setY(y);
-        spellButton.setWidth(60);
-        spellButton.setHeight(40);
-        spellButton.setVisible(true);
+        List<Integer> xCoords= new ArrayList<Integer>(Arrays.asList(-50, -80, -60, -20));
+        List<Integer> yCoords= new ArrayList<Integer>(Arrays.asList(50, 100, 150, 200));
+
+        ButtonGroup buttonGroup = new ButtonGroup();
+
+        for (int i = 0; i < super.listOfSpells.size(); i++) {
+            spellButton = new CheckBox(listOfSpells.get(i), getSkin());
+            spellButton.setX(WIDTH - AimInput1.diameter + xCoords.get(i));
+            spellButton.setY(yCoords.get(i));
+
+            spellButton.setWidth((float) 150 / listOfSpells.size());
+            spellButton.setHeight((float) 100 / listOfSpells.size());
+            spellButton.setVisible(true);
 
 
+            addListenerToSpellButton(spellButton,listOfSpells.get(i));
+
+            buttonGroup.add(spellButton);
+
+            stage.addActor(spellButton);
+
+
+        }
+
+        buttonGroup.setMaxCheckCount(1);
+        buttonGroup.setMinCheckCount(0);
+
+        //buttonGroup.setUncheckLast(true);
+//        (buttonGroup.getButtons().get(0)).setChecked(true);
+
+
+
+
+
+    }
+
+
+    private void addListenerToSpellButton(CheckBox spellButton, final String spellName){
         spellButton.addListener(new InputListener() {
-
-
-
 
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -62,7 +105,20 @@ public class SpellSelector1 {
                 //System.out.println("getChecked: "+spellButton.getButtonGroup().getChecked()+ "\n");
                 return true;
             }
+
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                setSelectedSpell(spellName);
+            }
         });
-        return spellButton;
     }
+
+    protected String getSelectedSpell() {
+        return super.getSpellSelected();
+    }
+
+    protected void setSelectedSpell(String spellName) {
+        super.setSpellSelected(spellName);
+    }
+
 }
