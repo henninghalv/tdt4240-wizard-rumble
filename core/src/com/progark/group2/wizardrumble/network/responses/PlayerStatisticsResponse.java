@@ -1,8 +1,8 @@
-package com.progark.group2.wizardrumble.network;
+package com.progark.group2.wizardrumble.network.responses;
 
 import java.util.HashMap;
 
-public class PlayerStatisticsResponse {
+public class PlayerStatisticsResponse extends Response {
 
     private int playerID;
     private HashMap<String, Object> map;
@@ -24,6 +24,6 @@ public class PlayerStatisticsResponse {
     }
 
     // TODO: Add metadata such ass score and placement for scoreboard
-    // A list of players sorted after when they died
+    // A list of playerNames sorted after when they died
     // Amount of kills
 }

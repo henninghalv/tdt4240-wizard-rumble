@@ -1,6 +1,8 @@
 package com.progark.group2.wizardrumble.states;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.progark.group2.wizardrumble.network.NetworkController;
 
 import java.util.EmptyStackException;
 import java.util.Stack;
@@ -10,8 +12,9 @@ import java.util.Stack;
  */
 public class GameStateManager {
 
-    private static GameStateManager instance;
+    private static GameStateManager instance = null;
 
+    //TODO Change from stack to some sort of list to enable game render while the in-game pause is active
     private Stack<State> states;
 
     private GameStateManager(){
@@ -20,21 +23,23 @@ public class GameStateManager {
 
     public static GameStateManager getInstance(){
         if(instance == null){
-            return new GameStateManager();
+            instance = new GameStateManager();
         }
-        else{
-            return instance;
-        }
+        return instance;
     }
 
     public void push(State state){
         this.states.push(state);
     }
 
-    // Prints error message if stack is empty
+    /**
+     * Prints error message if stack is empty. Also tries to activate
+     * the previous state.
+     */
     public void pop(){
         try {
             this.states.pop();
+            this.states.peek().activate();
         } catch(EmptyStackException e){
             System.out.println(e.getMessage());
         }
@@ -46,8 +51,13 @@ public class GameStateManager {
      * @param state The new state to be pushed
      */
     public void set(State state){
-        // Use own pop method for error handling
-        this.pop();
+
+        try {
+            this.states.pop();
+        } catch(EmptyStackException e){
+            System.out.println(e.getMessage());
+        }
+
         this.states.push(state);
     }
 
@@ -58,7 +68,4 @@ public class GameStateManager {
     public void render(SpriteBatch spriteBatch){
         this.states.peek().render(spriteBatch);
     }
-
-
-
 }

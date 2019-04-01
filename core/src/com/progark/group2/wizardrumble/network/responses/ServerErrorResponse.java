@@ -1,6 +1,6 @@
-package com.progark.group2.wizardrumble.network;
+package com.progark.group2.wizardrumble.network.responses;
 
-public class ServerErrorResponse {
+public class ServerErrorResponse extends Response {
     private String errorMsg;
 
     public String getErrorMsg() {

@@ -30,17 +30,9 @@ public class Application extends Game {
 
 	private SpriteBatch spriteBatch;
 	private GameStateManager gameStateManager;
-	private NetworkController networkController;
-
-	// TODO remove
-	private Texture img;
-
-	// TODO move to inGameSate
-	private List<Spell> spellList;
 
 
-	
-	@Override
+    @Override
 	public void create () {
 		Gdx.graphics.setTitle(TITLE);
 		Gdx.graphics.setWindowedMode(WIDTH, HEIGHT);
@@ -48,29 +40,22 @@ public class Application extends Game {
 
 		// Used to test server connection.
 		// Not necessarily the right way to do it.
-        networkController = new NetworkController();
-
 		try {
-            networkController.init();
+            NetworkController networkController = NetworkController.getInstance();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
         this.gameStateManager = GameStateManager.getInstance();
-        gameStateManager.push(new MainMenuState(gameStateManager));
+		try {
+			gameStateManager.push(MainMenuState.getInstance());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void render () {
-		//TODO remove
-		/*
-		Gdx.gl.glClearColor(1, 0, 0, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		spriteBatch.begin();
-		//spriteBatch.draw(img, 0, 0);
-		spriteBatch.end();
-		*/
-
 		gameStateManager.update(Gdx.graphics.getDeltaTime());
 		gameStateManager.render(spriteBatch);
 	}
@@ -78,7 +63,5 @@ public class Application extends Game {
 	@Override
 	public void dispose () {
 		spriteBatch.dispose();
-		//img.dispose();
-		//gameStateManager.dispose();
 	}
 }
