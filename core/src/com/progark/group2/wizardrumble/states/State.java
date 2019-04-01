@@ -18,7 +18,6 @@ public abstract class State{
     public State(GameStateManager gameStateManager){
         this.gameStateManager = gameStateManager;
         this.camera = new OrthographicCamera();
-
         this.stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
     }

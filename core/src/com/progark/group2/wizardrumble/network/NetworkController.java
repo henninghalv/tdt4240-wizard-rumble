@@ -9,7 +9,7 @@ import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.minlog.Log;
 import com.progark.group2.wizardrumble.network.requests.CreateGameRequest;
 import com.progark.group2.wizardrumble.network.requests.CreatePlayerRequest;
-import com.progark.group2.wizardrumble.network.requests.GameStartRequest;
+import com.progark.group2.wizardrumble.network.packets.GameStartPacket;
 import com.progark.group2.wizardrumble.network.requests.PlayerJoinRequest;
 import com.progark.group2.wizardrumble.network.requests.PlayerMovementRequest;
 import com.progark.group2.wizardrumble.network.resources.Player;
@@ -21,6 +21,7 @@ import com.progark.group2.wizardrumble.network.responses.PlayerLeaveResponse;
 import com.progark.group2.wizardrumble.network.responses.PlayerMovementResponse;
 import com.progark.group2.wizardrumble.network.responses.ServerErrorResponse;
 import com.progark.group2.wizardrumble.network.responses.ServerSuccessResponse;
+import com.progark.group2.wizardrumble.states.InGameState;
 import com.progark.group2.wizardrumble.states.LobbyState;
 
 import java.io.IOException;
@@ -36,13 +37,13 @@ public class NetworkController extends Listener{
     private static Client gameServerClient;
     private static Preferences userPreferences = Gdx.app.getPreferences("user");
 
-    private static int playerId;
-    private static Player player;
+    private static int playerId = 0;
+    private static Player player = null;
     private static HashMap<Integer, Player> players = new HashMap<Integer, Player>();
 
     // Master server configuration constants
     private final static int TIMEOUT = 5000;
-    private final static String MASTER_SERVER_HOST = "localhost";  // Set this to the local IP address of your computer when running the server
+    private final static String MASTER_SERVER_HOST = "10.0.0.52";  // Set this to the local IP address of your computer when running the server
     private final static int MASTER_SERVER_TCP_PORT = 54555;
     private final static int MASTER_SERVER_UDP_PORT = 54777;
 
@@ -88,7 +89,7 @@ public class NetworkController extends Listener{
     /**
      * Sends a request to create a new game.
      */
-    public void requestGameCreation(){
+    public void requestGameCreation() {
         Log.info("Sending CreateGameRequest to MasterServer...\n");
         CreateGameRequest request = new CreateGameRequest();
         request.setPlayerId(playerId);
@@ -99,7 +100,12 @@ public class NetworkController extends Listener{
         Log.info("Sending PlayerJoinRequest to GameServer...\n");
         PlayerJoinRequest request = new PlayerJoinRequest();
         request.setPlayerId(playerId);
-        System.out.println("REQUEST PLAYER ID IS: " + playerId);
+        gameServerClient.sendTCP(request);
+    }
+
+    public void requestGameStart(){
+        Log.info("Sending GameStartPacket to GameServer...\n");
+        GameStartPacket request = new GameStartPacket();
         gameServerClient.sendTCP(request);
     }
 
@@ -124,10 +130,13 @@ public class NetworkController extends Listener{
             handlePlayerJoinResponse(connection, response);
 
         }
-        else if (object instanceof GameStartRequest){
-            // TODO: Start game
+        else if (object instanceof GameStartPacket){
+            try {
+                handleGameStart();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-
         else if (object instanceof GameJoinedResponse){
             Player player = new Player(
                     userPreferences.getString("username"),
@@ -141,7 +150,6 @@ public class NetworkController extends Listener{
             );  //TODO: Change the Vector2 to be starting position
             NetworkController.player = player;
         }
-
         else if (object instanceof PlayerMovementResponse){
             // TODO: Update enemy wizard position
             PlayerMovementResponse response = (PlayerMovementResponse) object;
@@ -203,6 +211,10 @@ public class NetworkController extends Listener{
     private void handlePlayerLeaveRequest(PlayerLeaveResponse response){
         Log.info("Player left: " + players.get(playerId).getName());
         players.remove(response.getPlayerId());
+    }
+
+    private void handleGameStart() throws IOException {
+        LobbyState.getInstance().startGame();
     }
 
     private void handlePlayerMovementResponse(PlayerMovementResponse response){

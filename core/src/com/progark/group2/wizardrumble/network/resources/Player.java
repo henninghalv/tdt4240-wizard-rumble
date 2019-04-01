@@ -13,7 +13,10 @@ public class Player {
     private Vector2 position;
     private float rotation;
 
-    public Player(String name,  int connectionId, int kills, int rank, int timeAliveInMilliseconds, boolean isAlive, Vector2 position, float rotation) {
+    public Player() {
+    }
+
+    public Player(String name, int connectionId, int kills, int rank, int timeAliveInMilliseconds, boolean isAlive, Vector2 position, float rotation) {
         this.name = name;
         this.connectionId = connectionId;
         this.kills = kills;

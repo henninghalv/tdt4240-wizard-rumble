@@ -48,7 +48,11 @@ public class Application extends Game {
 		}
 
         this.gameStateManager = GameStateManager.getInstance();
-        gameStateManager.push(MainMenuState.getInstance());
+		try {
+			gameStateManager.push(MainMenuState.getInstance());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override

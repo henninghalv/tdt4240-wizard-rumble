@@ -2,6 +2,7 @@ package com.progark.group2.wizardrumble.states;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.progark.group2.wizardrumble.network.NetworkController;
 
 import java.util.EmptyStackException;
 import java.util.Stack;

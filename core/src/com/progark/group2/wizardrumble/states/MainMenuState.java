@@ -16,12 +16,17 @@ import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.progark.group2.wizardrumble.network.NetworkController;
+
+import java.io.IOException;
 
 
 /** The main menu that is shown when the game is launched. The listeners must be added individually
  * to the buttons that are created by the parent class MenuState.
  */
 public class MainMenuState extends MenuState {
+
+    private NetworkController network;
 
     private Stage stage;
     private Table table;
@@ -33,7 +38,7 @@ public class MainMenuState extends MenuState {
 
 
     //TODO Remove sout and uncomment method calls in the button listeners
-    private MainMenuState(GameStateManager gameStateManager){
+    MainMenuState(GameStateManager gameStateManager) throws IOException {
         super(gameStateManager);
         initialize();
 
@@ -47,7 +52,13 @@ public class MainMenuState extends MenuState {
 
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                startGame();
+
+                try {
+                    network.requestGameCreation();
+                    startGame();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
         this.table.add(startButton).pad(10f);
@@ -89,14 +100,14 @@ public class MainMenuState extends MenuState {
         stage.addActor(table);
     }
 
-    public static MainMenuState getInstance() {
+    public static MainMenuState getInstance() throws IOException {
         if (instance == null) {
             instance = new MainMenuState(GameStateManager.getInstance());
         }
         return instance;
     }
 
-    private void startGame(){
+    private void startGame() throws IOException {
         this.gameStateManager.set(LobbyState.getInstance());
     }
 
@@ -136,7 +147,10 @@ public class MainMenuState extends MenuState {
     /**
      * Initialize stage, input, table and font for title.
      */
-    private void initialize() {
+    private void initialize() throws IOException {
+        // Getting NetworkController
+        network = NetworkController.getInstance();
+
         this.stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 

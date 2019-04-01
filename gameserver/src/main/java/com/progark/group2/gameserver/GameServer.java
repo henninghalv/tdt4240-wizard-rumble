@@ -1,15 +1,17 @@
 package com.progark.group2.gameserver;
 
+import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 import com.esotericsoftware.minlog.Log;
 import com.progark.group2.gameserver.resources.GameStatus;
-import com.progark.group2.gameserver.resources.Player;
 import com.progark.group2.gameserver.resources.PortStatus;
+import com.progark.group2.wizardrumble.network.packets.GameStartPacket;
 import com.progark.group2.wizardrumble.network.requests.PlayerJoinRequest;
 import com.progark.group2.wizardrumble.network.requests.PlayerLeaveRequest;
 import com.progark.group2.wizardrumble.network.requests.PlayerMovementRequest;
+import com.progark.group2.wizardrumble.network.resources.Player;
 import com.progark.group2.wizardrumble.network.responses.GameJoinedResponse;
 import com.progark.group2.wizardrumble.network.responses.PlayerJoinResponse;
 import com.progark.group2.wizardrumble.network.responses.PlayerLeaveResponse;
@@ -58,7 +60,7 @@ public class GameServer extends Listener{
     // LISTENERS
 
     public void received(Connection connection, Object object){
-        if (object instanceof PlayerJoinRequest) {
+        if (object instanceof PlayerJoinRequest){
             // If a player has joined
             PlayerJoinRequest request = (PlayerJoinRequest) object;
             // Add player to list of joined players
@@ -69,10 +71,14 @@ public class GameServer extends Listener{
                 e.printStackTrace();
             }
         }
-        else if (object instanceof PlayerLeaveRequest) {
+        else if (object instanceof PlayerLeaveRequest){
             PlayerLeaveRequest request = (PlayerLeaveRequest) object;
             sendServerSuccessResponse(connection, "Goodbye!");
             handlePlayerLeaveRequest(connection, request);
+        }
+        else if (object instanceof GameStartPacket){
+            GameStartPacket packet = (GameStartPacket) object;
+            server.sendToAllTCP(packet);
         }
         else if (object instanceof PlayerMovementRequest){
             PlayerMovementRequest request = (PlayerMovementRequest) object;
@@ -145,6 +151,8 @@ public class GameServer extends Listener{
         response.setPlayerId(request.getPlayerId());
         response.setPosition(request.getPosition());
         response.setRotation(request.getRotation());
+        players.get(request.getPlayerId()).setPosition(request.getPosition());
+        players.get(request.getPlayerId()).setRotation(request.getRotation());
         server.sendToAllExceptUDP(connection.getID(), response);
     }
 
@@ -178,7 +186,9 @@ public class GameServer extends Listener{
                 0, // Kills
                 0, // Position or rank according to time of death
                 0,// Time alive, milliseconds,
-                false
+                false,
+                new Vector2(0,0),
+                0
         );
 
         players.put(playerId, player);
