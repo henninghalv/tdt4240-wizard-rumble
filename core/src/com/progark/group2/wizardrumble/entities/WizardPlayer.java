@@ -1,5 +1,6 @@
 package com.progark.group2.wizardrumble.entities;
 
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
@@ -12,12 +13,12 @@ public class WizardPlayer extends Wizard {
     private Touchpad leftJoy; // importer touchpad-objektet som Bjørn lager
     private Touchpad rightJoy; // importer touchpad-objektet som Bjørn lager
 
-    public WizardPlayer(int maxHealth, Vector2 spawnPoint) {
-        super(maxHealth, spawnPoint);
+    public WizardPlayer(int maxHealth, Vector2 spawnPoint, Texture texture) {
+        super(maxHealth, spawnPoint, texture);
     }
 
     public WizardPlayer(Vector2 spawnPoint) {
-        super(Wizard.DEFAULT_HEALTH, spawnPoint);
+        super(Wizard.DEFAULT_HEALTH, spawnPoint, new Texture("wizard_front.png"));
     }
 
     public static WizardPlayer getInstance() {

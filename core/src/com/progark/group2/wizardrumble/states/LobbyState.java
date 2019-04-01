@@ -1,49 +1,83 @@
 package com.progark.group2.wizardrumble.states;
 
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.progark.group2.wizardrumble.network.NetworkController;
+import com.progark.group2.wizardrumble.network.resources.Player;
 
 import java.io.IOException;
+import java.util.HashMap;
 
+public class LobbyState extends MenuState {
 
-/** The main menu that is shown when the game is launched. The listeners must be added individually
- * to the buttons that are created by the parent class MenuState.
- */
-public class MainMenuState extends MenuState {
-
-    private NetworkController network;
+    private NetworkController network = NetworkController.getInstance();
 
     private Stage stage;
     private Table table;
     private Label.LabelStyle titleStyle;
 
-    private static MainMenuState instance = null;
+    private static LobbyState instance = null;
 
-    private final String title = "Wizard Rumble";
+    private final String title = "Lobby - waiting for players...";
 
-
-    //TODO Remove sout and uncomment method calls in the button listeners
-    MainMenuState(GameStateManager gameStateManager) throws IOException {
+    private LobbyState(GameStateManager gameStateManager) throws IOException {
         super(gameStateManager);
+        // Getting NetworkController
         initialize();
+    }
 
-        // startButton
-        Stack startButton = this.menuButton("Start");
+    public static LobbyState getInstance() throws IOException {
+        if (instance == null) {
+            instance = new LobbyState(GameStateManager.getInstance());
+        }
+        return instance;
+    }
+
+    private void createPanels() {
+        for (Integer playerId : network.getPlayers().keySet()) {
+            table.add(menuButton(network.getPlayers().get(playerId).getName())).pad(0F);
+            table.row();
+        }
+        table.add(menuButton(network.getPlayer().getName())).pad(0F);
+        table.row();
+    }
+
+    private void createBackButton() {
+        // back button
+        Stack backButton = this.menuButton("Back");
+        backButton.addListener(new InputListener(){
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                return true;
+            }
+
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                try {
+                    backToMainMenu();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        table.add(backButton).pad(100f);
+    }
+
+    private void createStartButton() {
+        // back button
+        Stack startButton = this.menuButton("Start Game");
         startButton.addListener(new InputListener(){
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -52,67 +86,30 @@ public class MainMenuState extends MenuState {
 
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-
                 try {
-                    network.requestGameCreation();
                     startGame();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         });
-        this.table.add(startButton).pad(10f);
-        this.table.row();
 
-        // Settings
-        Stack settingsButton = menuButton("Settings");
-        settingsButton.addListener(new InputListener(){
-            @Override
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                return true;
-            }
+        table.add(startButton).pad(70f);
 
-            @Override
-            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                System.out.println("Settings");
-                openSettings();
-            }
-        });
-        this.table.add(settingsButton).pad(10f);
-        this.table.row();
-
-        // exitButton
-        Stack exitButton = menuButton("Exit");
-        exitButton.addListener(new InputListener(){
-            @Override
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                return true;
-            }
-
-            @Override
-            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                onBackButtonPress();
-            }
-        });
-        this.table.add(exitButton).pad(10f);
-        this.table.row();
-
-        stage.addActor(table);
     }
 
-    public static MainMenuState getInstance() throws IOException {
-        if (instance == null) {
-            instance = new MainMenuState(GameStateManager.getInstance());
-        }
-        return instance;
+    private void backToMainMenu() throws IOException {
+        this.gameStateManager.set(MainMenuState.getInstance());
     }
 
-    private void startGame() throws IOException {
-        this.gameStateManager.set(LobbyState.getInstance());
+    private void requestGameStart() {
+        network.requestGameStart();
     }
 
-    private void openSettings(){
-        this.gameStateManager.push(new MainMenuSettings(this.gameStateManager));
+    public void startGame() throws IOException {
+        InGameState state = InGameState.getInstance();
+        System.out.println("Instance: " + state);
+        this.gameStateManager.set(state);
     }
 
     @Override
@@ -122,15 +119,19 @@ public class MainMenuState extends MenuState {
 
     @Override
     public void update(float dt) {
-
+        if(!network.getPlayers().isEmpty()){
+            table.clear();
+            createPanels();
+            createBackButton();
+            createStartButton();  // TODO: Remove. No manual starting. Meant for testing.
+            stage.addActor(table);
+        }
     }
 
     @Override
-
     public void render(SpriteBatch spriteBatch) {
         Gdx.gl.glClearColor(0, 1, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
         stage.draw();
     }
 
@@ -147,17 +148,13 @@ public class MainMenuState extends MenuState {
     /**
      * Initialize stage, input, table and font for title.
      */
-    private void initialize() throws IOException {
-        // Getting NetworkController
-        network = NetworkController.getInstance();
-
-        this.stage = new Stage(new ScreenViewport());
+    private void initialize() {
+        stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 
         // Layout styling
-        this.table = new Table();
+        table = new Table();
         table.setFillParent(true);
-        //table.setDebug(true);
         table.center();
 
         // Title
@@ -170,5 +167,8 @@ public class MainMenuState extends MenuState {
         label.setSize((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/4);
         table.add(label).size((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/4);
         table.row();
+
+        table.debug();
+        stage.addActor(table);
     }
 }

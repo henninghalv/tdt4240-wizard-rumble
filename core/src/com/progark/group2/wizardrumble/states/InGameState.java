@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapObject;
@@ -20,15 +21,19 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.progark.group2.wizardrumble.entities.Wizard;
+import com.progark.group2.wizardrumble.entities.WizardEnemy;
 import com.progark.group2.wizardrumble.entities.WizardPlayer;
 import com.progark.group2.wizardrumble.handlers.MapHandler;
 import com.progark.group2.wizardrumble.controllers.AimInput1;
 import com.progark.group2.wizardrumble.controllers.MovementInput1;
 import com.progark.group2.wizardrumble.entities.Spell;
 import com.progark.group2.wizardrumble.entities.spells.FireBall;
+import com.progark.group2.wizardrumble.network.NetworkController;
+import com.progark.group2.wizardrumble.network.resources.Player;
 
-import java.security.Key;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import static com.progark.group2.wizardrumble.Application.HEIGHT;
@@ -36,8 +41,12 @@ import static com.progark.group2.wizardrumble.Application.WIDTH;
 
 public class InGameState extends State {
 
-    private Wizard wizard;
-    private TextureRegion region;
+    private NetworkController network;
+
+    private WizardPlayer wizardPlayer;
+    private HashMap<Integer, WizardEnemy> wizardEnemies = new HashMap<Integer, WizardEnemy>();
+    private TextureRegion wizardPlayerRegion;
+    private HashMap<Integer, TextureRegion> wizardEnemyRegions = new HashMap<Integer, TextureRegion>();
 
     private MovementInput1 leftJoyStick;
     private AimInput1 rightJoyStick;
@@ -63,21 +72,41 @@ public class InGameState extends State {
     private float lastAimY;
 
 
-    private InGameState(GameStateManager gameStateManager) {
+    private InGameState(GameStateManager gameStateManager) throws IOException {
         super(gameStateManager);
-
+        // Get the Network Controller
+        network = NetworkController.getInstance();
+        // Create a camera
         this.camera = new OrthographicCamera();
         gamePort = new FitViewport(WIDTH, HEIGHT, camera);
-
-        //Box2d
+        //Setup Box2d and Map
         b2dr = new Box2DDebugRenderer();
-
         mapHandler = new MapHandler();
 
-        //Startposition must be changed. It is only like this while the user input moves.
-        wizard = new WizardPlayer(Wizard.DEFAULT_HEALTH, new Vector2(WIDTH / 2f, HEIGHT / 2f + (32 * 4)));
-        region = new TextureRegion(wizard.getSprite());
+        // Creating a WizardPlayer object
+        wizardPlayer = new WizardPlayer(
+                Wizard.DEFAULT_HEALTH,
+                network.getPlayer().getPosition(),  // TODO: Give some other spawn point
+                new Texture("wizard_front.png")
+        );
 
+        // Add a new wizardPlayerRegion around Wizard
+        wizardPlayerRegion = new TextureRegion(wizardPlayer.getSprite());
+
+        // Creating all enemy players
+
+        for (Player player : network.getPlayers().values()){
+            WizardEnemy enemy = new WizardEnemy(
+                    Wizard.DEFAULT_HEALTH,
+                    player.getPosition(), // TODO: Give some other spawn point
+                    new Texture("wizard_front.png")
+            );
+            wizardEnemies.put(player.getConnectionId(), enemy);
+            TextureRegion enemyRegion = new TextureRegion(enemy.getSprite());
+            wizardEnemyRegions.put(player.getConnectionId(), enemyRegion);
+        }
+
+        // Create Sprite Batch
         SpriteBatch sb = new SpriteBatch();
 
         leftJoyStick = new MovementInput1(15, 15);
@@ -87,7 +116,6 @@ public class InGameState extends State {
         this.stage.addActor(leftJoyStick);
         this.stage.addActor(rightJoyStick);
         Gdx.input.setInputProcessor(this.stage);
-
 
         // Makes objects into bodies in the box2d world.
         // This makes them collidable.
@@ -107,22 +135,17 @@ public class InGameState extends State {
             fdef.shape = shape;
             body.createFixture(fdef);
         }
-
-
-        // Set camera to initial wizard position
-        camera.position.set(wizard.getPosition().x + wizard.getSprite().getWidth()/2f, wizard.getPosition().y + wizard.getSprite().getHeight()/2f, 0);
-
+        // Set camera to initial wizardPlayer position
+        camera.position.set(wizardPlayer.getPosition().x + wizardPlayer.getSprite().getWidth()/2f, wizardPlayer.getPosition().y + wizardPlayer.getSprite().getHeight()/2f, 0);
         // Used for testing spells.
         spells = new ArrayList<Spell>();
         lastTouch = false;
-
     }
 
-    public static InGameState getInstance(){
+    public static InGameState getInstance() throws IOException {
         if (instance == null){
             instance = new InGameState(GameStateManager.getInstance());
         }
-        System.out.print("created instance");
         return instance;
     }
 
@@ -131,7 +154,7 @@ public class InGameState extends State {
     }
 
     private void updateWizardRotation(){
-        wizard.updateRotation(
+        wizardPlayer.updateRotation(
                 rightJoyStick.isTouched() ? // Terniary
                         new Vector2(rightJoyStick.getKnobPercentX(),rightJoyStick.getKnobPercentY()) :
                         new Vector2(leftJoyStick.getKnobPercentX(),leftJoyStick.getKnobPercentY())
@@ -145,8 +168,8 @@ public class InGameState extends State {
 
     private void updateWizardPosition(){
         //GetKnobPercentX and -Y returns cos and sin values of the touchpad in question
-        Vector2 leftJoyPosition = new Vector2(leftJoyStick.getKnobPercentX(),leftJoyStick.getKnobPercentY());
-        wizard.updatePosition(leftJoyPosition);
+        Vector2 leftJoyPosition = new Vector2(leftJoyStick.getKnobPercentX(), leftJoyStick.getKnobPercentY());
+        wizardPlayer.updatePosition(leftJoyPosition);
     }
 
     private void castSpell(String selectedSpell) {
@@ -163,10 +186,10 @@ public class InGameState extends State {
                 new Vector2(
                         // TODO: offsetting spell position by screen width and height is not desirable, but it works for now.
                         // Need to further look into how spell position or rendering is decided.
-                        wizard.getPosition().x - (WIDTH + wizard.getSprite().getWidth())/2f ,
-                        wizard.getPosition().y - (HEIGHT + wizard.getSprite().getHeight())/2f
+                        wizardPlayer.getPosition().x - (WIDTH + wizardPlayer.getSprite().getWidth())/2f ,
+                        wizardPlayer.getPosition().y - (HEIGHT + wizardPlayer.getSprite().getHeight())/2f
                         ),
-                wizard.getRotation(), // rotation
+                wizardPlayer.getRotation(), // rotation
                 new Vector2(x, y)  // velocity
         );
         spells.add(fb); // THIS IS ONLY FOR FIREBALL AT THE MOMENT
@@ -189,14 +212,13 @@ public class InGameState extends State {
         if (leftJoyStick.isTouched()){
             updateWizardRotation();
             //Update camera to follow player. If we move player sprite to player, we have to fix this method.
-
-
-            updateCamera(wizard.getPosition().x + wizard.getSprite().getWidth() / 2f, wizard.getPosition().y + wizard.getSprite().getHeight() / 2f);
-            System.out.println(wizard.getPosition());
-
+            updateCamera(wizardPlayer.getPosition().x + wizardPlayer.getSprite().getWidth() / 2f, wizardPlayer.getPosition().y + wizardPlayer.getSprite().getHeight() / 2f);
+            // Sends the updated position to the server
+            network.updatePlayerPosition(wizardPlayer.getPosition(), wizardPlayer.getRotation());
         }
         if (rightJoyStick.isTouched()){
-            wizard.updateRotation(new Vector2(rightJoyStick.getKnobPercentX(),rightJoyStick.getKnobPercentY()));
+            wizardPlayer.updateRotation(new Vector2(rightJoyStick.getKnobPercentX(),rightJoyStick.getKnobPercentY()));
+            network.updatePlayerPosition(wizardPlayer.getPosition(), wizardPlayer.getRotation());
         }
 
         // Probably temporary code. Written to test functionality.
@@ -215,12 +237,18 @@ public class InGameState extends State {
 
         // The offsets might be off as well. Adding 30 to the rightJoySticks X seems wrong. #MagicNumbersBTW
 
-        leftJoyStick.updatePosition(wizard.getPosition().x - WIDTH/2f + 15, wizard.getPosition().y  - HEIGHT/2f + 15);
-        rightJoyStick.updatePosition(wizard.getPosition().x + WIDTH/2f + 35 - AimInput1.diameter, wizard.getPosition().y  - HEIGHT/2f + 15);
+        leftJoyStick.updatePosition(wizardPlayer.getPosition().x - WIDTH/2f + 15, wizardPlayer.getPosition().y  - HEIGHT/2f + 15);
+        rightJoyStick.updatePosition(wizardPlayer.getPosition().x + WIDTH/2f + 35 - AimInput1.diameter, wizardPlayer.getPosition().y  - HEIGHT/2f + 15);
 
         // Iterate spells to update
         for (Spell spell : spells){
             spell.update();
+        }
+
+        // Keep the Wizard object in sync with Player object
+        for (Player player : network.getPlayers().values()){
+            wizardEnemies.get(player.getConnectionId()).setPosition(player.getPosition());
+            wizardEnemies.get(player.getConnectionId()).setRotation(player.getRotation());
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
@@ -236,28 +264,37 @@ public class InGameState extends State {
         Gdx.gl.glClearColor(0,0,0,1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         mapHandler.render();
-
-        // box2d debug renderer
-        // Renders visible boxes around all collidable objects.
-        b2dr.render(world, camera.combined);
-
         spriteBatch.begin();
 
-        spriteBatch.draw(region, wizard.getPosition().x,wizard.getPosition().y,
-                wizard.getSprite().getWidth()/2f,
-                wizard.getSprite().getHeight()/2f,
-                wizard.getSprite().getWidth(), wizard.getSprite().getHeight(),
-                1,1, wizard.getRotation());
+        spriteBatch.draw(wizardPlayerRegion, wizardPlayer.getPosition().x, wizardPlayer.getPosition().y,
+                wizardPlayer.getSprite().getWidth()/2f,
+                wizardPlayer.getSprite().getHeight()/2f,
+                wizardPlayer.getSprite().getWidth(), wizardPlayer.getSprite().getHeight(),
+                1,1, wizardPlayer.getRotation());
 
         // Iterate spells to render
         for (Spell spell : spells){
             spell.render(spriteBatch);
         }
 
+        for(Integer wizardId : wizardEnemies.keySet()) {
+            WizardEnemy enemy = wizardEnemies.get(wizardId);
+            TextureRegion enemyRegion = wizardEnemyRegions.get(wizardId);
+            spriteBatch.draw(
+                    enemyRegion, enemy.getPosition().x, enemy.getPosition().y,
+                    enemy.getSprite().getWidth()/2f,
+                    enemy.getSprite().getHeight()/2f,
+                    enemy.getSprite().getWidth(), enemy.getSprite().getHeight(),
+                    1, 1, enemy.getRotation()
+            );
+        }
+
         spriteBatch.end();
 
+        // box2d debug renderer
+        // Renders visible boxes around all collidable objects.
+        b2dr.render(world, camera.combined);
         stage.draw();
-
     }
 
     @Override

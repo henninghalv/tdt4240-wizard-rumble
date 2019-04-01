@@ -24,6 +24,6 @@ public class PlayerStatisticsResponse extends Response {
     }
 
     // TODO: Add metadata such ass score and placement for scoreboard
-    // A list of players sorted after when they died
+    // A list of playerNames sorted after when they died
     // Amount of kills
 }

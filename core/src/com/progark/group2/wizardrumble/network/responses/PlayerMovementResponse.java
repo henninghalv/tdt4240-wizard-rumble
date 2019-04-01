@@ -1,20 +1,12 @@
-package com.progark.group2.wizardrumble.network.requests;
+package com.progark.group2.wizardrumble.network.responses;
 
 import com.badlogic.gdx.math.Vector2;
 
-public class PlayerMovementRequest extends Request {
+public class PlayerMovementResponse extends Response {
 
     private Vector2 position;
     private float rotation;
     private int playerId;
-
-    public int getPlayerId() {
-        return playerId;
-    }
-
-    public void setPlayerId(int playerId) {
-        this.playerId = playerId;
-    }
 
     public Vector2 getPosition() {
         return position;
@@ -30,5 +22,13 @@ public class PlayerMovementRequest extends Request {
 
     public void setRotation(float rotation) {
         this.rotation = rotation;
+    }
+
+    public int getPlayerId() {
+        return playerId;
+    }
+
+    public void setPlayerId(int playerId) {
+        this.playerId = playerId;
     }
 }

@@ -25,10 +25,10 @@ public abstract class Wizard extends Entity {
     private final float ANGLE_OFFSET = 270;
 
 
-    public Wizard(int maxHealth, Vector2 spawnPoint) {
-        wizardSprite = new Texture("wizard_front.png");
+    public Wizard(int maxHealth, Vector2 spawnPoint, Texture texture) {
         this.position = spawnPoint;
         this.maxHealth = maxHealth;
+        this.wizardSprite = texture;
         defineWizard();
     }
 
@@ -43,6 +43,8 @@ public abstract class Wizard extends Entity {
     public void setHealth(int health) {
         this.health = health;
     }
+
+
 
     public void attack(){
 

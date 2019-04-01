@@ -8,6 +8,8 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 
+import java.io.IOException;
+
 public class InGameMenuState extends MenuState {
 
     private Table table;
@@ -62,7 +64,11 @@ public class InGameMenuState extends MenuState {
 
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                exitToMainMenu();
+                try {
+                    exitToMainMenu();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
         this.table.add(exitButton).pad(10f);
@@ -104,7 +110,7 @@ public class InGameMenuState extends MenuState {
         //this.gameStateManager.push(new InGameSettings(this.gameStateManager));
     }
 
-    private void exitToMainMenu(){
+    private void exitToMainMenu() throws IOException {
         this.gameStateManager.set(new MainMenuState(this.gameStateManager));
     }
 }

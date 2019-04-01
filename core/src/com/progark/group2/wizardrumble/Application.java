@@ -31,10 +31,9 @@ public class Application extends Game {
 
 	private SpriteBatch spriteBatch;
 	private GameStateManager gameStateManager;
-	private NetworkController networkController;
 
 
-	@Override
+    @Override
 	public void create () {
 		Gdx.graphics.setTitle(TITLE);
 		Gdx.graphics.setWindowedMode(WIDTH, HEIGHT);
@@ -43,15 +42,17 @@ public class Application extends Game {
 		// Used to test server connection.
 		// Not necessarily the right way to do it.
 		try {
-			networkController = NetworkController.getInstance();
+            NetworkController networkController = NetworkController.getInstance();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
-
-
         this.gameStateManager = GameStateManager.getInstance();
-        gameStateManager.push(new MainMenuState(gameStateManager));
+		try {
+			gameStateManager.push(MainMenuState.getInstance());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override

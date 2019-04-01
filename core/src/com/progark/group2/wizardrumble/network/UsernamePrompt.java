@@ -8,7 +8,7 @@ import java.io.IOException;
 
 public class UsernamePrompt implements Input.TextInputListener {
 
-    public UsernamePrompt() {
+    UsernamePrompt() {
     }
 
     @Override
