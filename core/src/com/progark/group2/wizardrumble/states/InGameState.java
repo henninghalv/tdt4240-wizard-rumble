@@ -8,30 +8,23 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
-import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.progark.group2.wizardrumble.controllers.SpellSelector;
 import com.progark.group2.wizardrumble.entities.Wizard;
 import com.progark.group2.wizardrumble.entities.spells.Ice;
 import com.progark.group2.wizardrumble.handlers.MapHandler;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.progark.group2.wizardrumble.entities.Spell;
 import com.progark.group2.wizardrumble.controllers.AimInput1;
 import com.progark.group2.wizardrumble.controllers.MovementInput1;
 import com.progark.group2.wizardrumble.controllers.SpellSelector1;
-import com.progark.group2.wizardrumble.entities.Wizard;
 import com.progark.group2.wizardrumble.entities.spells.FireBall;
-import com.progark.group2.wizardrumble.entities.spells.Ice;
 
 
 import java.util.ArrayList;
 import java.util.List;
 
 
-import static com.badlogic.gdx.Input.Keys;
 import static com.progark.group2.wizardrumble.Application.HEIGHT;
 import static com.progark.group2.wizardrumble.Application.WIDTH;
 
@@ -41,12 +34,9 @@ public class InGameState extends State {
     private Texture wizardSprite;
     private TextureRegion region;
 
-    private SpriteBatch sb;
+    private SpriteBatch spriteBatch;
     private MovementInput1 leftJoyStick;
     private AimInput1 rightJoyStick;
-    private SpellSelector1 spellButtons;
-    private CheckBox button1, button2, button3, button4, bugfixer;
-    private ButtonGroup buttonGroup;
     private Stage stage;
     private String activeSpell;
 
@@ -66,21 +56,14 @@ public class InGameState extends State {
         camera = new OrthographicCamera();
         gamePort = new FitViewport(WIDTH, HEIGHT, camera);
 
-        wizard = new Wizard(new Vector2(WIDTH / 2f, HEIGHT / 2f));
-        wizardSprite = new Texture("wizard_liten.jpg");
-        region = new TextureRegion(wizardSprite);
-
-        sb = new SpriteBatch();
+        spriteBatch = new SpriteBatch();
         stage = new Stage();
         leftJoyStick = new MovementInput1(15, 15);
         rightJoyStick = new AimInput1(WIDTH - 15 - AimInput1.diameter, 15);
 
 
-
-
-
         Gdx.input.setInputProcessor(stage);
-        stage = new Stage(gamePort, sb);
+        stage = new Stage(gamePort, spriteBatch);
         stage.addActor(leftJoyStick);
         stage.addActor(rightJoyStick);
 
@@ -218,24 +201,24 @@ public class InGameState extends State {
     }
 
     @Override
-    public void render(SpriteBatch sb) {
+    public void render(SpriteBatch spriteBatch) {
         //Combines camera's coordinate system with world coordinate system.
-        sb.setProjectionMatrix(camera.combined);
+        spriteBatch.setProjectionMatrix(camera.combined);
 
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         mapHandler.render();
-        sb.begin();
-        sb.draw(region, wizard.getPosition().x, wizard.getPosition().y,
+        spriteBatch.begin();
+        spriteBatch.draw(region, wizard.getPosition().x, wizard.getPosition().y,
                 wizardSprite.getWidth() / 2f,
                 wizardSprite.getHeight() / 2f,
                 wizardSprite.getWidth(), wizardSprite.getHeight(),
                 1, 1, wizard.getRotation());
         // Iterate spells to render
         for (Spell spell : spells) {
-            spell.render(sb);
+            spell.render(spriteBatch);
         }
-        sb.end();
+        spriteBatch.end();
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();
 

@@ -43,7 +43,7 @@ public class NetworkController extends Listener{
 
     // Master server configuration constants
     private final static int TIMEOUT = 5000;
-    private final static String MASTER_SERVER_HOST = "10.0.0.52";  // Set this to the local IP address of your computer when running the server
+    private final static String MASTER_SERVER_HOST = "localhost";  // Set this to the local IP address of your computer when running the server
     private final static int MASTER_SERVER_TCP_PORT = 54555;
     private final static int MASTER_SERVER_UDP_PORT = 54777;
 
