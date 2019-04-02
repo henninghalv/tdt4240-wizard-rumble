@@ -32,22 +32,19 @@ public class SpellSelector1 extends SpellSelector {
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(Color.WHITE);
         pixmap.fill();
-        skin.add("black", new Texture(pixmap));
-        skin.add("green", new Texture(pixmap));
 
-        skin.add("default", new BitmapFont());
+        skin.add("black", new Texture(pixmap)); // Used for unselected button
+        skin.add("green", new Texture(pixmap)); // Used for selected button
+        skin.add("default", new BitmapFont()); // Used for font
 
         CheckBox.CheckBoxStyle checkBoxStyle = new CheckBox.CheckBoxStyle();
-        checkBoxStyle.up = skin.newDrawable("black", new
 
-                Color(0, 0, 0, 0.5f));
-        checkBoxStyle.down = skin.newDrawable("green", new
-
-                Color(0, 0.5f, 0.5f, 0.75f));
-        checkBoxStyle.checked = skin.newDrawable("green", new
-
-                Color(0, 0.5f, 0.5f, 0.75f));
+        checkBoxStyle.up = skin.newDrawable("black",
+                new Color(0, 0, 0, 0.5f)); // Used for unselected button
+        checkBoxStyle.checked = skin.newDrawable("green",
+                new Color(0, 0.5f, 0.5f, 0.75f)); // Used for selected button
         checkBoxStyle.font = skin.getFont("default");
+
         skin.add("default", checkBoxStyle);
         return skin;
 
@@ -57,23 +54,28 @@ public class SpellSelector1 extends SpellSelector {
 
     public void createSpellButtons() {
         if (listOfSpells.size() == 0) {
-            throw new IllegalArgumentException("yo peeps, listOfSpells cannot be 0");
+            throw new IllegalArgumentException("ListOfSpells cannot be 0");
         }
 
+        //Predefined positions that match the right joystick
         List<Integer> xCoords= new ArrayList<Integer>(Arrays.asList(-70, -100, -80, -40));
         List<Integer> yCoords= new ArrayList<Integer>(Arrays.asList(50, 100, 150, 200));
 
         ButtonGroup buttonGroup = new ButtonGroup();
 
+        // Instantiate all spells in the list and add them to one buttonGroup
         for (int i = 0; i < super.listOfSpells.size(); i++) {
             spellButton = new CheckBox(listOfSpells.get(i), getSkin());
+
+            // Places the buttons relative to the right joystick and the predefined list
             spellButton.setX(WIDTH - AimInput1.diameter + xCoords.get(i));
+
+            // Places the buttons relative according to the predefined list
             spellButton.setY(yCoords.get(i));
 
             spellButton.setWidth((float) 150 / listOfSpells.size());
             spellButton.setHeight((float) 100 / listOfSpells.size());
             spellButton.setVisible(true);
-
 
             addListenerToSpellButton(spellButton,listOfSpells.get(i));
 
@@ -84,16 +86,9 @@ public class SpellSelector1 extends SpellSelector {
 
         }
 
+        // Ensures only one spell can be selected at any time(radio buttons)
         buttonGroup.setMaxCheckCount(1);
         buttonGroup.setMinCheckCount(0);
-
-        //buttonGroup.setUncheckLast(true);
-//        (buttonGroup.getButtons().get(0)).setChecked(true);
-
-
-
-
-
     }
 
 

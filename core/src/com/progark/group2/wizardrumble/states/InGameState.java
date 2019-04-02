@@ -20,7 +20,6 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.progark.group2.wizardrumble.controllers.SpellSelector1;
 import com.progark.group2.wizardrumble.entities.Wizard;
 import com.progark.group2.wizardrumble.entities.WizardEnemy;
 import com.progark.group2.wizardrumble.entities.WizardPlayer;
@@ -30,8 +29,6 @@ import com.progark.group2.wizardrumble.entities.spells.FireBall;
 import com.progark.group2.wizardrumble.entities.spells.Ice;
 import com.progark.group2.wizardrumble.network.NetworkController;
 import com.progark.group2.wizardrumble.network.resources.Player;
-
-import com.progark.group2.wizardrumble.controllers.SpellSelector;
 
 
 import java.io.IOException;
@@ -51,18 +48,17 @@ public class InGameState extends State {
     private TextureRegion wizardPlayerRegion;
     private HashMap<Integer, TextureRegion> wizardEnemyRegions = new HashMap<Integer, TextureRegion>();
 
+    // Currently selected spell
     private String activeSpell;
 
-
-    // Used for testing spells
+    // Spells that have been cast
     private List<Spell> spells;
 
-    //private OrthographicCamera camera;
     private Viewport gamePort;
     private MapHandler mapHandler;
     private SpriteBatch spriteBatch;
 
-    //Box2d variables
+    // Box2d variables
     public final static World world = new World(new Vector2(0, 0), true);
     private Box2DDebugRenderer b2dr;
 
@@ -78,8 +74,17 @@ public class InGameState extends State {
 
     private InGameState(GameStateManager gameStateManager) throws IOException {
         super(gameStateManager);
+
+        // Start with no active spell
         activeSpell = "";
-        
+
+        // Start with no casted spells
+        spells = new ArrayList<Spell>();
+
+        // Start without any buttons having been touched
+        lastTouch = false;
+
+
         // Get the Network Controller
         network = NetworkController.getInstance();
         spriteBatch = new SpriteBatch();
@@ -92,7 +97,7 @@ public class InGameState extends State {
         // Create the stage
         stage = new Stage(gamePort, spriteBatch);
 
-        //Setup Box2d and Map
+        // Setup Box2d and Map
         b2dr = new Box2DDebugRenderer();
         mapHandler = new MapHandler();
 
@@ -122,10 +127,8 @@ public class InGameState extends State {
 
         // Set camera to initial wizardPlayer position
         camera.position.set(wizardPlayer.getPosition().x + wizardPlayer.getSprite().getWidth()/2f, wizardPlayer.getPosition().y + wizardPlayer.getSprite().getHeight()/2f, 0);
-        // Used for testing spells.
-        spells = new ArrayList<Spell>();
-        lastTouch = false;
-    }
+
+     }
 
     public static InGameState getInstance() throws IOException {
         if (instance == null){
@@ -183,7 +186,7 @@ public class InGameState extends State {
         float x = x1 * ratio;
         float y = y1 * ratio;
 
-
+        // Logic for casting when FireBall has been selected
         if (spell.equals("FireBall")) {
             FireBall fb = new FireBall( // spawnPoint, rotation, velocity
                     new Vector2(
@@ -195,11 +198,11 @@ public class InGameState extends State {
                     wizardPlayer.getRotation(), // rotation
                     new Vector2(x, y)  // velocity
             );
-            spells.add(fb);
+            spells.add(fb); // Add to list of casted spells
         }
 
+        // Logic for casting when Ice has been selected
         if (spell.equals("Ice")) {
-
             Ice ic = new Ice( // spawnPoint, rotation, velocity
                     new Vector2(
                             // TODO: offsetting spell position by screen width and height is not desirable, but it works for now.
@@ -210,7 +213,7 @@ public class InGameState extends State {
                     wizardPlayer.getRotation(), // rotation
                     new Vector2(x, y)  // velocity
             );
-            spells.add(ic);
+            spells.add(ic); // Add to list of casted spells
         }
     }
 
