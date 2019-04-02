@@ -1,13 +1,10 @@
 package com.progark.group2.wizardrumble.states;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.progark.group2.wizardrumble.network.NetworkController;
 
-import java.util.ArrayList;
 import java.util.EmptyStackException;
 import java.util.LinkedList;
-import java.util.Stack;
+
 
 /**
  * Singelton that keeps track of the different states by using a private stack.

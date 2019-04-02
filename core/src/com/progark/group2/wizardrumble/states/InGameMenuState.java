@@ -2,7 +2,10 @@ package com.progark.group2.wizardrumble.states;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
@@ -10,9 +13,14 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 
 import java.io.IOException;
 
+import static com.progark.group2.wizardrumble.Application.HEIGHT;
+import static com.progark.group2.wizardrumble.Application.WIDTH;
+
 public class InGameMenuState extends MenuState {
 
     private Table table;
+    private Sprite pauseOverlay;
+    private Vector3 cameraPosition;
 
 
     InGameMenuState(GameStateManager gameStateManager){
@@ -75,18 +83,35 @@ public class InGameMenuState extends MenuState {
         this.table.row();
 
         this.stage.addActor(table);
+
+        this.pauseOverlay = new Sprite(new Texture("black.png"));
+        this.pauseOverlay.setSize(WIDTH, HEIGHT);
+        this.pauseOverlay.setAlpha(0.5f);
     }
 
 
     @Override
     public void update(float dt) {
+        //TODO esc doesn't work, but not crucial for phone
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
             this.onBackButtonPress();
         }
+
+        try {
+            this.cameraPosition = InGameState.getInstance().getCamPosition();
+        } catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+
+        this.pauseOverlay.setPosition(cameraPosition.x-WIDTH/2, cameraPosition.y-HEIGHT/2);
     }
 
     @Override
     public void render(SpriteBatch spriteBatch) {
+        spriteBatch.begin();
+        this.pauseOverlay.draw(spriteBatch);
+        spriteBatch.end();
+
         stage.draw();
     }
 
