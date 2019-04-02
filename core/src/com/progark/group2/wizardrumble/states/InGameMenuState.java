@@ -111,6 +111,6 @@ public class InGameMenuState extends MenuState {
     }
 
     private void exitToMainMenu() throws IOException {
-        this.gameStateManager.set(new MainMenuState(this.gameStateManager));
+        GameStateManager.getInstance().set(MainMenuState.getInstance());
     }
 }

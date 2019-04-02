@@ -14,10 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.progark.group2.wizardrumble.network.NetworkController;
-import com.progark.group2.wizardrumble.network.resources.Player;
-
 import java.io.IOException;
-import java.util.HashMap;
 
 public class LobbyState extends MenuState {
 

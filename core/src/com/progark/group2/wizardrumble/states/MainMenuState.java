@@ -4,20 +4,17 @@ package com.progark.group2.wizardrumble.states;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.progark.group2.wizardrumble.network.NetworkController;
-
 import java.io.IOException;
 
 
@@ -38,8 +35,8 @@ public class MainMenuState extends MenuState {
 
 
     //TODO Remove sout and uncomment method calls in the button listeners
-    MainMenuState(GameStateManager gameStateManager) throws IOException {
-        super(gameStateManager);
+    MainMenuState() throws IOException {
+        super(GameStateManager.getInstance());
         initialize();
 
         // startButton
@@ -102,17 +99,17 @@ public class MainMenuState extends MenuState {
 
     public static MainMenuState getInstance() throws IOException {
         if (instance == null) {
-            instance = new MainMenuState(GameStateManager.getInstance());
+            instance = new MainMenuState();
         }
         return instance;
     }
 
     private void startGame() throws IOException {
-        this.gameStateManager.set(LobbyState.getInstance());
+        GameStateManager.getInstance().set(LobbyState.getInstance());
     }
 
     private void openSettings(){
-        this.gameStateManager.push(new MainMenuSettings(this.gameStateManager));
+        GameStateManager.getInstance().push(MainMenuSettings.getInstance());
     }
 
     @Override
