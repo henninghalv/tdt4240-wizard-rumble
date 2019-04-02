@@ -18,7 +18,7 @@ import java.io.IOException;
 
 public class LobbyState extends MenuState {
 
-    private NetworkController network = NetworkController.getInstance();
+    private NetworkController network;
 
     private Stage stage;
     private Table table;
@@ -30,7 +30,6 @@ public class LobbyState extends MenuState {
 
     private LobbyState(GameStateManager gameStateManager) throws IOException {
         super(gameStateManager);
-        // Getting NetworkController
         initialize();
     }
 
@@ -83,11 +82,7 @@ public class LobbyState extends MenuState {
 
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                try {
-                    startGame();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                requestGameStart();
             }
         });
 
@@ -103,9 +98,7 @@ public class LobbyState extends MenuState {
         network.requestGameStart();
     }
 
-    public void startGame() throws IOException {
-        InGameState state = InGameState.getInstance();
-        System.out.println("Instance: " + state);
+    public void startGame(InGameState state) {
         this.gameStateManager.set(state);
     }
 
@@ -146,6 +139,12 @@ public class LobbyState extends MenuState {
      * Initialize stage, input, table and font for title.
      */
     private void initialize() {
+        // Getting NetworkController
+        try {
+            network = NetworkController.getInstance();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 

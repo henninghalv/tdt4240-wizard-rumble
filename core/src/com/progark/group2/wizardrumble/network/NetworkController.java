@@ -21,8 +21,8 @@ import com.progark.group2.wizardrumble.network.responses.PlayerLeaveResponse;
 import com.progark.group2.wizardrumble.network.responses.PlayerMovementResponse;
 import com.progark.group2.wizardrumble.network.responses.ServerErrorResponse;
 import com.progark.group2.wizardrumble.network.responses.ServerSuccessResponse;
-import com.progark.group2.wizardrumble.states.LobbyState;
-
+import com.progark.group2.wizardrumble.states.GameStateManager;
+import com.progark.group2.wizardrumble.states.InGameState;
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -130,11 +130,7 @@ public class NetworkController extends Listener{
 
         }
         else if (object instanceof GameStartPacket){
-            try {
-                handleGameStart();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            handleGameStart();
         }
         else if (object instanceof GameJoinedResponse){
             Player player = new Player(
@@ -143,7 +139,6 @@ public class NetworkController extends Listener{
                     0,
                     0,
                     0,
-                    false,
                     new Vector2(WIDTH / 2f, HEIGHT / 2f + (32 * 4)),
                     0
             );  //TODO: Change the Vector2 to be starting position
@@ -200,7 +195,6 @@ public class NetworkController extends Listener{
                 0,
                 0,
                 0,
-                false,
                 new Vector2(WIDTH / 2f, HEIGHT / 2f + (32 * 4)),
                 0
         );  //TODO: Change the Vector2 to be starting position
@@ -212,8 +206,19 @@ public class NetworkController extends Listener{
         players.remove(response.getPlayerId());
     }
 
-    private void handleGameStart() throws IOException {
-        LobbyState.getInstance().startGame();
+    private void handleGameStart() {
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+                InGameState state = null;
+                try {
+                    state = InGameState.getInstance();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                GameStateManager.getInstance().set(state);
+            }
+            });
     }
 
     private void handlePlayerMovementResponse(PlayerMovementResponse response){
