@@ -4,7 +4,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.progark.group2.wizardrumble.network.NetworkController;
 
+import java.util.ArrayList;
 import java.util.EmptyStackException;
+import java.util.LinkedList;
 import java.util.Stack;
 
 /**
@@ -15,10 +17,10 @@ public class GameStateManager {
     private static GameStateManager instance = null;
 
     //TODO Change from stack to some sort of list to enable game render while the in-game pause is active
-    private Stack<State> states;
+    private LinkedList<State> states;
 
     private GameStateManager(){
-        this.states = new Stack<State>();
+        this.states = new LinkedList<State>();
     }
 
     public static GameStateManager getInstance(){
@@ -29,7 +31,7 @@ public class GameStateManager {
     }
 
     public void push(State state){
-        this.states.push(state);
+        this.states.addFirst(state);
     }
 
     /**
@@ -38,9 +40,9 @@ public class GameStateManager {
      */
     public void pop(){
         try {
-            this.states.pop();
+            this.states.removeFirst();
             this.states.peek().activate();
-        } catch(EmptyStackException e){
+        } catch(Exception e){
             System.out.println(e.getMessage());
         }
     }
@@ -53,12 +55,12 @@ public class GameStateManager {
     public void set(State state){
 
         try {
-            this.states.pop();
+            this.states.removeFirst();
         } catch(EmptyStackException e){
             System.out.println(e.getMessage());
         }
 
-        this.states.push(state);
+        this.states.addFirst(state);
     }
 
     public void update(float dt){
