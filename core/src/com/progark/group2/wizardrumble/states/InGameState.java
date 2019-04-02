@@ -90,7 +90,6 @@ public class InGameState extends State {
         spriteBatch = new SpriteBatch();
         inGameHud = new InGameHud(spriteBatch);
         Gdx.input.setInputProcessor(inGameHud.getStage());
-        //TODO fix listener for HUD stage
 
         // Create a camera
         camera = new OrthographicCamera();
@@ -107,8 +106,6 @@ public class InGameState extends State {
         wizardPlayer = new WizardPlayer(
                 Wizard.DEFAULT_HEALTH,
                 network.getPlayer().getPosition(),  // TODO: Give some other spawn point
-                //new Vector2(500, 500),
-
                 new Texture("wizard_front.png")
         );
 
