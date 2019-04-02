@@ -55,15 +55,13 @@ public class SpellSelector1 extends SpellSelector {
 
 
 
-
     public void createSpellButtons() {
         if (listOfSpells.size() == 0) {
             throw new IllegalArgumentException("yo peeps, listOfSpells cannot be 0");
         }
 
-        List<Integer> xCoords= new ArrayList<Integer>(Arrays.asList(-50, -80, -60, -20));
-        List<Integer> yCoords= new ArrayList<Integer>(Arrays.asList(200, 250, 300, 350));
-        //List<Integer> yCoords= new ArrayList<Integer>(Arrays.asList(50, 100, 150, 200));
+        List<Integer> xCoords= new ArrayList<Integer>(Arrays.asList(-70, -100, -80, -40));
+        List<Integer> yCoords= new ArrayList<Integer>(Arrays.asList(50, 100, 150, 200));
 
         ButtonGroup buttonGroup = new ButtonGroup();
 

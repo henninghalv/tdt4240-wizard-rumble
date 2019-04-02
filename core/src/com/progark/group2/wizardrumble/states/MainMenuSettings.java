@@ -4,9 +4,20 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class MainMenuSettings extends SettingsState {
 
-    public MainMenuSettings(GameStateManager gameStateManager){
-        super(gameStateManager);
+    private static MainMenuSettings instance = null;
+
+    private MainMenuSettings(){
+        super(GameStateManager.getInstance());
     }
+
+    protected static MainMenuSettings getInstance() {
+        if (instance == null) {
+            instance = new MainMenuSettings();
+        }
+        return instance;
+    }
+
+
     @Override
     public void update(float dt) {
 

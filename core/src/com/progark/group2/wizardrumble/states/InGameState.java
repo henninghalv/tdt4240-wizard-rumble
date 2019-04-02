@@ -20,13 +20,11 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.progark.group2.wizardrumble.controllers.SpellSelector1;
 import com.progark.group2.wizardrumble.entities.Wizard;
 import com.progark.group2.wizardrumble.entities.WizardEnemy;
 import com.progark.group2.wizardrumble.entities.WizardPlayer;
 import com.progark.group2.wizardrumble.handlers.MapHandler;
-import com.progark.group2.wizardrumble.controllers.AimInput1;
-import com.progark.group2.wizardrumble.controllers.MovementInput1;
-import com.progark.group2.wizardrumble.controllers.SpellSelector1;
 import com.progark.group2.wizardrumble.entities.Spell;
 import com.progark.group2.wizardrumble.entities.spells.FireBall;
 import com.progark.group2.wizardrumble.entities.spells.Ice;
@@ -53,9 +51,6 @@ public class InGameState extends State {
     private TextureRegion wizardPlayerRegion;
     private HashMap<Integer, TextureRegion> wizardEnemyRegions = new HashMap<Integer, TextureRegion>();
 
-    private MovementInput1 leftJoyStick;
-    private AimInput1 rightJoyStick;
-
     private String activeSpell;
 
 
@@ -65,15 +60,14 @@ public class InGameState extends State {
     //private OrthographicCamera camera;
     private Viewport gamePort;
     private MapHandler mapHandler;
-
-    private ArrayList<String> spellNames;
-    private SpellSelector spellSelector;
+    private SpriteBatch spriteBatch;
 
     //Box2d variables
     public final static World world = new World(new Vector2(0, 0), true);
     private Box2DDebugRenderer b2dr;
 
     private static InGameState instance = null;
+    private InGameHud inGameHud;
 
     // Last touch boolean for when rightJoyStick was touched last frame.
     // For when you release the right joystick, the spell should fire, instead of on justTouched().
@@ -84,11 +78,20 @@ public class InGameState extends State {
 
     private InGameState(GameStateManager gameStateManager) throws IOException {
         super(gameStateManager);
+        activeSpell = "";
+        
         // Get the Network Controller
         network = NetworkController.getInstance();
+        spriteBatch = new SpriteBatch();
+        inGameHud = new InGameHud(spriteBatch);
+        Gdx.input.setInputProcessor(inGameHud.getStage());
         // Create a camera
-        this.camera = new OrthographicCamera();
+        camera = new OrthographicCamera();
         gamePort = new FitViewport(WIDTH, HEIGHT, camera);
+
+        // Create the stage
+        stage = new Stage(gamePort, spriteBatch);
+
         //Setup Box2d and Map
         b2dr = new Box2DDebugRenderer();
         mapHandler = new MapHandler();
@@ -104,8 +107,7 @@ public class InGameState extends State {
         wizardPlayerRegion = new TextureRegion(wizardPlayer.getSprite());
 
         // Creating all enemy players
-
-        for (Player player : network.getPlayers().values()) {
+        for (Player player : network.getPlayers().values()){
             WizardEnemy enemy = new WizardEnemy(
                     Wizard.DEFAULT_HEALTH,
                     player.getPosition(), // TODO: Give some other spawn point
@@ -116,32 +118,35 @@ public class InGameState extends State {
             wizardEnemyRegions.put(player.getConnectionId(), enemyRegion);
         }
 
-        // Create Sprite Batch
-        SpriteBatch spriteBatch = new SpriteBatch();
+        createCollisionBoxes();
 
-        leftJoyStick = new MovementInput1(15, 15);
-        rightJoyStick = new AimInput1(WIDTH - 15 - AimInput1.diameter, 15);
+        // Set camera to initial wizardPlayer position
+        camera.position.set(wizardPlayer.getPosition().x + wizardPlayer.getSprite().getWidth()/2f, wizardPlayer.getPosition().y + wizardPlayer.getSprite().getHeight()/2f, 0);
+        // Used for testing spells.
+        spells = new ArrayList<Spell>();
+        lastTouch = false;
+    }
 
-        this.stage = new Stage(gamePort, spriteBatch);
+    public static InGameState getInstance() throws IOException {
+        if (instance == null){
+            instance = new InGameState(GameStateManager.getInstance());
+        }
+        return instance;
+    }
 
-        this.stage.addActor(leftJoyStick);
-        this.stage.addActor(rightJoyStick);
+    public World getWorld(){
+        return world;
+    }
 
+    private void updateWizardRotation(){
+        wizardPlayer.updateRotation(
+                inGameHud.getRightJoyStick().isTouched() ?
+                        new Vector2(inGameHud.getRightJoyStick().getKnobPercentX(), inGameHud.getRightJoyStick().getKnobPercentY()) :
+                        new Vector2(inGameHud.getLeftJoyStick().getKnobPercentX(), inGameHud.getLeftJoyStick().getKnobPercentY())
+        );
+    }
 
-        spellNames = new ArrayList<String>();
-
-        spellNames.add("FireBall");
-        spellNames.add("Ice");
-
-        activeSpell = "";
-
-        spellSelector = new SpellSelector1(spellNames, stage);
-
-
-
-        Gdx.input.setInputProcessor(this.stage);
-
-
+    private void createCollisionBoxes(){
         // Makes objects into bodies in the box2d world.
         // This makes them collidable.
         BodyDef bdef = new BodyDef();
@@ -160,48 +165,19 @@ public class InGameState extends State {
             fdef.shape = shape;
             body.createFixture(fdef);
         }
-        // Set camera to initial wizardPlayer position
-        camera.position.set(wizardPlayer.getPosition().x + wizardPlayer.getSprite().getWidth() / 2f, wizardPlayer.getPosition().y + wizardPlayer.getSprite().getHeight() / 2f, 0);
-        // Used for testing spells.
-        spells = new ArrayList<Spell>();
-        lastTouch = false;
-    }
-
-    public static InGameState getInstance() throws IOException {
-        if (instance == null) {
-            instance = new InGameState(GameStateManager.getInstance());
-        }
-        return instance;
-    }
-
-    public World getWorld() {
-        return world;
-    }
-
-    private void updateWizardRotation() {
-        wizardPlayer.updateRotation(
-                rightJoyStick.isTouched() ? // Terniary
-                        new Vector2(rightJoyStick.getKnobPercentX(), rightJoyStick.getKnobPercentY()) :
-                        new Vector2(leftJoyStick.getKnobPercentX(), leftJoyStick.getKnobPercentY())
-        );
-    }
-
-    @Override
-    public void handleInput() {
-
     }
 
     private void updateWizardPosition() {
         //GetKnobPercentX and -Y returns cos and sin values of the touchpad in question
-        Vector2 leftJoyPosition = new Vector2(leftJoyStick.getKnobPercentX(), leftJoyStick.getKnobPercentY());
+        Vector2 leftJoyPosition = new Vector2(inGameHud.getLeftJoyStick().getKnobPercentX(), inGameHud.getLeftJoyStick().getKnobPercentY());
         wizardPlayer.updatePosition(leftJoyPosition);
     }
 
     private void castSpell(String spell) {
         // Computes x and y from right joystick input making the speed the same regardless of
         // where on the joystick you touch.
-        float x1 = rightJoyStick.getKnobPercentX();
-        float y1 = rightJoyStick.getKnobPercentY();
+        float x1 = lastAimX;
+        float y1 = lastAimY;
         float hypotenuse = (float) Math.sqrt(x1 * x1 + y1 * y1);
         float ratio = (float) Math.sqrt(2) / hypotenuse;
         float x = x1 * ratio;
@@ -252,44 +228,36 @@ public class InGameState extends State {
 
         // Let the player rotate primarily using the right stick, but use left stick if right stick input is absent.
         updateWizardPosition();
-        if (leftJoyStick.isTouched()) {
+
+        if (inGameHud.getLeftJoyStick().isTouched()){
             updateWizardRotation();
             //Update camera to follow player. If we move player sprite to player, we have to fix this method.
             updateCamera(wizardPlayer.getPosition().x + wizardPlayer.getSprite().getWidth() / 2f, wizardPlayer.getPosition().y + wizardPlayer.getSprite().getHeight() / 2f);
             // Sends the updated position to the server
             network.updatePlayerPosition(wizardPlayer.getPosition(), wizardPlayer.getRotation());
         }
-        if (rightJoyStick.isTouched()) {
-            wizardPlayer.updateRotation(new Vector2(rightJoyStick.getKnobPercentX(), rightJoyStick.getKnobPercentY()));
+        if (inGameHud.getRightJoyStick().isTouched()){
+            wizardPlayer.updateRotation(new Vector2(inGameHud.getRightJoyStick().getKnobPercentX(), inGameHud.getRightJoyStick().getKnobPercentY()));
             network.updatePlayerPosition(wizardPlayer.getPosition(), wizardPlayer.getRotation());
         }
 
         // Probably temporary code. Written to test functionality.
-        if (Gdx.input.justTouched()) {
-            // I think that spells should be cast when the player releases the right
-            if (rightJoyStick.isTouched()) {
-                //activeSpell = spellNames.get(spellSelector.getSpellSelected());
-                for (String spell : spellNames) {
-                    if (spell.equals(spellSelector.getSpellSelected())) {
-                        activeSpell = spell;
-                        break;
-                    }
+        if (lastTouch && !inGameHud.getRightJoyStick().isTouched()){
+        // if (inGameHud.getRightJoyStick().isTouched()){
+            // I think that spells should be cast when the player releases the right joystick, so that you can
+            // see the rotation of the player character and not rely on hopefully having touched the joystick correctly
+            for (String spell : inGameHud.getSpellNames()) {
+                if (spell.equals(inGameHud.getSpellSelector().getSpellSelected())) {
+                    activeSpell = spell;
+                    break;
                 }
-                castSpell(activeSpell);
             }
+            castSpell(activeSpell);
         }
 
-        lastTouch = rightJoyStick.isTouched();
-        lastAimX = rightJoyStick.getKnobPercentX();
-        lastAimY = rightJoyStick.getKnobPercentY();
-
-        // Jank solution that takes in Wizards position and offsets by half screen size etc.
-        // TODO Bind joysticks position to actual screen (suspect something with viewPort and/or stage)
-
-        // The offsets might be off as well. Adding 30 to the rightJoySticks X seems wrong. #MagicNumbersBTW
-
-        leftJoyStick.updatePosition(wizardPlayer.getPosition().x - WIDTH / 2f + 15, wizardPlayer.getPosition().y - HEIGHT / 2f + 15);
-        rightJoyStick.updatePosition(wizardPlayer.getPosition().x + WIDTH / 2f + 35 - AimInput1.diameter, wizardPlayer.getPosition().y - HEIGHT / 2f + 15);
+        lastTouch = inGameHud.getRightJoyStick().isTouched();
+        lastAimX = inGameHud.getRightJoyStick().getKnobPercentX();
+        lastAimY = inGameHud.getRightJoyStick().getKnobPercentY();
 
         // Iterate spells to update
         for (Spell spell : spells) {
@@ -300,6 +268,7 @@ public class InGameState extends State {
         for (Player player : network.getPlayers().values()) {
             wizardEnemies.get(player.getConnectionId()).setPosition(player.getPosition());
             wizardEnemies.get(player.getConnectionId()).setRotation(player.getRotation());
+            wizardEnemies.get(player.getConnectionId()).updateBodyPosition(player.getPosition());
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
@@ -345,11 +314,20 @@ public class InGameState extends State {
         // box2d debug renderer
         // Renders visible boxes around all collidable objects.
         b2dr.render(world, camera.combined);
+        // Draws the game stage
         stage.draw();
+        //Secondly draw the Hud
+        spriteBatch.setProjectionMatrix(inGameHud.getStage().getCamera().combined);
+        inGameHud.getStage().draw();
     }
 
     @Override
     public void dispose() {
+
+    }
+
+    @Override
+    public void handleInput() {
 
     }
 
