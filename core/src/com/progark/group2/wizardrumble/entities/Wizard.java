@@ -44,8 +44,6 @@ public abstract class Wizard extends Entity {
         this.health = health;
     }
 
-
-
     public void attack(){
 
     }
@@ -73,7 +71,6 @@ public abstract class Wizard extends Entity {
         b2body.setLinearVelocity(speed * direction.x, speed * direction.y);
         position.x = b2body.getPosition().x - (wizardSprite.getWidth() / 2f);
         position.y = b2body.getPosition().y - (wizardSprite.getHeight() / 2f);
-
     }
 
     public void takeDamage(int damage){
@@ -87,10 +84,13 @@ public abstract class Wizard extends Entity {
         rotation = (direction.angle() + ANGLE_OFFSET);
     }
 
+    public void updateBodyPosition(Vector2 position){
+        b2body.setTransform(position.x + (wizardSprite.getWidth() / 2f), position.y + (wizardSprite.getWidth() / 2f), 0);
+    }
+
     public float getRotation(){
         return this.rotation;
     }
-
 
     public Body getB2body(){
         return b2body;
@@ -99,6 +99,7 @@ public abstract class Wizard extends Entity {
     public Texture getSprite(){
         return wizardSprite;
     }
+
     public Vector2 getGlobalPosition(){
         // TODO return global position, if that's even needed
         return null;
