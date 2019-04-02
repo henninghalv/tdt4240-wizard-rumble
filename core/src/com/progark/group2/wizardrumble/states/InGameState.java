@@ -346,6 +346,12 @@ public class InGameState extends State {
     }
 
     public Vector3 getCamPosition(){
-        return this.camera.position;
+        return camera.position;
+    }
+
+    @Override
+    public void activate(){
+        super.activate();
+        Gdx.input.setInputProcessor(inGameHud.getStage());
     }
 }

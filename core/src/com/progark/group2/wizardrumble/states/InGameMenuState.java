@@ -102,8 +102,6 @@ public class InGameMenuState extends MenuState {
         } catch (Exception e){
             System.out.println(e.getMessage());
         }
-
-        this.pauseOverlay.setPosition(cameraPosition.x-WIDTH/2, cameraPosition.y-HEIGHT/2);
     }
 
     @Override
@@ -136,6 +134,7 @@ public class InGameMenuState extends MenuState {
     }
 
     private void exitToMainMenu() throws IOException {
+        this.gameStateManager.pop();
         GameStateManager.getInstance().set(MainMenuState.getInstance());
     }
 }

@@ -29,6 +29,7 @@ public class GameStateManager {
 
     public void push(State state){
         this.states.addFirst(state);
+        this.states.peek().activate();
     }
 
     /**
@@ -38,10 +39,10 @@ public class GameStateManager {
     public void pop(){
         try {
             this.states.removeFirst();
-            this.states.peek().activate();
         } catch(Exception e){
             System.out.println(e.getMessage());
         }
+        this.states.peek().activate();
     }
 
     /**
@@ -56,8 +57,8 @@ public class GameStateManager {
         } catch(EmptyStackException e){
             System.out.println(e.getMessage());
         }
-
         this.states.addFirst(state);
+        state.activate();
     }
 
     public void update(float dt){
