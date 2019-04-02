@@ -14,37 +14,51 @@ public abstract class Entity {
     protected Vector2 position;
     protected Vector2 velocity;
     protected Texture texture;
+    protected Vector2 size;
     protected float rotation; // Definert som en Vector2.angle()
     protected Fixture fixture;
-    private Body b2body;
+    protected Body b2body;
+    protected String bodyType;
 
-    protected Entity(Vector2 position, Vector2 velocity, float rotation, Texture texture) {
+    protected Entity(Vector2 position, Vector2 velocity, float rotation, Texture texture, Vector2 size, String bodyType) {
         this.position = position;
         this.velocity = velocity;
         this.rotation = rotation;
         this.texture = texture;
-        fixture.setUserData(this);
+        this.size = size;
+        this.bodyType = bodyType;
     }
 
     public Vector2 getPosition() {
         return position;
     }
 
+
+
     protected void defineEntity() {
         BodyDef bdef = new BodyDef();
-        bdef.position.set(position.x + (1/2f * texture.getWidth()), position.y + (1/2f * texture.getHeight()));
-        bdef.type = BodyDef.BodyType.DynamicBody;
+        bdef.position.set(position.x + (1/2f * size.x), position.y + (1/2f * size.y));
+        if (bodyType.equals("dynamic")){
+            bdef.type = BodyDef.BodyType.DynamicBody;
+        }
+        else{
+            bdef.type = BodyDef.BodyType.StaticBody;
+        }
         b2body = InGameState.world.createBody(bdef);
 
         FixtureDef fdef = new FixtureDef();
         PolygonShape shape = new PolygonShape();
-        shape.setAsBox(texture.getWidth() / 2f, texture.getHeight() / 2f);
+        shape.setAsBox(size.x / 2f, size.y / 2f);
 
         fdef.shape = shape;
         fixture = b2body.createFixture(fdef);
+        fixture.setUserData(this);
+    }
+    public Vector2 getSize(){
+        return size;
     }
 
-    public abstract void onCollision();
+    public abstract void onCollideWithSpell(int damage);
 
     public abstract void update();
 

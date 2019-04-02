@@ -25,27 +25,15 @@ public abstract class Spell extends Entity {
     private Body b2body;
 
     public Spell(Vector2 spawnPoint, float rotation, Vector2 velocity, Texture texture, int damage, float speed, String statusEffect, int cooldown, int castTime){
-        super(spawnPoint, velocity, rotation, texture);
-        region = new TextureRegion(super.texture);
-        scale = 0.2f; // Tweak the scale as necessary
-
+        super(spawnPoint, velocity, rotation, texture, new Vector2(texture.getWidth(), texture.getHeight()), "dynamic");
+        this.damage = damage;
         // Define the spell's physical body in the world
         super.defineEntity();
-    }
-
-    private void defineSpell() {
-        BodyDef bdef = new BodyDef();
-        bdef.position.set(position.x + (1/2f * super.texture.getWidth()), position.y + (1/2f * super.texture.getHeight()));
-        bdef.type = BodyDef.BodyType.DynamicBody;
-        b2body = InGameState.world.createBody(bdef);
-
-        FixtureDef fdef = new FixtureDef();
-        PolygonShape shape = new PolygonShape();
-        shape.setAsBox(super.texture.getWidth() / 2f, super.texture.getHeight() / 2f);
-
-        fdef.shape = shape;
-        fdef.isSensor = true;
-        b2body.createFixture(fdef).setUserData("Spell");
+        //System.out.println(super.texture);
+        region = new TextureRegion(super.texture);
+        scale = 0.2f; // Tweak the scale as necessary
+        b2body = super.b2body;
+        this.speed = speed;
     }
 
         // There's a difference in screen coordinates and global coordinates. Where you draw each sprite
@@ -55,13 +43,28 @@ public abstract class Spell extends Entity {
         return null;
     }
 
+    public int getDamage(){
+        return damage;
+    }
+
+
     private void updatePosition(){
-        position.x += velocity.x;
-        position.y += velocity.y;
+        //position.x += velocity.x;
+        //position.y += velocity.y;
+        //b2body.applyLinearImpulse(new Vector2(velocity.x, velocity.y), new Vector2(position.x,position.y), true);
+        b2body.setLinearVelocity(speed * velocity.x, speed * velocity.y);
+        position.x = b2body.getPosition().x - (super.texture.getWidth() / 2f);
+        position.y = b2body.getPosition().y - (super.texture.getHeight() / 2f);
+    }
+
+    public void destroySpell(){
+        InGameState.getInstance().addToBodyList(b2body);
+        InGameState.getInstance().removeSpell(this);
+        //super.texture.dispose();
     }
 
     @Override
-    public void onCollision() {
+    public void onCollideWithSpell(int damage) {
 
         /*if (WizardPlayer.getInstance() == hit.target) {
             NetworkController.getInstance().sendPlayerTookDamageRequest();
@@ -77,12 +80,13 @@ public abstract class Spell extends Entity {
         updatePosition();
     }
 
+
     @Override
     public void render(SpriteBatch sb) {
-        sb.draw(region, getPosition().x, getPosition().y,
+        sb.draw(region, super.position.x, super.position.y,
                 super.texture.getWidth()/2f,
                 super.texture.getHeight()/2f,
-                super.texture.getWidth(), super.texture.getHeight(),scale,scale,rotation);
+                super.texture.getWidth(), super.texture.getHeight(),1,1,rotation);
     }
 
     @Override

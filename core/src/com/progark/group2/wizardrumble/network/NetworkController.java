@@ -127,7 +127,7 @@ public class NetworkController {
         }
     }
 
-    private void sendPlayerTookDamageRequest(int damage) {
+    public void sendPlayerTookDamageRequest(int damage) {
         PlayerTookDamageRequest request = new PlayerTookDamageRequest();
         request.setDamage(damage);
         request.setPlayerId(playerId);

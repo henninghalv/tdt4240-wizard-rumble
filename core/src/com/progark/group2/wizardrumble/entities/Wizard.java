@@ -13,6 +13,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
 import com.progark.group2.wizardrumble.entities.Entity;
 import com.progark.group2.wizardrumble.states.InGameState;
 
+import java.io.IOException;
+
 
 public abstract class Wizard extends Entity {
     private Body b2body; // the body that contains the wizard in the box2d world
@@ -27,10 +29,14 @@ public abstract class Wizard extends Entity {
     private final float ANGLE_OFFSET = 270;
 
     public Wizard(int maxHealth, Vector2 spawnPoint) {
-        super(spawnPoint, new Vector2(0,0), 0, new Texture("wizard_front.png"));
+        super(spawnPoint, new Vector2(0,0), 0, new Texture("wizard_front.png"), new Vector2(new Texture("wizard_front.png").getWidth(), new Texture("wizard_front.png").getHeight()), "dynamic");
+        super.defineEntity();
+        this.b2body = super.b2body;
         this.position = spawnPoint;
         this.maxHealth = maxHealth;
-        super.defineEntity();
+    }
+    public float getOffset(){
+        return ANGLE_OFFSET;
     }
 
     public int getPlayerID() {
@@ -90,7 +96,7 @@ public abstract class Wizard extends Entity {
 
 
     @Override
-    public void onCollision() {
+    public void onCollideWithSpell(int damage) {
 
     }
 

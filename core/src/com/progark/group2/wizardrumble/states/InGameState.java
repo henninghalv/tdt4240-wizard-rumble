@@ -5,17 +5,12 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.maps.MapObject;
-import com.badlogic.gdx.maps.objects.RectangleMapObject;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
@@ -27,6 +22,7 @@ import com.progark.group2.wizardrumble.controllers.MovementInput1;
 import com.progark.group2.wizardrumble.entities.spells.Spell;
 import com.progark.group2.wizardrumble.entities.spells.FireBall;
 import com.progark.group2.wizardrumble.listeners.WorldContactListener;
+import com.progark.group2.wizardrumble.tools.B2WorldCreator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +49,7 @@ public class InGameState extends State {
     //Box2d variables
     public final static World world = new World(new Vector2(0,0), true);
     private Box2DDebugRenderer b2dr;
+    private Array<Body> bodiesToDestroy;
 
     private static InGameState instance = null;
 
@@ -75,7 +72,7 @@ public class InGameState extends State {
         mapHandler = new MapHandler();
 
         //Startposition must be changed. It is only like this while the user input moves.
-        wizard = new WizardPlayer(Wizard.DEFAULT_HEALTH, new Vector2(WIDTH / 2f, HEIGHT / 2f + (32 * 4)));
+        wizard = new WizardPlayer(new Vector2(WIDTH / 2f, HEIGHT / 2f + (32 * 4)));
         region = new TextureRegion(wizard.getSprite());
 
         SpriteBatch sb = new SpriteBatch();
@@ -90,24 +87,8 @@ public class InGameState extends State {
         Gdx.input.setInputProcessor(stage);
 
 
-        // Makes objects into bodies in the box2d world.
-        // This makes them collidable.
-        BodyDef bdef = new BodyDef();
-        PolygonShape shape = new PolygonShape();
-        FixtureDef fdef = new FixtureDef();
-        Body body;
-        // The number 3 is the index of the object layer in the TiledMap.
-        for (MapObject object : mapHandler.getMap().getLayers().get(3).getObjects().getByType(RectangleMapObject.class)) {
-            Rectangle rectangle = ((RectangleMapObject) object).getRectangle();
+        new B2WorldCreator(mapHandler.getMap());
 
-            bdef.type = BodyDef.BodyType.StaticBody;
-            bdef.position.set(rectangle.getX() + rectangle.getWidth() / 2, rectangle.getY() + rectangle.getHeight() / 2);
-
-            body = world.createBody(bdef);
-            shape.setAsBox(rectangle.getWidth() / 2, rectangle.getHeight() / 2);
-            fdef.shape = shape;
-            body.createFixture(fdef);
-        }
 
 
         // Set camera to initial wizard position
@@ -120,19 +101,17 @@ public class InGameState extends State {
         // Adds a world contact listener
         world.setContactListener(new WorldContactListener());
 
+        bodiesToDestroy = new Array<Body>();
+
     }
 
     public static InGameState getInstance(){
         if (instance == null){
             instance = new InGameState(GameStateManager.getInstance());
         }
-        System.out.print("created instance");
         return instance;
     }
 
-    public World getWorld(){
-        return world;
-    }
 
     private void updateWizardRotation(){
         wizard.updateRotation(
@@ -163,18 +142,18 @@ public class InGameState extends State {
         float x = x1 * ratio;
         float y = y1 * ratio;
 
+
         FireBall fb = new FireBall( // spawnPoint, rotation, velocity
-                new Vector2(
-                        // TODO: offsetting spell position by screen width and height is not desirable, but it works for now.
-                        // Need to further look into how spell position or rendering is decided.
-                        wizard.getPosition().x - (WIDTH + wizard.getSprite().getWidth())/2f ,
-                        wizard.getPosition().y - (HEIGHT + wizard.getSprite().getHeight())/2f
-                        ),
+                getSpellInitialPosition(wizard.getPosition(), wizard.getSize(), FireBall.texture.getHeight(), FireBall.texture.getWidth(), (new Vector2(lastAimX, lastAimY).angle() + wizard.getOffset())),
                 wizard.getRotation(), // rotation
                 new Vector2(x, y)  // velocity
         );
         spells.add(fb); // THIS IS ONLY FOR FIREBALL AT THE MOMENT
     }
+
+
+
+
 
     private void updateCamera(float x, float y){
         camera.position.x = x;
@@ -184,6 +163,7 @@ public class InGameState extends State {
 
     @Override
     public void update(float dt) {
+        delete();
         world.step(1/60f, 6, 2);
 
         mapHandler.setView(camera);
@@ -196,7 +176,6 @@ public class InGameState extends State {
 
 
             updateCamera(wizard.getPosition().x + wizard.getSprite().getWidth() / 2f, wizard.getPosition().y + wizard.getSprite().getHeight() / 2f);
-            System.out.println(wizard.getPosition());
 
         }
         if (rightJoyStick.isTouched()){
@@ -260,6 +239,14 @@ public class InGameState extends State {
 
     }
 
+    public void addToBodyList(Body body){
+        bodiesToDestroy.add(body);
+    }
+
+    public void removeSpell(Spell spell){
+        spells.remove(spell);
+    }
+
     @Override
     public void dispose() {
 
@@ -267,6 +254,63 @@ public class InGameState extends State {
 
     @Override
     public void onBackButtonPress() {
+
+    }
+
+    private void delete(){
+        for (Body body : bodiesToDestroy) {
+            world.destroyBody(body);
+        }
+        bodiesToDestroy.clear();
+    }
+
+    private Vector2 getSpellInitialPosition(Vector2 wizpos, Vector2 wizSize, int spellHeight, int spellWidth, float rotation){
+        // To not run into the spell
+        int offset = 6;
+
+        Vector2 pos1 = new Vector2((wizpos.x - spellWidth - offset),(wizpos.y + wizSize.y + offset));
+        Vector2 pos2 = new Vector2((wizpos.x + wizSize.x/2f - spellWidth/2f),(wizpos.y + wizSize.y + offset ));
+        Vector2 pos3 = new Vector2((wizpos.x + wizSize.x + offset),(wizpos.y + wizSize.y + offset ));
+        Vector2 pos4 = new Vector2((wizpos.x - spellWidth - offset),(wizpos.y + wizSize.y/2f - spellHeight / 2f));
+        Vector2 pos5 = new Vector2((wizpos.x + wizSize.x + offset),(wizpos.y + wizSize.y/2f - spellHeight / 2f));
+        Vector2 pos6 = new Vector2((wizpos.x - spellWidth - offset),(wizpos.y - spellHeight - offset));
+        Vector2 pos7 = new Vector2((wizpos.x + wizSize.x/2f - spellWidth/2f),(wizpos.y - spellHeight - offset));
+        Vector2 pos8 = new Vector2((wizpos.x + wizSize.x + offset),(wizpos.y - spellHeight - offset));
+
+
+
+        if(rotation > getRotation(2) && rotation < getRotation(3) ){
+            return pos1;
+        }
+        else if(rotation >= getRotation(1) && rotation <= getRotation(2)){
+            return pos2;
+        }
+        else if(rotation > getRotation(0) && rotation < getRotation(1)){
+            return pos3;
+        }
+        else if(rotation >= getRotation(3) && rotation <= getRotation(4)){
+            return pos4;
+        }
+        else if(rotation <= getRotation(0) || rotation >= getRotation(7)){
+            return pos5;
+        }
+        else if(rotation > getRotation(4) && rotation < getRotation(5)){
+            return pos6;
+        }
+        else if(rotation >= getRotation(5) && rotation <= getRotation(6)) {
+            return pos7;
+        }
+        else{
+            return pos8;
+        }
+
+    }
+
+    private float getRotation(int indexOfArea){
+        float startRotation = 22.5f;
+        float rotationInterval = 45f;
+
+        return startRotation + indexOfArea * rotationInterval + wizard.getOffset();
 
     }
 
