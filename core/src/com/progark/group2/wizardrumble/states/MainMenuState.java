@@ -37,8 +37,8 @@ public class MainMenuState extends MenuState {
 
 
     //TODO Remove sout and uncomment method calls in the button listeners
-    MainMenuState(GameStateManager gameStateManager) throws IOException {
-        super(gameStateManager);
+    MainMenuState() throws IOException {
+        super(GameStateManager.getInstance());
         initialize();
 
         // startButton
@@ -101,19 +101,17 @@ public class MainMenuState extends MenuState {
 
     public static MainMenuState getInstance() throws IOException {
         if (instance == null) {
-            instance = new MainMenuState(GameStateManager.getInstance());
+            instance = new MainMenuState();
         }
         return instance;
     }
 
     private void startGame() throws IOException {
-        this.gameStateManager.set(LobbyState.getInstance());
+        GameStateManager.getInstance().set(LobbyState.getInstance());
     }
 
     private void openSettings(){
-        this.gameStateManager.push(new MainMenuSettings(this.gameStateManager));
-
-        Arrays.asList(1,2,3,4);
+        GameStateManager.getInstance().push(MainMenuSettings.getInstance());
     }
 
     @Override
