@@ -31,7 +31,6 @@ import com.progark.group2.wizardrumble.entities.spells.Ice;
 import com.progark.group2.wizardrumble.network.NetworkController;
 import com.progark.group2.wizardrumble.network.resources.Player;
 
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -107,8 +106,8 @@ public class InGameState extends State {
         // Creating a WizardPlayer object
         wizardPlayer = new WizardPlayer(
                 Wizard.DEFAULT_HEALTH,
-                //network.getPlayer().getPosition(),  // TODO: Give some other spawn point
-                new Vector2(500, 500),
+                network.getPlayer().getPosition(),  // TODO: Give some other spawn point
+                //new Vector2(500, 500),
 
                 new Texture("wizard_front.png")
         );
@@ -127,6 +126,7 @@ public class InGameState extends State {
             TextureRegion enemyRegion = new TextureRegion(enemy.getSprite());
             wizardEnemyRegions.put(player.getConnectionId(), enemyRegion);
         }
+
 
         createCollisionBoxes();
 
@@ -242,7 +242,7 @@ public class InGameState extends State {
             //Update camera to follow player. If we move player sprite to player, we have to fix this method.
             updateCamera(wizardPlayer.getPosition().x + wizardPlayer.getSprite().getWidth() / 2f, wizardPlayer.getPosition().y + wizardPlayer.getSprite().getHeight() / 2f);
             // Sends the updated position to the server
-            //network.updatePlayerPosition(wizardPlayer.getPosition(), wizardPlayer.getRotation());
+            network.updatePlayerPosition(wizardPlayer.getPosition(), wizardPlayer.getRotation());
         }
 
         if (inGameHud.getRightJoyStick().isTouched()){
@@ -273,14 +273,12 @@ public class InGameState extends State {
             spell.update();
         }
 
-        /*
         // Keep the Wizard object in sync with Player object
         for (Player player : network.getPlayers().values()) {
             wizardEnemies.get(player.getConnectionId()).setPosition(player.getPosition());
             wizardEnemies.get(player.getConnectionId()).setRotation(player.getRotation());
             wizardEnemies.get(player.getConnectionId()).updateBodyPosition(player.getPosition());
         }
-        */
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             this.onBackButtonPress();
