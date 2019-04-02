@@ -26,8 +26,10 @@ import com.progark.group2.wizardrumble.entities.WizardPlayer;
 import com.progark.group2.wizardrumble.handlers.MapHandler;
 import com.progark.group2.wizardrumble.entities.Spell;
 import com.progark.group2.wizardrumble.entities.spells.FireBall;
+import com.progark.group2.wizardrumble.entities.spells.Ice;
 import com.progark.group2.wizardrumble.network.NetworkController;
 import com.progark.group2.wizardrumble.network.resources.Player;
+
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -46,17 +48,18 @@ public class InGameState extends State {
     private TextureRegion wizardPlayerRegion;
     private HashMap<Integer, TextureRegion> wizardEnemyRegions = new HashMap<Integer, TextureRegion>();
 
-    // Used for testing spells
-    private List<Spell> spells;
-    private String selectedSpell;
+    // Currently selected spell
+    private String activeSpell;
 
-    //private OrthographicCamera camera;
+    // Spells that have been cast
+    private List<Spell> spells;
+
     private Viewport gamePort;
     private MapHandler mapHandler;
     private SpriteBatch spriteBatch;
 
-    //Box2d variables
-    public final static World world = new World(new Vector2(0,0), true);
+    // Box2d variables
+    public final static World world = new World(new Vector2(0, 0), true);
     private Box2DDebugRenderer b2dr;
 
     private static InGameState instance = null;
@@ -71,6 +74,17 @@ public class InGameState extends State {
 
     private InGameState(GameStateManager gameStateManager) throws IOException {
         super(gameStateManager);
+
+        // Start with no active spell
+        activeSpell = "";
+
+        // Start with no casted spells
+        spells = new ArrayList<Spell>();
+
+        // Start without any buttons having been touched
+        lastTouch = false;
+
+
         // Get the Network Controller
         network = NetworkController.getInstance();
         spriteBatch = new SpriteBatch();
@@ -83,7 +97,7 @@ public class InGameState extends State {
         // Create the stage
         stage = new Stage(gamePort, spriteBatch);
 
-        //Setup Box2d and Map
+        // Setup Box2d and Map
         b2dr = new Box2DDebugRenderer();
         mapHandler = new MapHandler();
 
@@ -113,10 +127,8 @@ public class InGameState extends State {
 
         // Set camera to initial wizardPlayer position
         camera.position.set(wizardPlayer.getPosition().x + wizardPlayer.getSprite().getWidth()/2f, wizardPlayer.getPosition().y + wizardPlayer.getSprite().getHeight()/2f, 0);
-        // Used for testing spells.
-        spells = new ArrayList<Spell>();
-        lastTouch = false;
-    }
+
+     }
 
     public static InGameState getInstance() throws IOException {
         if (instance == null){
@@ -158,13 +170,13 @@ public class InGameState extends State {
         }
     }
 
-    private void updateWizardPosition(){
+    private void updateWizardPosition() {
         //GetKnobPercentX and -Y returns cos and sin values of the touchpad in question
         Vector2 leftJoyPosition = new Vector2(inGameHud.getLeftJoyStick().getKnobPercentX(), inGameHud.getLeftJoyStick().getKnobPercentY());
         wizardPlayer.updatePosition(leftJoyPosition);
     }
 
-    private void castSpell(String selectedSpell) {
+    private void castSpell(String spell) {
         // Computes x and y from right joystick input making the speed the same regardless of
         // where on the joystick you touch.
         float x1 = lastAimX;
@@ -174,20 +186,38 @@ public class InGameState extends State {
         float x = x1 * ratio;
         float y = y1 * ratio;
 
-        FireBall fb = new FireBall( // spawnPoint, rotation, velocity
-                new Vector2(
-                        // TODO: offsetting spell position by screen width and height is not desirable, but it works for now.
-                        // Need to further look into how spell position or rendering is decided.
-                        wizardPlayer.getPosition().x - (WIDTH + wizardPlayer.getSprite().getWidth())/2f ,
-                        wizardPlayer.getPosition().y - (HEIGHT + wizardPlayer.getSprite().getHeight())/2f
-                        ),
-                wizardPlayer.getRotation(), // rotation
-                new Vector2(x, y)  // velocity
-        );
-        spells.add(fb); // THIS IS ONLY FOR FIREBALL AT THE MOMENT
+        // Logic for casting when FireBall has been selected
+        if (spell.equals("FireBall")) {
+            FireBall fb = new FireBall( // spawnPoint, rotation, velocity
+                    new Vector2(
+                            // TODO: offsetting spell position by screen width and height is not desirable, but it works for now.
+                            // Need to further look into how spell position or rendering is decided.
+                            wizardPlayer.getPosition().x - (WIDTH + wizardPlayer.getSprite().getWidth()) / 2f,
+                            wizardPlayer.getPosition().y - (HEIGHT + wizardPlayer.getSprite().getHeight()) / 2f
+                    ),
+                    wizardPlayer.getRotation(), // rotation
+                    new Vector2(x, y)  // velocity
+            );
+            spells.add(fb); // Add to list of casted spells
+        }
+
+        // Logic for casting when Ice has been selected
+        if (spell.equals("Ice")) {
+            Ice ic = new Ice( // spawnPoint, rotation, velocity
+                    new Vector2(
+                            // TODO: offsetting spell position by screen width and height is not desirable, but it works for now.
+                            // Need to further look into how spell position or rendering is decided.
+                            wizardPlayer.getPosition().x - (WIDTH + wizardPlayer.getSprite().getWidth()) / 2f,
+                            wizardPlayer.getPosition().y - (HEIGHT + wizardPlayer.getSprite().getHeight()) / 2f
+                    ),
+                    wizardPlayer.getRotation(), // rotation
+                    new Vector2(x, y)  // velocity
+            );
+            spells.add(ic); // Add to list of casted spells
+        }
     }
 
-    private void updateCamera(float x, float y){
+    private void updateCamera(float x, float y) {
         camera.position.x = x;
         camera.position.y = y;
         camera.update();
@@ -195,7 +225,7 @@ public class InGameState extends State {
 
     @Override
     public void update(float dt) {
-        world.step(1/60f, 6, 2);
+        world.step(1 / 60f, 6, 2);
 
         mapHandler.setView(camera);
 
@@ -219,7 +249,13 @@ public class InGameState extends State {
         // if (inGameHud.getRightJoyStick().isTouched()){
             // I think that spells should be cast when the player releases the right joystick, so that you can
             // see the rotation of the player character and not rely on hopefully having touched the joystick correctly
-            castSpell("fireball");
+            for (String spell : inGameHud.getSpellNames()) {
+                if (spell.equals(inGameHud.getSpellSelector().getSpellSelected())) {
+                    activeSpell = spell;
+                    break;
+                }
+            }
+            castSpell(activeSpell);
         }
 
         lastTouch = inGameHud.getRightJoyStick().isTouched();
@@ -227,18 +263,18 @@ public class InGameState extends State {
         lastAimY = inGameHud.getRightJoyStick().getKnobPercentY();
 
         // Iterate spells to update
-        for (Spell spell : spells){
+        for (Spell spell : spells) {
             spell.update();
         }
 
         // Keep the Wizard object in sync with Player object
-        for (Player player : network.getPlayers().values()){
+        for (Player player : network.getPlayers().values()) {
             wizardEnemies.get(player.getConnectionId()).setPosition(player.getPosition());
             wizardEnemies.get(player.getConnectionId()).setRotation(player.getRotation());
             wizardEnemies.get(player.getConnectionId()).updateBodyPosition(player.getPosition());
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             this.onBackButtonPress();
         }
     }
@@ -248,35 +284,36 @@ public class InGameState extends State {
         //Combines camera's coordinate system with world coordinate system.
         spriteBatch.setProjectionMatrix(camera.combined);
 
-        Gdx.gl.glClearColor(0,0,0,1);
+        Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         mapHandler.render();
         spriteBatch.begin();
 
         spriteBatch.draw(wizardPlayerRegion, wizardPlayer.getPosition().x, wizardPlayer.getPosition().y,
-                wizardPlayer.getSprite().getWidth()/2f,
-                wizardPlayer.getSprite().getHeight()/2f,
+                wizardPlayer.getSprite().getWidth() / 2f,
+                wizardPlayer.getSprite().getHeight() / 2f,
                 wizardPlayer.getSprite().getWidth(), wizardPlayer.getSprite().getHeight(),
-                1,1, wizardPlayer.getRotation());
+                1, 1, wizardPlayer.getRotation());
 
         // Iterate spells to render
-        for (Spell spell : spells){
+        for (Spell spell : spells) {
             spell.render(spriteBatch);
         }
 
-        for(Integer wizardId : wizardEnemies.keySet()) {
+        for (Integer wizardId : wizardEnemies.keySet()) {
             WizardEnemy enemy = wizardEnemies.get(wizardId);
             TextureRegion enemyRegion = wizardEnemyRegions.get(wizardId);
             spriteBatch.draw(
                     enemyRegion, enemy.getPosition().x, enemy.getPosition().y,
-                    enemy.getSprite().getWidth()/2f,
-                    enemy.getSprite().getHeight()/2f,
+                    enemy.getSprite().getWidth() / 2f,
+                    enemy.getSprite().getHeight() / 2f,
                     enemy.getSprite().getWidth(), enemy.getSprite().getHeight(),
                     1, 1, enemy.getRotation()
             );
         }
 
         spriteBatch.end();
+        stage.act(Gdx.graphics.getDeltaTime());
         // box2d debug renderer
         // Renders visible boxes around all collidable objects.
         b2dr.render(world, camera.combined);

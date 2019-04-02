@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.progark.group2.wizardrumble.entities.Spell;
 
-public class FireBall extends Spell {
+public class Ice extends Spell {
 
     private Texture fireBallSprite;
     private TextureRegion region;
@@ -17,14 +17,14 @@ public class FireBall extends Spell {
 
 
 
-    public FireBall(Vector2 spawnPoint, float rotation, Vector2 velocity){
+    public Ice(Vector2 spawnPoint, float rotation, Vector2 velocity){
         this.velocity = velocity; // Use speed in spell abstract class in addition to this.
         this.rotation = rotation;
         this.position = spawnPoint;  // Need to offset this by size of wizard sprite
         fireBallSprite = new Texture("fireball.png");
         region = new TextureRegion(fireBallSprite);
-        scale = 0.2f;
-        name="FireBall";
+        scale = 0.02f;
+        name="Ice";
     }
 
     // There's a difference in screen coordinates and global coordinates. Where you draw each sprite
