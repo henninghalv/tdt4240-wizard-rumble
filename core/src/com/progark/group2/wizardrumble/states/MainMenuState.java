@@ -17,6 +17,7 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.progark.group2.wizardrumble.network.NetworkController;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 
 /** The main menu that is shown when the game is launched. The listeners must be added individually
@@ -111,6 +112,8 @@ public class MainMenuState extends MenuState {
 
     private void openSettings(){
         this.gameStateManager.push(new MainMenuSettings(this.gameStateManager));
+
+        Arrays.asList(1,2,3,4);
     }
 
     @Override
