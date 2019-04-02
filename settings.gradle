@@ -1,1 +1,2 @@
+include ':gameserver', ':myapplication'
 include 'desktop', 'android', 'ios', 'html', 'core'
