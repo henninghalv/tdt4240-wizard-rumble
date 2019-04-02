@@ -9,20 +9,18 @@ public class Player {
     private int kills;
     private int rank;
     private int timeAliveInMilliseconds;
-    private boolean isAlive;
     private Vector2 position;
     private float rotation;
 
     public Player() {
     }
 
-    public Player(String name, int connectionId, int kills, int rank, int timeAliveInMilliseconds, boolean isAlive, Vector2 position, float rotation) {
+    public Player(String name, int connectionId, int kills, int rank, int timeAliveInMilliseconds, Vector2 position, float rotation) {
         this.name = name;
         this.connectionId = connectionId;
         this.kills = kills;
         this.rank = rank;
         this.timeAliveInMilliseconds = timeAliveInMilliseconds;
-        this.isAlive = isAlive;
         this.position = position;
         this.rotation = rotation;
 
@@ -66,14 +64,6 @@ public class Player {
 
     public void setTimeAliveInMilliseconds(int timeAliveInMilliseconds) {
         this.timeAliveInMilliseconds = timeAliveInMilliseconds;
-    }
-
-    public boolean isAlive() {
-        return isAlive;
-    }
-
-    public void setAlive(boolean alive) {
-        isAlive = alive;
     }
 
     public Vector2 getPosition() {

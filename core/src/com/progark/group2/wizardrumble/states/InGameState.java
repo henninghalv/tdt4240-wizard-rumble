@@ -117,24 +117,8 @@ public class InGameState extends State {
         this.stage.addActor(rightJoyStick);
         Gdx.input.setInputProcessor(this.stage);
 
-        // Makes objects into bodies in the box2d world.
-        // This makes them collidable.
-        BodyDef bdef = new BodyDef();
-        PolygonShape shape = new PolygonShape();
-        FixtureDef fdef = new FixtureDef();
-        Body body;
-        // The number 3 is the index of the object layer in the TiledMap.
-        for (MapObject object : mapHandler.getMap().getLayers().get(3).getObjects().getByType(RectangleMapObject.class)) {
-            Rectangle rectangle = ((RectangleMapObject) object).getRectangle();
+        createCollisionBoxes();
 
-            bdef.type = BodyDef.BodyType.StaticBody;
-            bdef.position.set(rectangle.getX() + rectangle.getWidth() / 2, rectangle.getY() + rectangle.getHeight() / 2);
-
-            body = world.createBody(bdef);
-            shape.setAsBox(rectangle.getWidth() / 2, rectangle.getHeight() / 2);
-            fdef.shape = shape;
-            body.createFixture(fdef);
-        }
         // Set camera to initial wizardPlayer position
         camera.position.set(wizardPlayer.getPosition().x + wizardPlayer.getSprite().getWidth()/2f, wizardPlayer.getPosition().y + wizardPlayer.getSprite().getHeight()/2f, 0);
         // Used for testing spells.
@@ -153,6 +137,12 @@ public class InGameState extends State {
         return world;
     }
 
+    private void updateWizardPosition(){
+        //GetKnobPercentX and -Y returns cos and sin values of the touchpad in question
+        Vector2 leftJoyPosition = new Vector2(leftJoyStick.getKnobPercentX(), leftJoyStick.getKnobPercentY());
+        wizardPlayer.updatePosition(leftJoyPosition);
+    }
+
     private void updateWizardRotation(){
         wizardPlayer.updateRotation(
                 rightJoyStick.isTouched() ? // Terniary
@@ -161,15 +151,30 @@ public class InGameState extends State {
         );
     }
 
+    private void createCollisionBoxes(){
+        // Makes objects into bodies in the box2d world.
+        // This makes them collidable.
+        BodyDef bdef = new BodyDef();
+        PolygonShape shape = new PolygonShape();
+        FixtureDef fdef = new FixtureDef();
+        Body body;
+        // The number 3 is the index of the object layer in the TiledMap.
+        for (MapObject object : mapHandler.getMap().getLayers().get(3).getObjects().getByType(RectangleMapObject.class)) {
+            Rectangle rectangle = ((RectangleMapObject) object).getRectangle();
+
+            bdef.type = BodyDef.BodyType.StaticBody;
+            bdef.position.set(rectangle.getX() + rectangle.getWidth() / 2, rectangle.getY() + rectangle.getHeight() / 2);
+
+            body = world.createBody(bdef);
+            shape.setAsBox(rectangle.getWidth() / 2, rectangle.getHeight() / 2);
+            fdef.shape = shape;
+            body.createFixture(fdef);
+        }
+    }
+
     @Override
     public void handleInput() {
 
-    }
-
-    private void updateWizardPosition(){
-        //GetKnobPercentX and -Y returns cos and sin values of the touchpad in question
-        Vector2 leftJoyPosition = new Vector2(leftJoyStick.getKnobPercentX(), leftJoyStick.getKnobPercentY());
-        wizardPlayer.updatePosition(leftJoyPosition);
     }
 
     private void castSpell(String selectedSpell) {
@@ -249,6 +254,7 @@ public class InGameState extends State {
         for (Player player : network.getPlayers().values()){
             wizardEnemies.get(player.getConnectionId()).setPosition(player.getPosition());
             wizardEnemies.get(player.getConnectionId()).setRotation(player.getRotation());
+            wizardEnemies.get(player.getConnectionId()).updateBodyPosition(player.getPosition());
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){

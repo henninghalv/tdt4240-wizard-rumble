@@ -186,7 +186,6 @@ public class GameServer extends Listener{
                 0, // Kills
                 0, // Position or rank according to time of death
                 0,// Time alive, milliseconds,
-                false,
                 new Vector2(0,0),
                 0
         );
