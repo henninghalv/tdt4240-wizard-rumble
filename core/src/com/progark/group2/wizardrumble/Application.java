@@ -40,11 +40,13 @@ public class Application extends Game {
 
 		// Used to test server connection.
 		// Not necessarily the right way to do it.
+		/*
 		try {
             NetworkController networkController = NetworkController.getInstance();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		*/
 
         this.gameStateManager = GameStateManager.getInstance();
 		try {

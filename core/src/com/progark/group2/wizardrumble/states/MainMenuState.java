@@ -51,7 +51,7 @@ public class MainMenuState extends MenuState {
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
 
                 try {
-                    network.requestGameCreation();
+                    //network.requestGameCreation();
                     startGame();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -146,7 +146,7 @@ public class MainMenuState extends MenuState {
      */
     private void initialize() throws IOException {
         // Getting NetworkController
-        network = NetworkController.getInstance();
+        //network = NetworkController.getInstance();
 
         this.stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
