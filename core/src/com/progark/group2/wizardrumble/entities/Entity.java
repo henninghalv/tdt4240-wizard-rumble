@@ -15,6 +15,18 @@ public abstract class Entity {
         return position;
     }
 
+    public void setPosition(Vector2 position) {
+        this.position = position;
+    }
+
+    public float getRotation() {
+        return rotation;
+    }
+
+    public void setRotation(float rotation) {
+        this.rotation = rotation;
+    }
+
     public abstract void onCollision();
 
     public abstract void update();

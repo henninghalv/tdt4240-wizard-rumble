@@ -103,6 +103,7 @@ public class SQLiteDBConnector {
      * @throws SQLException
      */
     public HashMap<Integer, String> getPlayer(int id) throws SQLException {
+        Log.info("DATABASE: Looking up player name...");
         String query = String.format("SELECT * FROM players WHERE id=%d", id);
 
         Statement stmt = conn.createStatement();
@@ -111,7 +112,7 @@ public class SQLiteDBConnector {
         if(resultSet.next()){
             player.put(resultSet.getInt("id"), resultSet.getString("username"));
         }
-
+        Log.info("Done!\n");
         return player;
     }
 
