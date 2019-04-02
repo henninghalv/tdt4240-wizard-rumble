@@ -15,9 +15,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.progark.group2.wizardrumble.network.NetworkController;
-
 import java.io.IOException;
-import java.util.Arrays;
 
 
 /** The main menu that is shown when the game is launched. The listeners must be added individually
