@@ -64,10 +64,20 @@ public class GameStateManager {
     }
 
     public void update(float dt){
+        if(this.isOverlay(this.states.peek())){
+            this.states.get(1).update(dt);
+        }
         this.states.peek().update(dt);
     }
 
     public void render(SpriteBatch spriteBatch){
+        if(this.isOverlay(this.states.peek())){
+            this.states.get(1).render(spriteBatch);
+        }
         this.states.peek().render(spriteBatch);
+    }
+
+    private boolean isOverlay(State state){
+        return state instanceof InGameMenuState || state instanceof InGameSettings;
     }
 }
