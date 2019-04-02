@@ -11,6 +11,7 @@ import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
@@ -29,7 +30,6 @@ import com.progark.group2.wizardrumble.entities.spells.FireBall;
 import com.progark.group2.wizardrumble.entities.spells.Ice;
 import com.progark.group2.wizardrumble.network.NetworkController;
 import com.progark.group2.wizardrumble.network.resources.Player;
-
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -90,6 +90,7 @@ public class InGameState extends State {
         spriteBatch = new SpriteBatch();
         inGameHud = new InGameHud(spriteBatch);
         Gdx.input.setInputProcessor(inGameHud.getStage());
+
         // Create a camera
         camera = new OrthographicCamera();
         gamePort = new FitViewport(WIDTH, HEIGHT, camera);
@@ -122,6 +123,7 @@ public class InGameState extends State {
             TextureRegion enemyRegion = new TextureRegion(enemy.getSprite());
             wizardEnemyRegions.put(player.getConnectionId(), enemyRegion);
         }
+
 
         createCollisionBoxes();
 
@@ -239,6 +241,7 @@ public class InGameState extends State {
             // Sends the updated position to the server
             network.updatePlayerPosition(wizardPlayer.getPosition(), wizardPlayer.getRotation());
         }
+
         if (inGameHud.getRightJoyStick().isTouched()){
             wizardPlayer.updateRotation(new Vector2(inGameHud.getRightJoyStick().getKnobPercentX(), inGameHud.getRightJoyStick().getKnobPercentY()));
             network.updatePlayerPosition(wizardPlayer.getPosition(), wizardPlayer.getRotation());
@@ -339,4 +342,13 @@ public class InGameState extends State {
         this.gameStateManager.push(new InGameMenuState(gameStateManager));
     }
 
+    public Vector3 getCamPosition(){
+        return camera.position;
+    }
+
+    @Override
+    public void activate(){
+        super.activate();
+        Gdx.input.setInputProcessor(inGameHud.getStage());
+    }
 }

@@ -25,7 +25,6 @@ public class MainMenuState extends MenuState {
 
     private NetworkController network;
 
-    private Stage stage;
     private Table table;
     private Label.LabelStyle titleStyle;
 
