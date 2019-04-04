@@ -10,7 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.progark.group2.wizardrumble.states.InGameState.InGameState;
+import com.progark.group2.wizardrumble.states.ingamestate.InGameState;
 
 import java.io.IOException;
 

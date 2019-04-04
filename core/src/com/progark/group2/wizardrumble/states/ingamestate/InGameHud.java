@@ -1,4 +1,4 @@
-package com.progark.group2.wizardrumble.states.InGameState;
+package com.progark.group2.wizardrumble.states.ingamestate;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -8,7 +8,6 @@ import com.progark.group2.wizardrumble.controllers.AimInput1;
 import com.progark.group2.wizardrumble.controllers.MovementInput1;
 import com.progark.group2.wizardrumble.controllers.SpellSelector1;
 import com.progark.group2.wizardrumble.controllers.SpellSelector;
-import com.progark.group2.wizardrumble.gui.HealthBar;
 
 
 import java.util.ArrayList;
@@ -43,6 +42,7 @@ public class InGameHud {
         spellNames.add("Ice");
 
         spellSelector = new SpellSelector1(spellNames, stage);
+        spellSelector.setSpellSelected("FireBall");  // Setting default spell to Fireball
 
         healthBar = new HealthBar();
         stage.addActor(healthBar);
