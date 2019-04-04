@@ -4,16 +4,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.Fixture;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
-import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
-import com.progark.group2.wizardrumble.entities.Entity;
-import com.progark.group2.wizardrumble.states.InGameState;
-
-import java.io.IOException;
 
 
 public abstract class Wizard extends Entity {
@@ -28,6 +19,7 @@ public abstract class Wizard extends Entity {
     private Touchpad rightJoy; // importer touchpad-objektet som Bjørn lager
     private final float ANGLE_OFFSET = 270;
 
+
     public Wizard(int maxHealth, Vector2 spawnPoint) {
         super(spawnPoint, new Vector2(0,0), 0, new Texture("wizard_front.png"), new Vector2(new Texture("wizard_front.png").getWidth(), new Texture("wizard_front.png").getHeight()), "dynamic");
         super.defineEntity();
@@ -37,6 +29,7 @@ public abstract class Wizard extends Entity {
     }
     public float getOffset(){
         return ANGLE_OFFSET;
+
     }
 
     public int getPlayerID() {
@@ -47,13 +40,14 @@ public abstract class Wizard extends Entity {
         this.playerID = playerID;
     }
 
+    public int getHealth() {
+        return health;
+    }
+
     public void setHealth(int health) {
         this.health = health;
     }
 
-    public void attack(){
-
-    }
 
     public void updatePosition(Vector2 direction) {
         // Stops the wizard from moving when you're not using the left joystick.
@@ -63,11 +57,9 @@ public abstract class Wizard extends Entity {
         b2body.setLinearVelocity(speed * direction.x, speed * direction.y);
         position.x = b2body.getPosition().x - (super.texture.getWidth() / 2f);
         position.y = b2body.getPosition().y - (super.texture.getHeight() / 2f);
-    }
-
-    public void takeDamage(int damage){
 
     }
+
 
     public void updateRotation(Vector2 direction){
         // Rotation is set with an offset, since the rotation-argument in SpriteBatch.draw() starts
@@ -76,14 +68,14 @@ public abstract class Wizard extends Entity {
         rotation = (direction.angle() + ANGLE_OFFSET);
     }
 
+    public void updateBodyPosition(Vector2 position){
+        b2body.setTransform(position.x + (super.texture.getWidth() / 2f), position.y + (super.texture.getWidth() / 2f), 0);
+    }
+
     public float getRotation(){
         return this.rotation;
     }
 
-
-    public Body getB2body(){
-        return b2body;
-    }
 
     public Texture getSprite(){
         return super.texture;

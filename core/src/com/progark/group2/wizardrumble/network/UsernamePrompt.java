@@ -8,7 +8,7 @@ import java.io.IOException;
 
 public class UsernamePrompt implements Input.TextInputListener {
 
-    public UsernamePrompt() {
+    UsernamePrompt() {
     }
 
     @Override
@@ -18,7 +18,6 @@ public class UsernamePrompt implements Input.TextInputListener {
         preferences.flush();
         try {
             NetworkController.getInstance().requestPlayerCreation(text);
-            NetworkController.getInstance().requestGameCreation();
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -3,8 +3,10 @@ package com.progark.group2.wizardrumble.entities;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
 import com.progark.group2.wizardrumble.network.NetworkController;
+import com.progark.group2.wizardrumble.states.InGameState.InGameState;
 
 import java.io.IOException;
+
 
 public class WizardPlayer extends Wizard {
 
@@ -12,6 +14,7 @@ public class WizardPlayer extends Wizard {
 
     private Touchpad leftJoy; // importer touchpad-objektet som Bjørn lager
     private Touchpad rightJoy; // importer touchpad-objektet som Bjørn lager
+
 
     public WizardPlayer(Vector2 spawnPoint) {
         super(DEFAULT_HEALTH, spawnPoint);
@@ -21,13 +24,19 @@ public class WizardPlayer extends Wizard {
     @Override
     public void onCollideWithSpell(int damage) {
         super.health -= damage;
+        try {
+            InGameState.getInstance().getInGameHud().getHealthBar().updateHealth(super.health);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         System.out.println("Wizard's health: " + super.health);
        try {
            NetworkController.getInstance().sendPlayerTookDamageRequest(damage);
        }
        catch (IOException e){
             System.out.println("Problems sending damage to Server.");
-       };
+       }
+
     }
 
     public static WizardPlayer getInstance() {
@@ -38,7 +47,4 @@ public class WizardPlayer extends Wizard {
         return instance;
     }
 
-    public void attack(){
-
-    }
 }

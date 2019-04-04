@@ -1,17 +1,14 @@
 package com.progark.group2.wizardrumble.entities.spells;
 
-import com.badlogic.gdx.Net;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.Fixture;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.progark.group2.wizardrumble.entities.Entity;
-import com.progark.group2.wizardrumble.states.InGameState;
+import com.progark.group2.wizardrumble.states.InGameState.InGameState;
+
+import java.io.IOException;
 
 public abstract class Spell extends Entity {
     protected int damage;
@@ -57,7 +54,7 @@ public abstract class Spell extends Entity {
         position.y = b2body.getPosition().y - (super.texture.getHeight() / 2f);
     }
 
-    public void destroySpell(){
+    public void destroySpell() throws IOException {
         InGameState.getInstance().addToBodyList(b2body);
         InGameState.getInstance().removeSpell(this);
     }

@@ -9,7 +9,9 @@ public class FireBall extends Spell {
     public final static Texture texture = new Texture("fireball_small.png");
 
     public FireBall(Vector2 spawnPoint, float rotation, Vector2 velocity){
+
         super(spawnPoint, rotation, velocity, texture, 20, 200, "", 5, 1);
+
     }
 
 

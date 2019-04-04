@@ -8,6 +8,8 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.progark.group2.wizardrumble.entities.Entity;
 import com.progark.group2.wizardrumble.entities.spells.Spell;
 
+import java.io.IOException;
+
 public class WorldContactListener implements ContactListener {
     // Has control of all collisions.
 
@@ -26,7 +28,11 @@ public class WorldContactListener implements ContactListener {
             if(object.getUserData() != null && Entity.class.isAssignableFrom(object.getUserData().getClass())){
                 Spell spellObject = ((Spell) spell.getUserData());
                 ((Entity) object.getUserData()).onCollideWithSpell(spellObject.getDamage());
-                spellObject.destroySpell();
+                try {
+                    spellObject.destroySpell();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
 

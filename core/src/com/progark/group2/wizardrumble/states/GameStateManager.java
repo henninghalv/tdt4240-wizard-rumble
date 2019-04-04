@@ -3,41 +3,46 @@ package com.progark.group2.wizardrumble.states;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import java.util.EmptyStackException;
-import java.util.Stack;
+import java.util.LinkedList;
+
 
 /**
  * Singelton that keeps track of the different states by using a private stack.
  */
 public class GameStateManager {
 
-    private static GameStateManager instance;
+    private static GameStateManager instance = null;
 
-    private Stack<State> states;
+    //TODO Change from stack to some sort of list to enable game render while the in-game pause is active
+    private LinkedList<State> states;
 
     private GameStateManager(){
-        this.states = new Stack<State>();
+        this.states = new LinkedList<State>();
     }
 
     public static GameStateManager getInstance(){
         if(instance == null){
-            return new GameStateManager();
+            instance = new GameStateManager();
         }
-        else{
-            return instance;
-        }
+        return instance;
     }
 
     public void push(State state){
-        this.states.push(state);
+        this.states.addFirst(state);
+        this.states.peek().activate();
     }
 
-    // Prints error message if stack is empty
+    /**
+     * Prints error message if stack is empty. Also tries to activate
+     * the previous state.
+     */
     public void pop(){
         try {
-            this.states.pop();
-        } catch(EmptyStackException e){
+            this.states.removeFirst();
+        } catch(Exception e){
             System.out.println(e.getMessage());
         }
+        this.states.peek().activate();
     }
 
     /**
@@ -46,19 +51,31 @@ public class GameStateManager {
      * @param state The new state to be pushed
      */
     public void set(State state){
-        // Use own pop method for error handling
-        this.pop();
-        this.states.push(state);
+
+        try {
+            this.states.removeFirst();
+        } catch(EmptyStackException e){
+            System.out.println(e.getMessage());
+        }
+        this.states.addFirst(state);
+        state.activate();
     }
 
     public void update(float dt){
+        if(this.isOverlay(this.states.peek())){
+            this.states.get(1).update(dt);
+        }
         this.states.peek().update(dt);
     }
 
     public void render(SpriteBatch spriteBatch){
+        if(this.isOverlay(this.states.peek())){
+            this.states.get(1).render(spriteBatch);
+        }
         this.states.peek().render(spriteBatch);
     }
 
-
-
+    private boolean isOverlay(State state){
+        return state instanceof InGameMenuState || state instanceof InGameSettings;
+    }
 }

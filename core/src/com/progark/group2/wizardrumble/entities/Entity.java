@@ -8,7 +8,7 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
-import com.progark.group2.wizardrumble.states.InGameState;
+import com.progark.group2.wizardrumble.states.InGameState.InGameState;
 
 public abstract class Entity {
     protected Vector2 position;
@@ -60,6 +60,19 @@ public abstract class Entity {
     }
 
     public abstract void onCollideWithSpell(int damage);
+
+     public void setPosition(Vector2 position) {
+        this.position = position;
+    }
+
+    public float getRotation() {
+        return rotation;
+    }
+
+    public void setRotation(float rotation) {
+        this.rotation = rotation;
+    }
+
 
     public abstract void update();
 
