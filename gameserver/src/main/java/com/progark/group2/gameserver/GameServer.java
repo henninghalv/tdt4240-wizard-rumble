@@ -8,6 +8,7 @@ import com.esotericsoftware.minlog.Log;
 import com.progark.group2.gameserver.resources.GameStatus;
 import com.progark.group2.gameserver.resources.PortStatus;
 import com.progark.group2.wizardrumble.network.packets.GameStartPacket;
+import com.progark.group2.wizardrumble.network.packets.SpellFiredPacket;
 import com.progark.group2.wizardrumble.network.requests.PlayerJoinRequest;
 import com.progark.group2.wizardrumble.network.requests.PlayerLeaveRequest;
 import com.progark.group2.wizardrumble.network.requests.PlayerMovementRequest;
@@ -99,6 +100,11 @@ public class GameServer extends Listener{
                 e.printStackTrace();
             }
         }
+        else if (object instanceof SpellFiredPacket){
+            System.out.println("Received spell fired packet...");
+            SpellFiredPacket packet = (SpellFiredPacket) object;
+            server.sendToAllExceptUDP(connection.getID(), packet);
+        }
         else if (object instanceof PlayerMovementRequest){
             PlayerMovementRequest request = (PlayerMovementRequest) object;
             handlePlayerMovementRequest(connection, request);
@@ -142,6 +148,10 @@ public class GameServer extends Listener{
 
     private void handlePlayerMovementRequest(Connection connection, PlayerMovementRequest request){
         sendPlayerMovementResponse(connection, request);
+    }
+
+    private void handleSpellFiredPacket(Connection connection, SpellFiredPacket packet){
+
     }
 
     // =====

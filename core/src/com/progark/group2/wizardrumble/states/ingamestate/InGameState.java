@@ -193,17 +193,23 @@ public class InGameState extends State {
 
         // Logic for casting when FireBall has been selected
         if (spell.equals("FireBall")) {
-            FireBall fb = new FireBall( // spawnPoint, rotation, velocity
-                    new Vector2(
-                            // TODO: offsetting spell position by screen width and height is not desirable, but it works for now.
-                            // Need to further look into how spell position or rendering is decided.
-                            wizardPlayer.getPosition().x - (WIDTH + wizardPlayer.getSprite().getWidth()) / 2f,
-                            wizardPlayer.getPosition().y - (HEIGHT + wizardPlayer.getSprite().getHeight()) / 2f
-                    ),
-                    wizardPlayer.getRotation(), // rotation
-                    new Vector2(x, y)  // velocity
+
+            Vector2 spawnPoint = new Vector2(
+                    // TODO: offsetting spell position by screen width and height is not desirable, but it works for now.
+                    // Need to further look into how spell position or rendering is decided.
+                    wizardPlayer.getPosition().x - (WIDTH + wizardPlayer.getSprite().getWidth()) / 2f,
+                    wizardPlayer.getPosition().y - (HEIGHT + wizardPlayer.getSprite().getHeight()) / 2f
             );
+
+            float rotation = wizardPlayer.getRotation();  // rotation
+
+            Vector2 velocity = new Vector2(x, y);  // velocity
+
+            FireBall fb = new FireBall(spawnPoint, rotation, velocity);
             spells.add(fb); // Add to list of casted spells
+
+            // TODO: Send SpellFiredPacket
+            network.castSpell("FireBall", spawnPoint, rotation, velocity);
         }
 
         // Logic for casting when Ice has been selected
@@ -220,6 +226,10 @@ public class InGameState extends State {
             );
             spells.add(ic); // Add to list of casted spells
         }
+    }
+
+    public void addSpell(Spell spell){
+        spells.add(spell);
     }
 
     private void updateCamera(float x, float y) {

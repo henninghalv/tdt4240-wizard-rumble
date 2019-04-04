@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
 import com.progark.group2.wizardrumble.network.packets.GameStartPacket;
+import com.progark.group2.wizardrumble.network.packets.SpellFiredPacket;
 import com.progark.group2.wizardrumble.network.requests.CreateGameRequest;
 import com.progark.group2.wizardrumble.network.requests.CreatePlayerRequest;
 import com.progark.group2.wizardrumble.network.requests.PlayerDeadRequest;
@@ -53,6 +54,7 @@ public class KryoClientRegister {
         kryo.register(CreateGameResponse.class);
         kryo.register(GameJoinedResponse.class);
         kryo.register(GameStartPacket.class);
+        kryo.register(SpellFiredPacket.class);
         kryo.register(HashMap.class);
         kryo.register(Vector2.class);
         kryo.register(ArrayList.class);
