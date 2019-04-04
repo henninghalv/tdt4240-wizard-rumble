@@ -25,10 +25,10 @@ import java.util.HashMap;
 public class GameServer extends Listener{
 
     private static Server server;
-    private HashMap<Integer, PortStatus> TCP_PORTS = new HashMap<Integer, PortStatus>();
-    private HashMap<Integer, PortStatus> UDP_PORTS = new HashMap<Integer, PortStatus>();
     private static int TCP_PORT;
     private static int UDP_PORT;
+    // List of the six available starting positions on the map.
+    private static HashMap<Integer, Vector2> spawnPoints = new HashMap<Integer, Vector2>();
     // List of all players that has joined the game with their stats for this game
     private HashMap<Integer, Player> players = new HashMap<Integer, Player>();
 
@@ -37,6 +37,7 @@ public class GameServer extends Listener{
         server = createNewServer(tcpPort, udpPort);
         TCP_PORT = tcpPort;
         UDP_PORT = udpPort;
+        createSpawnPoints();
     }
 
     // CREATION
@@ -53,6 +54,15 @@ public class GameServer extends Listener{
         KryoServerRegister.registerKryoClasses(server);
         server.addListener(this);
         return server;
+    }
+
+    private void createSpawnPoints(){
+        spawnPoints.put(1, new Vector2(500, 500));
+        spawnPoints.put(2, new Vector2(500, 1000));
+        spawnPoints.put(3, new Vector2(500, 1500));
+        spawnPoints.put(4, new Vector2(1500, 1500));
+        spawnPoints.put(5, new Vector2(1500, 1000));
+        spawnPoints.put(6, new Vector2(1500, 500));
     }
 
     // =====
@@ -74,11 +84,20 @@ public class GameServer extends Listener{
         else if (object instanceof PlayerLeaveRequest){
             PlayerLeaveRequest request = (PlayerLeaveRequest) object;
             sendServerSuccessResponse(connection, "Goodbye!");
-            handlePlayerLeaveRequest(connection, request);
+            try {
+                handlePlayerLeaveRequest(connection, request);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         else if (object instanceof GameStartPacket){
             GameStartPacket packet = (GameStartPacket) object;
             server.sendToAllTCP(packet);
+            try {
+                startGame();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         else if (object instanceof PlayerMovementRequest){
             PlayerMovementRequest request = (PlayerMovementRequest) object;
@@ -102,16 +121,21 @@ public class GameServer extends Listener{
         PlayerJoinResponse response = new PlayerJoinResponse();
         response.setPlayerId(request.getPlayerId());
         response.setPlayerName(playerName);
+        response.setConnectionId(connection.getID());
+        response.setSpawnPoint(spawnPoints.get(connection.getID()));
         server.sendToAllExceptTCP(connection.getID(), response);
+
         for(Integer playerId : players.keySet()){
             sendPlayerJoinResponse(connection, playerId, players.get(playerId));
         }
 
         addPlayer(request.getPlayerId(), playerName, connection.getID());
-        connection.sendTCP(new GameJoinedResponse());
+        GameJoinedResponse response1 = new GameJoinedResponse();
+        response1.setSpawnPoint(spawnPoints.get(connection.getID()));
+        connection.sendTCP(response1);
     }
 
-    private void handlePlayerLeaveRequest(Connection connection, PlayerLeaveRequest request){
+    private void handlePlayerLeaveRequest(Connection connection, PlayerLeaveRequest request) throws IOException {
         removePlayer(request.getPlayerId());
         sendPlayerLeaveResponse(connection, request);
     }
@@ -160,6 +184,8 @@ public class GameServer extends Listener{
         PlayerJoinResponse response = new PlayerJoinResponse();
         response.setPlayerId(playerId);
         response.setPlayerName(player.getName());
+        response.setConnectionId(player.getConnectionId());
+        response.setSpawnPoint(player.getPosition());
         connection.sendTCP(response);
     }
 
@@ -173,7 +199,6 @@ public class GameServer extends Listener{
 
     // ACTIONS
 
-
     /**
      * Add a new player to list when joining or creating a new game.
      * @return Player name
@@ -186,7 +211,7 @@ public class GameServer extends Listener{
                 0, // Kills
                 0, // Position or rank according to time of death
                 0,// Time alive, milliseconds,
-                new Vector2(0,0),
+                spawnPoints.get(connectionId),
                 0
         );
 
@@ -199,9 +224,15 @@ public class GameServer extends Listener{
         }
     }
 
-    private void removePlayer(int playerId){
+    private void removePlayer(int playerId) throws IOException {
         players.remove(playerId);
+        MasterServer.getInstance().updateGameServerStatus(this, GameStatus.STAND_BY);
     }
+
+
+    // =====
+
+    // HELPER METHODS
 
     Integer getTCPPort(){
         return TCP_PORT;
@@ -209,26 +240,6 @@ public class GameServer extends Listener{
 
     Integer getUDPPort(){
         return UDP_PORT;
-    }
-
-    // =====
-
-    // HELPER METHODS
-
-    /**
-     * Used by master server to determine which tcp port this server used
-     * @return  tcp port used by server
-     */
-    HashMap<Integer, PortStatus> getTCPPorts() {
-        return TCP_PORTS;
-    }
-
-    /**
-     * Used by master server to determine which udp ports this server used
-     * @return  udp ports used by server
-     */
-    HashMap<Integer, PortStatus> getUDPPorts() {
-        return UDP_PORTS;
     }
 
     // =====
@@ -278,13 +289,16 @@ public class GameServer extends Listener{
 //        }
 //    }
 //
-//    /**
-//     * Tell the master server that this server no longer is on standby,
-//     * but in progress. Start game after 30 seconds from when two players joined or
-//     * when the game server is full.
-//     */
-//    private void startGame() {
-//
+    /**
+     * Tell the master server that this server no longer is on standby,
+     * but in progress. Start game after 30 seconds from when two players joined or
+     * when the game server is full.
+     */
+    private void startGame() throws IOException {
+        Log.info("Starting game...");
+        MasterServer.getInstance().updateGameServerStatus(this, GameStatus.IN_PROGRESS);
+        Log.info("Done!\n");
+
 //        if (players.keySet().size() == MasterServer.getMaximumPlayers()) {
 //            // set gameserver status to inprogress
 //        }
@@ -294,39 +308,33 @@ public class GameServer extends Listener{
 //            // After this countdown, set gameserver status to inprogress
 //
 //        }
-//    }
+    }
 //
-//    /**
-//     * When the game has ended and all joinedPlayerIDs has left the game,
-//     * the server stops and removes itself from the MasterServer.
-//     */
-//    private void endGame(Connection connection) {
-//        if (!hasGameEnded()) return;
-//
-//        // TODO: Create a timeout for when the server should shutdown anyway
-//
-//        // TODO: send request with metadata (scoreboard data) to all clients
-//        //PlayerStatisticsResponse response = new PlayerStatisticsResponse();
-//
-//        // TODO: FIll response with players metadata
-//
-//        // Send the response back to client
-//        //connection.sendTCP(response);
-//
-//        Log.info("ALL PLAYERS ARE DEAD. STOPPING GAMESERVER: GOODBYE WORLD");
-//        // Stop the server connection for all servers
-//        for (Server server : servers) {
-//            server.stop();
-//        }
-//
-//        try {
-//            // Try removing this from the master server
-//            // This should open the used ports in master server
-//            MasterServer.getInstance().removeGameServer(this);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
+    /**
+     * When the game has ended and all joinedPlayerIDs has left the game,
+     * the server stops and removes itself from the MasterServer.
+     */
+    private void endGame() {
+        // TODO: Create a timeout for when the server should shutdown anyway
+
+        // TODO: send request with metadata (scoreboard data) to all clients
+
+
+        // TODO: FIll response with players metadata
+
+        // Send the response back to client
+        //connection.sendTCP(response);
+        Log.info("ALL PLAYERS ARE DEAD. STOPPING GAMESERVER: GOODBYE WORLD");
+        // Stop the server connection for all servers
+
+        try {
+            // Try removing this from the master server
+            // This should open the used ports in master server
+            MasterServer.getInstance().removeGameServer(TCP_PORT, UDP_PORT, this);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 //    /**
 //     * Return whether all players are dead and the game has ended.

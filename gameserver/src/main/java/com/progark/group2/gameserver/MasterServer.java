@@ -16,9 +16,7 @@ import com.progark.group2.gameserver.database.SQLiteDBConnector;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class MasterServer extends Listener{
 
@@ -210,10 +208,10 @@ public class MasterServer extends Listener{
     private GameServer createNewGameServer() throws IOException {
         Log.info("Creating a new GameServer...");
         Log.info("Finding available TCP port...");
-        int tcpPort = newFindAvailableTCPPort();
+        int tcpPort = findAvailableTCPPort();
         Log.info("Done!");
         Log.info("Finding available UDP port...");
-        int udpPort = newFindAvailableUDPPort();
+        int udpPort = findAvailableUDPPort();
         Log.info("Done!");
         Log.info("GameServer created!\n");
         return new GameServer(tcpPort, udpPort);
@@ -236,37 +234,17 @@ public class MasterServer extends Listener{
     }
 
     /**
-     * Finds an available TCP ports from hashmap
+     * Finds an available TCP port from hashmap
      * @return  (int)  The first open port number for TCP
      */
-    private List<Integer> findAvailableTCPPorts() {
-        List<Integer> tcpPorts = new ArrayList<Integer>();
-        for (int tcpPort : TCP_PORTS.keySet()) {
-            if (PortStatus.OPEN.equals(TCP_PORTS.get(tcpPort))) {
-                tcpPorts.add(tcpPort);
-                TCP_PORTS.put(tcpPort, PortStatus.CLOSED);
-            }
-
-            if (tcpPorts.size() == MAXIMUM_PLAYERS_PER_GAME) {
-                break;
-            }
-        }
-        return tcpPorts;
-    }
-
-    private int newFindAvailableTCPPort(){
+    private int findAvailableTCPPort(){
         for(int tcpPort : TCP_PORTS.keySet()){
             if(PortStatus.OPEN.equals(TCP_PORTS.get(tcpPort))){
+                TCP_PORTS.put(tcpPort, PortStatus.CLOSED);
                 return tcpPort;
             }
-        }
-        return 0;
-    }
-
-    private int newFindAvailableUDPPort(){
-        for(int tcpPort : UDP_PORTS.keySet()){
-            if(PortStatus.OPEN.equals(UDP_PORTS.get(tcpPort))){
-                return tcpPort;
+            else{
+                System.out.println("Port taken...");
             }
         }
         return 0;
@@ -276,20 +254,20 @@ public class MasterServer extends Listener{
      * Finds an available UDP port from hashmap
      * @return  (int)   The first open port number for UDP
      */
-    private List<Integer> findAvailableUDPPorts() {
-        List<Integer> udpPorts = new ArrayList<Integer>();
-        for (int udpPort : UDP_PORTS.keySet()) {
-            if (PortStatus.OPEN.equals(UDP_PORTS.get(udpPort))) {
-                udpPorts.add(udpPort);
+    private int findAvailableUDPPort(){
+        for(int udpPort : UDP_PORTS.keySet()){
+            if(PortStatus.OPEN.equals(UDP_PORTS.get(udpPort))){
                 UDP_PORTS.put(udpPort, PortStatus.CLOSED);
+                return udpPort;
             }
-
-            if (udpPorts.size() == MAXIMUM_PLAYERS_PER_GAME) {
-                break;
+            else{
+                System.out.println("Port taken...");
             }
         }
-        return udpPorts;
+        return 0;
     }
+
+
     /**
      * Add server to the list of all servers on standby
      * @param server    GameServer object
@@ -311,17 +289,11 @@ public class MasterServer extends Listener{
      * Remove server from the list of all servers and
      * updates which ports that are now open
      */
-    void removeGameServer(GameServer server) {
-        // Open all tcpports
-        for (int tcpPort : server.getTCPPorts().keySet()) {
-            TCP_PORTS.put(tcpPort, PortStatus.OPEN);
-        }
-
-        // Open all udpPorts
-        for (int udpPort : server.getUDPPorts().keySet()) {
-            TCP_PORTS.put(udpPort, PortStatus.OPEN);
-        }
-
+    void removeGameServer(int tcpPort, int udpPort, GameServer server) {
+        // Open tcpPort
+        TCP_PORTS.put(tcpPort, PortStatus.OPEN);
+        // Open udpPort
+        TCP_PORTS.put(udpPort, PortStatus.OPEN);
         // Remove gameserver from MasterServer
         this.gameServers.remove(server);
     }
