@@ -4,11 +4,8 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
-import com.progark.group2.wizardrumble.states.ingamestate.InGameState;
+
 
 
 public abstract class Wizard extends Entity {
@@ -17,18 +14,23 @@ public abstract class Wizard extends Entity {
     protected int health;
     protected int maxHealth;
     private int speed = 100;
-    private Texture wizardSprite;
     public final static int DEFAULT_HEALTH = 100;
+
     private Touchpad leftJoy; // importer touchpad-objektet som Bjørn lager
     private Touchpad rightJoy; // importer touchpad-objektet som Bjørn lager
     private final float ANGLE_OFFSET = 270;
 
 
-    public Wizard(int maxHealth, Vector2 spawnPoint, Texture texture) {
+    public Wizard(int maxHealth, Vector2 spawnPoint) {
+        super(spawnPoint, new Vector2(0,0), 0, new Texture("wizard_front.png"), new Vector2(new Texture("wizard_front.png").getWidth(), new Texture("wizard_front.png").getHeight()), "dynamic");
+        super.defineEntity();
+        this.b2body = super.b2body;
         this.position = spawnPoint;
         this.maxHealth = maxHealth;
-        this.wizardSprite = texture;
-        defineWizard();
+    }
+    public float getOffset(){
+        return ANGLE_OFFSET;
+
     }
 
     public int getPlayerID() {
@@ -47,24 +49,6 @@ public abstract class Wizard extends Entity {
         this.health = health;
     }
 
-    public void attack(){
-
-    }
-
-    private void defineWizard(){
-        BodyDef bdef = new BodyDef();
-        bdef.position.set(position.x + (1/2f * wizardSprite.getWidth()), position.y + (1/2f * wizardSprite.getHeight()));
-        bdef.type = BodyDef.BodyType.DynamicBody;
-        b2body = InGameState.world.createBody(bdef);
-
-        FixtureDef fdef = new FixtureDef();
-        PolygonShape shape = new PolygonShape();
-        shape.setAsBox(wizardSprite.getWidth() / 2f, wizardSprite.getHeight() / 2f);
-
-        fdef.shape = shape;
-        b2body.createFixture(fdef);
-    }
-
 
     public void updatePosition(Vector2 direction) {
         // Stops the wizard from moving when you're not using the left joystick.
@@ -72,13 +56,11 @@ public abstract class Wizard extends Entity {
             b2body.setLinearVelocity(0, 0);
         }
         b2body.setLinearVelocity(speed * direction.x, speed * direction.y);
-        position.x = b2body.getPosition().x - (wizardSprite.getWidth() / 2f);
-        position.y = b2body.getPosition().y - (wizardSprite.getHeight() / 2f);
-    }
-
-    public void takeDamage(int damage){
+        position.x = b2body.getPosition().x - (super.texture.getWidth() / 2f);
+        position.y = b2body.getPosition().y - (super.texture.getHeight() / 2f);
 
     }
+
 
     public void updateRotation(Vector2 direction){
         // Rotation is set with an offset, since the rotation-argument in SpriteBatch.draw() starts
@@ -88,19 +70,16 @@ public abstract class Wizard extends Entity {
     }
 
     public void updateBodyPosition(Vector2 position){
-        b2body.setTransform(position.x + (wizardSprite.getWidth() / 2f), position.y + (wizardSprite.getWidth() / 2f), 0);
+        b2body.setTransform(position.x + (super.texture.getWidth() / 2f), position.y + (super.texture.getWidth() / 2f), 0);
     }
 
     public float getRotation(){
         return this.rotation;
     }
 
-    public Body getB2body(){
-        return b2body;
-    }
 
     public Texture getSprite(){
-        return wizardSprite;
+        return super.texture;
     }
 
     public Vector2 getGlobalPosition(){
@@ -110,7 +89,7 @@ public abstract class Wizard extends Entity {
 
 
     @Override
-    public void onCollision() {
+    public void onCollideWithSpell(int damage) {
 
     }
 

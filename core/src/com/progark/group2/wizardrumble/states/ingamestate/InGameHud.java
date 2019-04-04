@@ -55,6 +55,10 @@ public class InGameHud {
         stage.dispose();
     }
 
+    public HealthBar getHealthBar(){
+        return healthBar;
+    }
+
     public MovementInput1 getLeftJoyStick() {
         return leftJoyStick;
     }

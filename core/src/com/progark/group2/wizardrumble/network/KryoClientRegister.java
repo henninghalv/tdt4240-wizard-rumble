@@ -8,6 +8,8 @@ import com.progark.group2.wizardrumble.network.packets.SpellFiredPacket;
 import com.progark.group2.wizardrumble.network.requests.CreateGameRequest;
 import com.progark.group2.wizardrumble.network.requests.CreatePlayerRequest;
 import com.progark.group2.wizardrumble.network.requests.PlayerDeadRequest;
+
+import com.progark.group2.wizardrumble.network.requests.PlayerTookDamageRequest;
 import com.progark.group2.wizardrumble.network.requests.PlayerJoinRequest;
 import com.progark.group2.wizardrumble.network.requests.PlayerLeaveRequest;
 import com.progark.group2.wizardrumble.network.responses.CreateGameResponse;
@@ -45,6 +47,7 @@ public class KryoClientRegister {
         kryo.register(PlayerNameRequest.class);
         kryo.register(PlayerNameResponse.class);
         kryo.register(PlayersHealthStatusRequest.class);
+        kryo.register(PlayerTookDamageRequest.class);
         kryo.register(PlayerStatisticsResponse.class);
         kryo.register(ServerErrorResponse.class);
         kryo.register(ServerSuccessResponse.class);
