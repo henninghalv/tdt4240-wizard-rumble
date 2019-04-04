@@ -126,6 +126,8 @@ public class GameServer extends Listener{
         GameJoinedResponse response1 = new GameJoinedResponse();
         response1.setSpawnPoint(spawnPoints.get(connection.getID()));
         connection.sendTCP(response1);
+        startGame();
+
     }
 
     private void handlePlayerLeaveRequest(Connection connection, PlayerLeaveRequest request){
@@ -297,13 +299,16 @@ public class GameServer extends Listener{
 //        }
 //    }
 //
-//    /**
-//     * Tell the master server that this server no longer is on standby,
-//     * but in progress. Start game after 30 seconds from when two players joined or
-//     * when the game server is full.
-//     */
-//    private void startGame() {
-//
+    /**
+     * Tell the master server that this server no longer is on standby,
+     * but in progress. Start game after 30 seconds from when two players joined or
+     * when the game server is full.
+     */
+    private void startGame() throws IOException {
+        Log.info("Staring game...");
+        MasterServer.getInstance().updateGameServerStatus(this, GameStatus.IN_PROGRESS);
+        Log.info("Done!\n");
+
 //        if (players.keySet().size() == MasterServer.getMaximumPlayers()) {
 //            // set gameserver status to inprogress
 //        }
@@ -313,7 +318,7 @@ public class GameServer extends Listener{
 //            // After this countdown, set gameserver status to inprogress
 //
 //        }
-//    }
+    }
 //
 //    /**
 //     * When the game has ended and all joinedPlayerIDs has left the game,
