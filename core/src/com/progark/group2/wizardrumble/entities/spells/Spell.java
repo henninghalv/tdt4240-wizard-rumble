@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.progark.group2.wizardrumble.entities.Entity;
-import com.progark.group2.wizardrumble.states.InGameState.InGameState;
+import com.progark.group2.wizardrumble.states.ingamestate.InGameState;
 
 import java.io.IOException;
 

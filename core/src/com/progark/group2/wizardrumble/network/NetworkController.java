@@ -24,7 +24,8 @@ import com.progark.group2.wizardrumble.network.responses.PlayerMovementResponse;
 import com.progark.group2.wizardrumble.network.responses.ServerErrorResponse;
 import com.progark.group2.wizardrumble.network.responses.ServerSuccessResponse;
 import com.progark.group2.wizardrumble.states.GameStateManager;
-import com.progark.group2.wizardrumble.states.InGameState.InGameState;
+
+import com.progark.group2.wizardrumble.states.ingamestate.InGameState;
 
 import java.io.IOException;
 import java.util.HashMap;

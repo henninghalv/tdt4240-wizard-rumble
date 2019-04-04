@@ -7,6 +7,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
 
 
+
 public abstract class Wizard extends Entity {
     private Body b2body; // the body that contains the wizard in the box2d world
     protected int playerID;

@@ -1,4 +1,4 @@
-package com.progark.group2.wizardrumble.gui;
+package com.progark.group2.wizardrumble.states.ingamestate;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
