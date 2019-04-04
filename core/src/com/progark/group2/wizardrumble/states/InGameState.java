@@ -42,6 +42,8 @@ public class InGameState extends State {
     // Used for testing spells
     private List<Spell> spells;
     private String selectedSpell;
+    private long cooldown;
+    private long lastattack;
 
     private OrthographicCamera camera;
     private MapHandler mapHandler;
@@ -98,6 +100,8 @@ public class InGameState extends State {
         // Used for testing spells.
         spells = new ArrayList<Spell>();
         lastTouch = false;
+        cooldown = 2000;
+        lastattack = -2000; // To allow spellcasting at the start of the game.
 
         // Adds a world contact listener
         world.setContactListener(new WorldContactListener());
@@ -188,7 +192,13 @@ public class InGameState extends State {
         // if (rightJoyStick.isTouched()){
             // I think that spells should be cast when the player releases the right joystick, so that you can
             // see the rotation of the player character and not rely on hopefully having touched the joystick correctly
-            castSpell("fireball");
+            long time = System.currentTimeMillis();
+            System.out.println(time);
+            if (time > lastattack + cooldown){
+                castSpell("fireball");
+                lastattack = time;
+                System.out.println(lastattack);
+            }
         }
         lastTouch = rightJoyStick.isTouched();
         lastAimX = rightJoyStick.getKnobPercentX();
@@ -196,8 +206,6 @@ public class InGameState extends State {
 
         // Jank solution that takes in Wizards position and offsets by half screen size etc.
         // TODO Bind joysticks position to actual screen (suspect something with viewPort and/or stage)
-
-        // The offsets might be off as well. Adding 30 to the rightJoySticks X seems wrong. #MagicNumbersBTW
 
         leftJoyStick.updatePosition(wizard.getPosition().x - WIDTH/2f + 15, wizard.getPosition().y  - HEIGHT/2f + 15);
         rightJoyStick.updatePosition(wizard.getPosition().x + WIDTH/2f + 35 - AimInput1.diameter, wizard.getPosition().y  - HEIGHT/2f + 15);
