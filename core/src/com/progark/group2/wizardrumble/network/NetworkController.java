@@ -1,5 +1,6 @@
 package com.progark.group2.wizardrumble.network;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.math.Vector2;
@@ -126,26 +127,27 @@ public class NetworkController extends Listener{
         else if (object instanceof PlayerJoinResponse){
             Log.info("Received PlayerJoinResponse");
             PlayerJoinResponse response = (PlayerJoinResponse) object;
-            handlePlayerJoinResponse(connection, response);
+            handlePlayerJoinResponse(response);
 
         }
         else if (object instanceof GameStartPacket){
             handleGameStart();
         }
         else if (object instanceof GameJoinedResponse){
+            GameJoinedResponse response = (GameJoinedResponse) object;
+            Log.info("Connection ID: " + connection.getID());
             Player player = new Player(
                     userPreferences.getString("username"),
                     connection.getID(),
                     0,
                     0,
                     0,
-                    new Vector2(WIDTH / 2f, HEIGHT / 2f + (32 * 4)),
+                    response.getSpawnPoint(),
                     0
-            );  //TODO: Change the Vector2 to be starting position
+            );
             NetworkController.player = player;
         }
         else if (object instanceof PlayerMovementResponse){
-            // TODO: Update enemy wizard position
             PlayerMovementResponse response = (PlayerMovementResponse) object;
             handlePlayerMovementResponse(response);
         }
@@ -187,15 +189,15 @@ public class NetworkController extends Listener{
         Log.info("Game created and connected! Waiting for players...\n");
     }
 
-    private void handlePlayerJoinResponse(Connection connection, PlayerJoinResponse response) {
+    private void handlePlayerJoinResponse(PlayerJoinResponse response) {
         Log.info("Player joined: " + response.getPlayerName());
         Player player = new Player(
                 response.getPlayerName(),
-                connection.getID(),
+                response.getConnectionId(),
                 0,
                 0,
                 0,
-                new Vector2(WIDTH / 2f, HEIGHT / 2f + (32 * 4)),
+                response.getSpawnPoint(),
                 0
         );  //TODO: Change the Vector2 to be starting position
         players.put(response.getPlayerId(), player);

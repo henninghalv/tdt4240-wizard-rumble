@@ -29,6 +29,8 @@ public class GameServer extends Listener{
     private HashMap<Integer, PortStatus> UDP_PORTS = new HashMap<Integer, PortStatus>();
     private static int TCP_PORT;
     private static int UDP_PORT;
+    // List of the six available starting positions on the map.
+    private static HashMap<Integer, Vector2> spawnPoints = new HashMap<Integer, Vector2>();
     // List of all players that has joined the game with their stats for this game
     private HashMap<Integer, Player> players = new HashMap<Integer, Player>();
 
@@ -37,6 +39,7 @@ public class GameServer extends Listener{
         server = createNewServer(tcpPort, udpPort);
         TCP_PORT = tcpPort;
         UDP_PORT = udpPort;
+        createSpawnPoints();
     }
 
     // CREATION
@@ -53,6 +56,15 @@ public class GameServer extends Listener{
         KryoServerRegister.registerKryoClasses(server);
         server.addListener(this);
         return server;
+    }
+
+    private void createSpawnPoints(){
+        spawnPoints.put(1, new Vector2(500, 500));
+        spawnPoints.put(2, new Vector2(500, 1000));
+        spawnPoints.put(3, new Vector2(500, 1500));
+        spawnPoints.put(4, new Vector2(1500, 1500));
+        spawnPoints.put(5, new Vector2(1500, 1000));
+        spawnPoints.put(6, new Vector2(1500, 500));
     }
 
     // =====
@@ -102,13 +114,18 @@ public class GameServer extends Listener{
         PlayerJoinResponse response = new PlayerJoinResponse();
         response.setPlayerId(request.getPlayerId());
         response.setPlayerName(playerName);
+        response.setConnectionId(connection.getID());
+        response.setSpawnPoint(spawnPoints.get(connection.getID()));
         server.sendToAllExceptTCP(connection.getID(), response);
+
         for(Integer playerId : players.keySet()){
             sendPlayerJoinResponse(connection, playerId, players.get(playerId));
         }
 
         addPlayer(request.getPlayerId(), playerName, connection.getID());
-        connection.sendTCP(new GameJoinedResponse());
+        GameJoinedResponse response1 = new GameJoinedResponse();
+        response1.setSpawnPoint(spawnPoints.get(connection.getID()));
+        connection.sendTCP(response1);
     }
 
     private void handlePlayerLeaveRequest(Connection connection, PlayerLeaveRequest request){
@@ -160,6 +177,8 @@ public class GameServer extends Listener{
         PlayerJoinResponse response = new PlayerJoinResponse();
         response.setPlayerId(playerId);
         response.setPlayerName(player.getName());
+        response.setConnectionId(player.getConnectionId());
+        response.setSpawnPoint(player.getPosition());
         connection.sendTCP(response);
     }
 
@@ -186,7 +205,7 @@ public class GameServer extends Listener{
                 0, // Kills
                 0, // Position or rank according to time of death
                 0,// Time alive, milliseconds,
-                new Vector2(0,0),
+                spawnPoints.get(connectionId),
                 0
         );
 
