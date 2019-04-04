@@ -1,4 +1,4 @@
-package com.progark.group2.wizardrumble.states.InGameState;
+package com.progark.group2.wizardrumble.states.ingamestate;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -78,8 +78,8 @@ public class InGameState extends State {
     private InGameState(GameStateManager gameStateManager) throws IOException {
         super(gameStateManager);
 
-        // Start with no active spell
-        activeSpell = "";
+        // Start with Fireball as default spell
+        activeSpell = "Fireball";
 
         // Start with no casted spells
         spells = new ArrayList<Spell>();

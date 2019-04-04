@@ -15,7 +15,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.progark.group2.wizardrumble.network.NetworkController;
-import com.progark.group2.wizardrumble.states.InGameState.InGameState;
+import com.progark.group2.wizardrumble.states.ingamestate.InGameState;
 import com.progark.group2.wizardrumble.states.resources.UIButton;
 
 import java.io.IOException;
