@@ -101,7 +101,6 @@ public class GameServer extends Listener{
             }
         }
         else if (object instanceof SpellFiredPacket){
-            System.out.println("Received spell fired packet...");
             SpellFiredPacket packet = (SpellFiredPacket) object;
             server.sendToAllExceptUDP(connection.getID(), packet);
         }

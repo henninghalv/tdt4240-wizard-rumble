@@ -110,10 +110,7 @@ public class InGameState extends State {
         mapHandler = new MapHandler();
 
         // Creating a WizardPlayer object
-        wizardPlayer = new WizardPlayer(
-                network.getPlayer().getPosition()  // TODO: Give some other spawn point
-                );
-
+        wizardPlayer = new WizardPlayer(network.getPlayer().getPosition());  // TODO: Give some other spawn point
 
         // Add a new wizardPlayerRegion around Wizard
         wizardPlayerRegion = new TextureRegion(wizardPlayer.getSprite());

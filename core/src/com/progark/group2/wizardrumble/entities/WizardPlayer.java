@@ -12,10 +12,6 @@ public class WizardPlayer extends Wizard {
 
     private static WizardPlayer instance = null;
 
-    private Touchpad leftJoy; // importer touchpad-objektet som Bjørn lager
-    private Touchpad rightJoy; // importer touchpad-objektet som Bjørn lager
-
-
     public WizardPlayer(Vector2 spawnPoint) {
         super(DEFAULT_HEALTH, spawnPoint);
         super.health = maxHealth;

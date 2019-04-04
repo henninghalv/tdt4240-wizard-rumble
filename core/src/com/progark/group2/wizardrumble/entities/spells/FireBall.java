@@ -10,7 +10,7 @@ public class FireBall extends Spell {
 
     public FireBall(Vector2 spawnPoint, float rotation, Vector2 velocity){
 
-        super(spawnPoint, rotation, velocity, texture, 20, 200, "", 5, 1);
+        super(spawnPoint, rotation, velocity, texture, 10, 200, "", 5, 1);
 
     }
 

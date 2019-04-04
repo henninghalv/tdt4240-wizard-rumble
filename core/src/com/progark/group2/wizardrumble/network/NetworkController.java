@@ -7,8 +7,8 @@ import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.minlog.Log;
-import com.progark.group2.wizardrumble.entities.Spell;
 import com.progark.group2.wizardrumble.entities.spells.FireBall;
+import com.progark.group2.wizardrumble.entities.spells.Spell;
 import com.progark.group2.wizardrumble.network.packets.SpellFiredPacket;
 import com.progark.group2.wizardrumble.network.requests.CreateGameRequest;
 import com.progark.group2.wizardrumble.network.requests.CreatePlayerRequest;
@@ -155,7 +155,6 @@ public class NetworkController extends Listener{
             handlePlayerMovementResponse(response);
         }
         else if (object instanceof SpellFiredPacket){
-            System.out.println("Received spell fired packet...");
             SpellFiredPacket packet = (SpellFiredPacket) object;
             handleSpellCastPacket(packet);
         }
@@ -207,7 +206,7 @@ public class NetworkController extends Listener{
                 0,
                 response.getSpawnPoint(),
                 0
-        );  //TODO: Change the Vector2 to be starting position
+        );
         players.put(response.getPlayerId(), player);
     }
 
@@ -235,16 +234,20 @@ public class NetworkController extends Listener{
         updateEnemyPosition(response.getPlayerId(), response.getPosition(), response.getRotation());
     }
 
-    private void handleSpellCastPacket(SpellFiredPacket packet){
-        Spell spell;
-        // TODO: Update for real spelltypes
-        if(packet.getSpellType().equals("FireBall")){
-            spell = new FireBall(packet.getSpawnPoint(), packet.getRotation(), packet.getVelocity());
-        }
-        else{
-            spell = new FireBall(packet.getSpawnPoint(), packet.getRotation(), packet.getVelocity());
-        }
-        updateEnemyCastSpells(spell);
+    private void handleSpellCastPacket(final SpellFiredPacket packet){
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+                // TODO: Update for real spelltypes
+                if(packet.getSpellType().equals("FireBall")){
+                    updateEnemyCastSpells(new FireBall(packet.getSpawnPoint(), packet.getRotation(), packet.getVelocity()));
+                }
+                else{
+                    updateEnemyCastSpells(new FireBall(packet.getSpawnPoint(), packet.getRotation(), packet.getVelocity()));
+                }
+            }
+        });
+
     }
 
     // =====
@@ -284,9 +287,6 @@ public class NetworkController extends Listener{
             Log.info("Requesting to join game...");
             requestJoinGame();
 
-            sendPlayerJoinedRequest(gameServerClient);
-
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -297,15 +297,6 @@ public class NetworkController extends Listener{
         request.setDamage(damage);
         request.setPlayerId(playerId);
         gameServerClient.sendTCP(request);
-    }
-
-    private void sendPlayerJoinedRequest(Client client) {
-        // Player asks to join gameserver
-        System.out.println("Sending PlayerJoinedRequest to GameServer...");
-        PlayerJoinRequest request = new PlayerJoinRequest();
-        request.setPlayerId(playerId);
-        client.sendTCP(request);
-        System.out.println("Done!");
     }
 
     private Client createAndConnectClient(Integer timeout, String host, Integer tcp, Integer udp) throws IOException {
