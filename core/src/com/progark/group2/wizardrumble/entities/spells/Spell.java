@@ -47,6 +47,9 @@ public abstract class Spell extends Entity {
         return damage;
     }
 
+    public Body getB2body() {
+        return b2body;
+    }
 
     private void updatePosition(){
         //position.x += velocity.x;

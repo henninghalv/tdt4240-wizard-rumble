@@ -168,6 +168,11 @@ public class InGameState extends State {
 
     @Override
     public void update(float dt) {
+        for (Spell spell : spells){
+            if(spell.getB2body().equals(null)){
+                System.out.println("Spell isn't properly deleted");
+            }
+        }
         delete();
         world.step(1/60f, 6, 2);
 
@@ -193,11 +198,11 @@ public class InGameState extends State {
             // I think that spells should be cast when the player releases the right joystick, so that you can
             // see the rotation of the player character and not rely on hopefully having touched the joystick correctly
             long time = System.currentTimeMillis();
-            System.out.println(time);
+            //System.out.println(time);
             if (time > lastattack + cooldown){
                 castSpell("fireball");
                 lastattack = time;
-                System.out.println(lastattack);
+                //System.out.println(lastattack);
             }
         }
         lastTouch = rightJoyStick.isTouched();
@@ -249,7 +254,10 @@ public class InGameState extends State {
     }
 
     public void addToBodyList(Body body){
-        bodiesToDestroy.add(body);
+        if(!bodiesToDestroy.contains(body,true)){
+            bodiesToDestroy.add(body);
+        }
+        //bodiesToDestroy.add(body);
         System.out.println(bodiesToDestroy);
     }
 
