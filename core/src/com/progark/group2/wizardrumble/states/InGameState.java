@@ -72,7 +72,8 @@ public class InGameState extends State {
         mapHandler = new MapHandler();
 
         //Startposition must be changed. It is only like this while the user input moves.
-        wizard = new WizardPlayer(new Vector2(WIDTH / 2f, HEIGHT / 2f + (32 * 4)));
+        //wizard = new WizardPlayer(new Vector2(WIDTH / 2f, HEIGHT / 2f + (32 * 4)));
+        wizard = new WizardPlayer(new Vector2(1450,1500));
         region = new TextureRegion(wizard.getSprite());
 
         SpriteBatch sb = new SpriteBatch();
@@ -135,18 +136,18 @@ public class InGameState extends State {
     private void castSpell(String selectedSpell) {
         // Computes x and y from right joystick input making the speed the same regardless of
         // where on the joystick you touch.
-        float x1 = lastAimX;
-        float y1 = lastAimY;
-        float hypotenuse = (float) Math.sqrt(x1 * x1 + y1 * y1);
+        float angleX1 = lastAimX;
+        float angleY1 = lastAimY;
+        float hypotenuse = (float) Math.sqrt(angleX1 * angleX1 + angleY1 * angleY1);
         float ratio = (float) Math.sqrt(2) / hypotenuse;
-        float x = x1 * ratio;
-        float y = y1 * ratio;
+        float angleX = angleX1 * ratio;
+        float angleY = angleY1 * ratio;
 
 
         FireBall fb = new FireBall( // spawnPoint, rotation, velocity
-                getSpellInitialPosition(wizard.getPosition(), wizard.getSize(), FireBall.texture.getHeight(), FireBall.texture.getWidth(), (new Vector2(lastAimX, lastAimY).angle() + wizard.getOffset())),
+                getSpellInitialPosition(wizard.getPosition(), wizard.getSize(), FireBall.texture.getHeight(), FireBall.texture.getWidth(),angleX,angleY),
                 wizard.getRotation(), // rotation
-                new Vector2(x, y)  // velocity
+                new Vector2(angleX, angleY)  // velocity
         );
         spells.add(fb); // THIS IS ONLY FOR FIREBALL AT THE MOMENT
     }
@@ -241,6 +242,7 @@ public class InGameState extends State {
 
     public void addToBodyList(Body body){
         bodiesToDestroy.add(body);
+        System.out.println(bodiesToDestroy);
     }
 
     public void removeSpell(Spell spell){
@@ -264,46 +266,11 @@ public class InGameState extends State {
         bodiesToDestroy.clear();
     }
 
-    private Vector2 getSpellInitialPosition(Vector2 wizpos, Vector2 wizSize, int spellHeight, int spellWidth, float rotation){
-        // To not run into the spell
-        int offset = 6;
-
-        Vector2 pos1 = new Vector2((wizpos.x - spellWidth - offset),(wizpos.y + wizSize.y + offset));
-        Vector2 pos2 = new Vector2((wizpos.x + wizSize.x/2f - spellWidth/2f),(wizpos.y + wizSize.y + offset ));
-        Vector2 pos3 = new Vector2((wizpos.x + wizSize.x + offset),(wizpos.y + wizSize.y + offset ));
-        Vector2 pos4 = new Vector2((wizpos.x - spellWidth - offset),(wizpos.y + wizSize.y/2f - spellHeight / 2f));
-        Vector2 pos5 = new Vector2((wizpos.x + wizSize.x + offset),(wizpos.y + wizSize.y/2f - spellHeight / 2f));
-        Vector2 pos6 = new Vector2((wizpos.x - spellWidth - offset),(wizpos.y - spellHeight - offset));
-        Vector2 pos7 = new Vector2((wizpos.x + wizSize.x/2f - spellWidth/2f),(wizpos.y - spellHeight - offset));
-        Vector2 pos8 = new Vector2((wizpos.x + wizSize.x + offset),(wizpos.y - spellHeight - offset));
-
-
-
-        if(rotation > getRotation(2) && rotation < getRotation(3) ){
-            return pos1;
-        }
-        else if(rotation >= getRotation(1) && rotation <= getRotation(2)){
-            return pos2;
-        }
-        else if(rotation > getRotation(0) && rotation < getRotation(1)){
-            return pos3;
-        }
-        else if(rotation >= getRotation(3) && rotation <= getRotation(4)){
-            return pos4;
-        }
-        else if(rotation <= getRotation(0) || rotation >= getRotation(7)){
-            return pos5;
-        }
-        else if(rotation > getRotation(4) && rotation < getRotation(5)){
-            return pos6;
-        }
-        else if(rotation >= getRotation(5) && rotation <= getRotation(6)) {
-            return pos7;
-        }
-        else{
-            return pos8;
-        }
-
+    private Vector2 getSpellInitialPosition(Vector2 wizpos, Vector2 wizSize, int spellHeight, int spellWidth, float angleX, float angleY){
+        // To not run into the spell.
+        int offset = 40; // TODO Tweak this to align with spell size.
+        return new Vector2(wizpos.x + angleX*offset + spellWidth/2f*angleX - wizSize.x/2f,
+                           wizpos.y + angleY*offset + spellHeight/2f*angleY - wizSize.y/2f);
     }
 
     private float getRotation(int indexOfArea){
