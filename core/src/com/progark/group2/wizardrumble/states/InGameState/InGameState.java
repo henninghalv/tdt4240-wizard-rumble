@@ -1,4 +1,4 @@
-package com.progark.group2.wizardrumble.states;
+package com.progark.group2.wizardrumble.states.InGameState;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -30,6 +30,9 @@ import com.progark.group2.wizardrumble.entities.spells.FireBall;
 import com.progark.group2.wizardrumble.entities.spells.Ice;
 import com.progark.group2.wizardrumble.network.NetworkController;
 import com.progark.group2.wizardrumble.network.resources.Player;
+import com.progark.group2.wizardrumble.states.GameStateManager;
+import com.progark.group2.wizardrumble.states.InGameMenuState;
+import com.progark.group2.wizardrumble.states.State;
 
 import java.io.IOException;
 import java.util.ArrayList;
