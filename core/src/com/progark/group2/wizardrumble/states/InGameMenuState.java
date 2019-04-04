@@ -11,13 +11,14 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.progark.group2.wizardrumble.states.InGameState.InGameState;
+import com.progark.group2.wizardrumble.states.resources.UIButton;
 
 import java.io.IOException;
 
 import static com.progark.group2.wizardrumble.Application.HEIGHT;
 import static com.progark.group2.wizardrumble.Application.WIDTH;
 
-public class InGameMenuState extends MenuState {
+public class InGameMenuState extends State {
 
     private Table table;
     private Sprite pauseOverlay;
@@ -32,7 +33,7 @@ public class InGameMenuState extends MenuState {
         table.center();
 
         // resumeButton
-        Stack resumeButton = this.menuButton("Resume");
+        Stack resumeButton = new UIButton(new Texture("UI/blue_button00.png"), "Resume").getButton();
         resumeButton.addListener(new InputListener(){
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -48,7 +49,7 @@ public class InGameMenuState extends MenuState {
         this.table.row();
 
         // settingsButton
-        Stack settingsButton = this.menuButton("Settings");
+        Stack settingsButton = new UIButton(new Texture("UI/blue_button00.png"), "Settings").getButton();
         settingsButton.addListener(new InputListener(){
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -64,7 +65,7 @@ public class InGameMenuState extends MenuState {
         this.table.row();
 
         // exitButton
-        Stack exitButton = this.menuButton("Exit");
+        Stack exitButton = new UIButton(new Texture("UI/blue_button00.png"), "Exit").getButton();
         exitButton.addListener(new InputListener(){
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
