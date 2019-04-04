@@ -1,4 +1,4 @@
-package com.progark.group2.wizardrumble.states;
+package com.progark.group2.wizardrumble.states.InGameState;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;

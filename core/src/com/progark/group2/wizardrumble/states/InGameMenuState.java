@@ -10,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.progark.group2.wizardrumble.states.InGameState.InGameState;
 
 import java.io.IOException;
 
@@ -23,7 +24,7 @@ public class InGameMenuState extends MenuState {
     private Vector3 cameraPosition;
 
 
-    InGameMenuState(GameStateManager gameStateManager){
+    public InGameMenuState(GameStateManager gameStateManager){
         super(gameStateManager);
 
         table = new Table();

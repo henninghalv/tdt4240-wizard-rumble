@@ -22,7 +22,7 @@ import com.progark.group2.wizardrumble.network.responses.PlayerMovementResponse;
 import com.progark.group2.wizardrumble.network.responses.ServerErrorResponse;
 import com.progark.group2.wizardrumble.network.responses.ServerSuccessResponse;
 import com.progark.group2.wizardrumble.states.GameStateManager;
-import com.progark.group2.wizardrumble.states.InGameState;
+import com.progark.group2.wizardrumble.states.InGameState.InGameState;
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -42,7 +42,7 @@ public class NetworkController extends Listener{
 
     // Master server configuration constants
     private final static int TIMEOUT = 5000;
-    private final static String MASTER_SERVER_HOST = "10.22.78.88";  // Set this to the local IP address of your computer when running the server
+    private final static String MASTER_SERVER_HOST = "10.22.73.31";  // Set this to the local IP address of your computer when running the server
     private final static int MASTER_SERVER_TCP_PORT = 54555;
     private final static int MASTER_SERVER_UDP_PORT = 54777;
 
