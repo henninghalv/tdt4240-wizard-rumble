@@ -35,6 +35,7 @@ public abstract class Entity {
 
 
 
+    // Makes a b2body for all entities
     protected void defineEntity() {
         BodyDef bdef = new BodyDef();
         bdef.position.set(position.x + (1/2f * size.x), position.y + (1/2f * size.y));

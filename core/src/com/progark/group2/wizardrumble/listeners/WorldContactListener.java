@@ -9,7 +9,7 @@ import com.progark.group2.wizardrumble.entities.Entity;
 import com.progark.group2.wizardrumble.entities.spells.Spell;
 
 public class WorldContactListener implements ContactListener {
-
+    // Has control of all collisions.
 
     @Override
     public void beginContact(Contact contact) {
@@ -17,6 +17,7 @@ public class WorldContactListener implements ContactListener {
         Fixture fixB = contact.getFixtureB();
 
 
+        // Checks if one and only one fixture is a spell
         if (!(fixA.getUserData().getClass().getSuperclass().equals(Spell.class) && fixB.getUserData().getClass().getSuperclass().equals(Spell.class)) && (fixA.getUserData().getClass().getSuperclass().equals(Spell.class) || fixB.getUserData().getClass().getSuperclass().equals(Spell.class))){
             Fixture spell = fixA.getUserData() == "spell" ? fixA : fixB;
             Fixture object = spell == fixA ? fixB : fixA;

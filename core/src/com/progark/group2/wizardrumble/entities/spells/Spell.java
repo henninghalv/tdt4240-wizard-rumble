@@ -52,9 +52,6 @@ public abstract class Spell extends Entity {
     }
 
     private void updatePosition(){
-        //position.x += velocity.x;
-        //position.y += velocity.y;
-        //b2body.applyLinearImpulse(new Vector2(velocity.x, velocity.y), new Vector2(position.x,position.y), true);
         b2body.setLinearVelocity(speed * velocity.x, speed * velocity.y);
         position.x = b2body.getPosition().x - (super.texture.getWidth() / 2f);
         position.y = b2body.getPosition().y - (super.texture.getHeight() / 2f);
@@ -63,19 +60,11 @@ public abstract class Spell extends Entity {
     public void destroySpell(){
         InGameState.getInstance().addToBodyList(b2body);
         InGameState.getInstance().removeSpell(this);
-        //super.texture.dispose();
     }
 
     @Override
     public void onCollideWithSpell(int damage) {
 
-        /*if (WizardPlayer.getInstance() == hit.target) {
-            NetworkController.getInstance().sendPlayerTookDamageRequest();
-        }*/
-        // TODO: If colliding object is the Wizard Player instance,
-        // TODO: Send request to server about taking damage
-
-        // TODO: Destroy/Dispose/move out of sight (ObjectPool) spell instance
     }
 
     @Override

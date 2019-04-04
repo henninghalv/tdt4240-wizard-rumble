@@ -90,6 +90,7 @@ public class InGameState extends State {
         Gdx.input.setInputProcessor(stage);
 
 
+        // Creates map with all elements
         new B2WorldCreator(mapHandler.getMap());
 
 
@@ -168,12 +169,17 @@ public class InGameState extends State {
 
     @Override
     public void update(float dt) {
+
+        // Debugging method to let us know if at any point a spell still exists after it's body is destroyed.
         for (Spell spell : spells){
             if(spell.getB2body().equals(null)){
                 System.out.println("Spell isn't properly deleted");
             }
         }
+
+        // Deletes bodies after collision
         delete();
+
         world.step(1/60f, 6, 2);
 
         mapHandler.setView(camera);
@@ -258,7 +264,7 @@ public class InGameState extends State {
             bodiesToDestroy.add(body);
         }
         //bodiesToDestroy.add(body);
-        System.out.println(bodiesToDestroy);
+        //System.out.println(bodiesToDestroy);
     }
 
     public void removeSpell(Spell spell){
