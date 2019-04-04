@@ -4,6 +4,7 @@ package com.progark.group2.wizardrumble.states;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -15,13 +16,15 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.progark.group2.wizardrumble.network.NetworkController;
+import com.progark.group2.wizardrumble.states.resources.UIButton;
+
 import java.io.IOException;
 
 
 /** The main menu that is shown when the game is launched. The listeners must be added individually
  * to the buttons that are created by the parent class MenuState.
  */
-public class MainMenuState extends MenuState {
+public class MainMenuState extends State {
 
     private NetworkController network;
 
@@ -39,7 +42,7 @@ public class MainMenuState extends MenuState {
         initialize();
 
         // startButton
-        Stack startButton = this.menuButton("Start");
+        Stack startButton = new UIButton(new Texture("UI/blue_button00.png"), "Start").getButton();
         startButton.addListener(new InputListener(){
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -61,7 +64,7 @@ public class MainMenuState extends MenuState {
         this.table.row();
 
         // Settings
-        Stack settingsButton = menuButton("Settings");
+        Stack settingsButton = new UIButton(new Texture("UI/blue_button00.png"), "Settings").getButton();
         settingsButton.addListener(new InputListener(){
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -78,7 +81,7 @@ public class MainMenuState extends MenuState {
         this.table.row();
 
         // exitButton
-        Stack exitButton = menuButton("Exit");
+        Stack exitButton = new UIButton(new Texture("UI/blue_button00.png"), "Exit").getButton();
         exitButton.addListener(new InputListener(){
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {

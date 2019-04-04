@@ -3,6 +3,7 @@ package com.progark.group2.wizardrumble.states;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -15,10 +16,11 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.progark.group2.wizardrumble.network.NetworkController;
 import com.progark.group2.wizardrumble.states.ingamestate.InGameState;
+import com.progark.group2.wizardrumble.states.resources.UIButton;
 
 import java.io.IOException;
 
-public class LobbyState extends MenuState {
+public class LobbyState extends State {
 
     private NetworkController network;
 
@@ -43,16 +45,16 @@ public class LobbyState extends MenuState {
 
     private void createPanels() {
         for (Integer playerId : network.getPlayers().keySet()) {
-            table.add(menuButton(network.getPlayers().get(playerId).getName())).pad(0F);
+            table.add(new UIButton(new Texture("UI/blue_button00.png"), network.getPlayers().get(playerId).getName()).getButton()).pad(0F);
             table.row();
         }
-        table.add(menuButton(network.getPlayer().getName())).pad(0F);
+        table.add(new UIButton(new Texture("UI/blue_button00.png"), network.getPlayer().getName()).getButton()).pad(0F);
         table.row();
     }
 
     private void createBackButton() {
         // back button
-        Stack backButton = this.menuButton("Back");
+        Stack backButton = new UIButton(new Texture("UI/blue_button00.png"), "Back").getButton();
         backButton.addListener(new InputListener(){
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -74,7 +76,7 @@ public class LobbyState extends MenuState {
 
     private void createStartButton() {
         // back button
-        Stack startButton = this.menuButton("Start Game");
+        Stack startButton = new UIButton(new Texture("UI/blue_button00.png"), "Start game").getButton();
         startButton.addListener(new InputListener(){
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
