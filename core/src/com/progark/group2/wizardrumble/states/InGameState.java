@@ -346,6 +346,8 @@ public class InGameState extends State {
         return camera.position;
     }
 
+    public WizardPlayer getWizardPlayer(){ return wizardPlayer; }
+
     @Override
     public void activate(){
         super.activate();

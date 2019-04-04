@@ -40,6 +40,10 @@ public abstract class Wizard extends Entity {
         this.playerID = playerID;
     }
 
+    public int getHealth() {
+        return health;
+    }
+
     public void setHealth(int health) {
         this.health = health;
     }
