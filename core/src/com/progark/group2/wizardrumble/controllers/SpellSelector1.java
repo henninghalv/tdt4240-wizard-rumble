@@ -82,8 +82,6 @@ public class SpellSelector1 extends SpellSelector {
             buttonGroup.add(spellButton);
 
             stage.addActor(spellButton);
-
-
         }
 
         // Ensures only one spell can be selected at any time(radio buttons)

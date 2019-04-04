@@ -8,6 +8,7 @@ import com.progark.group2.wizardrumble.controllers.AimInput1;
 import com.progark.group2.wizardrumble.controllers.MovementInput1;
 import com.progark.group2.wizardrumble.controllers.SpellSelector1;
 import com.progark.group2.wizardrumble.controllers.SpellSelector;
+import com.progark.group2.wizardrumble.gui.HealthBar;
 
 
 import java.util.ArrayList;
@@ -19,14 +20,13 @@ public class InGameHud {
 
     private Stage stage;
     private FitViewport stageViewport;
+    private HealthBar healthBar;
 
     private MovementInput1 leftJoyStick;
     private AimInput1 rightJoyStick;
 
     private SpellSelector spellSelector;
     private ArrayList<String> spellNames;
-
-
 
     public InGameHud(SpriteBatch spriteBatch) {
         stageViewport = new FitViewport(WIDTH, HEIGHT, new OrthographicCamera());
@@ -43,6 +43,9 @@ public class InGameHud {
         spellNames.add("Ice");
 
         spellSelector = new SpellSelector1(spellNames, stage);
+
+        healthBar = new HealthBar();
+        stage.addActor(healthBar);
 
     }
 
