@@ -4,35 +4,31 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.maps.MapObject;
-import com.badlogic.gdx.maps.objects.RectangleMapObject;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.progark.group2.wizardrumble.entities.Wizard;
 import com.progark.group2.wizardrumble.entities.WizardEnemy;
 import com.progark.group2.wizardrumble.entities.WizardPlayer;
 import com.progark.group2.wizardrumble.handlers.MapHandler;
-import com.progark.group2.wizardrumble.entities.Spell;
 import com.progark.group2.wizardrumble.entities.spells.FireBall;
 import com.progark.group2.wizardrumble.entities.spells.Ice;
+import com.progark.group2.wizardrumble.entities.spells.Spell;
+import com.progark.group2.wizardrumble.listeners.WorldContactListener;
 import com.progark.group2.wizardrumble.network.NetworkController;
 import com.progark.group2.wizardrumble.network.resources.Player;
 import com.progark.group2.wizardrumble.states.GameStateManager;
 import com.progark.group2.wizardrumble.states.InGameMenuState;
 import com.progark.group2.wizardrumble.states.State;
+import com.progark.group2.wizardrumble.tools.B2WorldCreator;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -54,9 +50,13 @@ public class InGameState extends State {
     // Currently selected spell
     private String activeSpell;
 
+    private long cooldown;
+    private long lastattack;
+
     // Spells that have been cast
     private List<Spell> spells;
 
+    private OrthographicCamera camera;
     private Viewport gamePort;
     private MapHandler mapHandler;
     private SpriteBatch spriteBatch;
@@ -64,6 +64,8 @@ public class InGameState extends State {
     // Box2d variables
     public final static World world = new World(new Vector2(0, 0), true);
     private Box2DDebugRenderer b2dr;
+    private Array<Body> bodiesToDestroy;
+
 
     private static InGameState instance = null;
     private InGameHud inGameHud;
@@ -78,8 +80,13 @@ public class InGameState extends State {
     private InGameState(GameStateManager gameStateManager) throws IOException {
         super(gameStateManager);
 
-        // Start with Fireball as default spell
-        activeSpell = "Fireball";
+        // Create camera
+        camera = new OrthographicCamera();
+        gamePort = new FitViewport(WIDTH, HEIGHT, camera);
+
+
+        // Start with no active spell
+        activeSpell = "FireBall";
 
         // Start with no casted spells
         spells = new ArrayList<Spell>();
@@ -94,9 +101,6 @@ public class InGameState extends State {
         inGameHud = new InGameHud(spriteBatch);
         Gdx.input.setInputProcessor(inGameHud.getStage());
 
-        // Create a camera
-        camera = new OrthographicCamera();
-        gamePort = new FitViewport(WIDTH, HEIGHT, camera);
 
         // Create the stage
         stage = new Stage(gamePort, spriteBatch);
@@ -106,11 +110,7 @@ public class InGameState extends State {
         mapHandler = new MapHandler();
 
         // Creating a WizardPlayer object
-        wizardPlayer = new WizardPlayer(
-                Wizard.DEFAULT_HEALTH,
-                network.getPlayer().getPosition(),  // TODO: Give some other spawn point
-                new Texture("wizard_front.png")
-        );
+        wizardPlayer = new WizardPlayer(network.getPlayer().getPosition());  // TODO: Give some other spawn point
 
         // Add a new wizardPlayerRegion around Wizard
         wizardPlayerRegion = new TextureRegion(wizardPlayer.getSprite());
@@ -119,8 +119,7 @@ public class InGameState extends State {
         for (Player player : network.getPlayers().values()){
             WizardEnemy enemy = new WizardEnemy(
                     Wizard.DEFAULT_HEALTH,
-                    player.getPosition(), // TODO: Give some other spawn point
-                    new Texture("wizard_front.png")
+                    player.getPosition() // TODO: Give some other spawn point
             );
             wizardEnemies.put(player.getConnectionId(), enemy);
             TextureRegion enemyRegion = new TextureRegion(enemy.getSprite());
@@ -128,7 +127,17 @@ public class InGameState extends State {
         }
 
 
-        createCollisionBoxes();
+        // Creates map with all elements
+        new B2WorldCreator(mapHandler.getMap());
+
+        // Adds a world contact listener
+        world.setContactListener(new WorldContactListener());
+
+        lastTouch = false;
+        cooldown = 2000;
+        lastattack = -2000; // To allow spellcasting at the start of the game.
+
+        bodiesToDestroy = new Array<Body>();
 
         // Set camera to initial wizardPlayer position
         camera.position.set(wizardPlayer.getPosition().x + wizardPlayer.getSprite().getWidth()/2f, wizardPlayer.getPosition().y + wizardPlayer.getSprite().getHeight()/2f, 0);
@@ -142,9 +151,6 @@ public class InGameState extends State {
         return instance;
     }
 
-    public World getWorld(){
-        return world;
-    }
 
     private void updateWizardRotation(){
         wizardPlayer.updateRotation(
@@ -154,26 +160,6 @@ public class InGameState extends State {
         );
     }
 
-    private void createCollisionBoxes(){
-        // Makes objects into bodies in the box2d world.
-        // This makes them collidable.
-        BodyDef bdef = new BodyDef();
-        PolygonShape shape = new PolygonShape();
-        FixtureDef fdef = new FixtureDef();
-        Body body;
-        // The number 3 is the index of the object layer in the TiledMap.
-        for (MapObject object : mapHandler.getMap().getLayers().get(3).getObjects().getByType(RectangleMapObject.class)) {
-            Rectangle rectangle = ((RectangleMapObject) object).getRectangle();
-
-            bdef.type = BodyDef.BodyType.StaticBody;
-            bdef.position.set(rectangle.getX() + rectangle.getWidth() / 2, rectangle.getY() + rectangle.getHeight() / 2);
-
-            body = world.createBody(bdef);
-            shape.setAsBox(rectangle.getWidth() / 2, rectangle.getHeight() / 2);
-            fdef.shape = shape;
-            body.createFixture(fdef);
-        }
-    }
 
     private void updateWizardPosition() {
         //GetKnobPercentX and -Y returns cos and sin values of the touchpad in question
@@ -193,33 +179,33 @@ public class InGameState extends State {
 
         // Logic for casting when FireBall has been selected
         if (spell.equals("FireBall")) {
-            FireBall fb = new FireBall( // spawnPoint, rotation, velocity
-                    new Vector2(
-                            // TODO: offsetting spell position by screen width and height is not desirable, but it works for now.
-                            // Need to further look into how spell position or rendering is decided.
-                            wizardPlayer.getPosition().x - (WIDTH + wizardPlayer.getSprite().getWidth()) / 2f,
-                            wizardPlayer.getPosition().y - (HEIGHT + wizardPlayer.getSprite().getHeight()) / 2f
-                    ),
-                    wizardPlayer.getRotation(), // rotation
-                    new Vector2(x, y)  // velocity
-            );
+
+            Vector2 spawnPoint = getSpellInitialPosition(wizardPlayer.getPosition(), wizardPlayer.getSize(), FireBall.texture.getHeight(), FireBall.texture.getWidth(),x,y);
+
+            float rotation = wizardPlayer.getRotation();  // rotation
+
+            Vector2 velocity = new Vector2(x, y);  // velocity
+
+            FireBall fb = new FireBall(spawnPoint, rotation, velocity);
             spells.add(fb); // Add to list of casted spells
+
+            // TODO: Send SpellFiredPacket
+            network.castSpell("FireBall", spawnPoint, rotation, velocity);
         }
 
         // Logic for casting when Ice has been selected
         if (spell.equals("Ice")) {
             Ice ic = new Ice( // spawnPoint, rotation, velocity
-                    new Vector2(
-                            // TODO: offsetting spell position by screen width and height is not desirable, but it works for now.
-                            // Need to further look into how spell position or rendering is decided.
-                            wizardPlayer.getPosition().x - (WIDTH + wizardPlayer.getSprite().getWidth()) / 2f,
-                            wizardPlayer.getPosition().y - (HEIGHT + wizardPlayer.getSprite().getHeight()) / 2f
-                    ),
+                    getSpellInitialPosition(wizardPlayer.getPosition(), wizardPlayer.getSize(), Ice.texture.getHeight(), Ice.texture.getWidth(),x,y),
                     wizardPlayer.getRotation(), // rotation
                     new Vector2(x, y)  // velocity
             );
             spells.add(ic); // Add to list of casted spells
         }
+    }
+
+    public void addSpell(Spell spell){
+        spells.add(spell);
     }
 
     private void updateCamera(float x, float y) {
@@ -228,8 +214,23 @@ public class InGameState extends State {
         camera.update();
     }
 
+    public InGameHud getInGameHud(){
+        return inGameHud;
+    }
+
     @Override
     public void update(float dt) {
+
+        // Debugging method to let us know if at any point a spell still exists after it's body is destroyed.
+        for (Spell spell : spells){
+            if(spell.getB2body() == (null)){
+                System.out.println("Spell isn't properly deleted");
+            }
+        }
+
+        // Deletes bodies after collision
+        delete();
+
         world.step(1 / 60f, 6, 2);
 
         mapHandler.setView(camera);
@@ -255,13 +256,21 @@ public class InGameState extends State {
         // if (inGameHud.getRightJoyStick().isTouched()){
             // I think that spells should be cast when the player releases the right joystick, so that you can
             // see the rotation of the player character and not rely on hopefully having touched the joystick correctly
-            for (String spell : inGameHud.getSpellNames()) {
-                if (spell.equals(inGameHud.getSpellSelector().getSpellSelected())) {
-                    activeSpell = spell;
-                    break;
+
+            long time = System.currentTimeMillis();
+
+            if (time > lastattack + cooldown){
+                for (String spell : inGameHud.getSpellNames()) {
+                    if (spell.equals(inGameHud.getSpellSelector().getSpellSelected())) {
+                        activeSpell = spell;
+                        break;
+                    }
                 }
+                castSpell(activeSpell);
+                lastattack = time;
+                //System.out.println(lastattack);
             }
-            castSpell(activeSpell);
+
         }
 
         lastTouch = inGameHud.getRightJoyStick().isTouched();
@@ -340,6 +349,25 @@ public class InGameState extends State {
 
     }
 
+    public void addToBodyList(Body body){
+        if(!bodiesToDestroy.contains(body,true)){
+            bodiesToDestroy.add(body);
+        }
+        //bodiesToDestroy.add(body);
+        //System.out.println(bodiesToDestroy);
+    }
+
+    public void removeSpell(Spell spell){
+        spells.remove(spell);
+    }
+
+    private void delete(){
+        for (Body body : bodiesToDestroy) {
+            world.destroyBody(body);
+        }
+        bodiesToDestroy.clear();
+    }
+
     @Override
     public void onBackButtonPress() {
         this.gameStateManager.push(new InGameMenuState(gameStateManager));
@@ -355,5 +383,12 @@ public class InGameState extends State {
     public void activate(){
         super.activate();
         Gdx.input.setInputProcessor(inGameHud.getStage());
+    }
+
+    private Vector2 getSpellInitialPosition(Vector2 wizpos, Vector2 wizSize, int spellHeight, int spellWidth, float angleX, float angleY){
+        // To not run into the spell.
+        int offset = 40; // TODO Tweak this to align with spell size.
+        return new Vector2(wizpos.x + angleX*offset + spellWidth/2f*angleX - wizSize.x/2f,
+                wizpos.y + angleY*offset + spellHeight/2f*angleY - wizSize.y/2f);
     }
 }

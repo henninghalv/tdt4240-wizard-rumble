@@ -4,9 +4,12 @@ import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Server;
 import com.progark.group2.wizardrumble.network.packets.GameStartPacket;
+import com.progark.group2.wizardrumble.network.packets.SpellFiredPacket;
 import com.progark.group2.wizardrumble.network.requests.CreateGameRequest;
 import com.progark.group2.wizardrumble.network.requests.CreatePlayerRequest;
 import com.progark.group2.wizardrumble.network.requests.PlayerDeadRequest;
+
+import com.progark.group2.wizardrumble.network.requests.PlayerTookDamageRequest;
 import com.progark.group2.wizardrumble.network.requests.PlayerJoinRequest;
 import com.progark.group2.wizardrumble.network.requests.PlayerLeaveRequest;
 import com.progark.group2.wizardrumble.network.responses.CreateGameResponse;
@@ -33,7 +36,7 @@ public class KryoServerRegister {
      * Registers all classes for kryo serializer
      * @param server    kryo server object
      */
-    protected static void registerKryoClasses(Server server) {
+    public static void registerKryoClasses(Server server) {
         Kryo kryo = server.getKryo();
         kryo.register(PlayerDeadRequest.class);
         kryo.register(PlayerJoinRequest.class);
@@ -45,6 +48,7 @@ public class KryoServerRegister {
         kryo.register(PlayerNameRequest.class);
         kryo.register(PlayerNameResponse.class);
         kryo.register(PlayersHealthStatusRequest.class);
+        kryo.register(PlayerTookDamageRequest.class);
         kryo.register(PlayerStatisticsResponse.class);
         kryo.register(ServerErrorResponse.class);
         kryo.register(ServerSuccessResponse.class);
@@ -54,6 +58,7 @@ public class KryoServerRegister {
         kryo.register(CreateGameResponse.class);
         kryo.register(GameJoinedResponse.class);
         kryo.register(GameStartPacket.class);
+        kryo.register(SpellFiredPacket.class);
         kryo.register(HashMap.class);
         kryo.register(Vector2.class);
         kryo.register(ArrayList.class);

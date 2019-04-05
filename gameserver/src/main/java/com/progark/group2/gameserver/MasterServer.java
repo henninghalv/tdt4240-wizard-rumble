@@ -243,9 +243,6 @@ public class MasterServer extends Listener{
                 TCP_PORTS.put(tcpPort, PortStatus.CLOSED);
                 return tcpPort;
             }
-            else{
-                System.out.println("Port taken...");
-            }
         }
         return 0;
     }
@@ -259,9 +256,6 @@ public class MasterServer extends Listener{
             if(PortStatus.OPEN.equals(UDP_PORTS.get(udpPort))){
                 UDP_PORTS.put(udpPort, PortStatus.CLOSED);
                 return udpPort;
-            }
-            else{
-                System.out.println("Port taken...");
             }
         }
         return 0;

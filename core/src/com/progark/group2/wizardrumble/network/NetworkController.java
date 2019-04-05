@@ -7,8 +7,13 @@ import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.minlog.Log;
+import com.progark.group2.wizardrumble.entities.spells.FireBall;
+import com.progark.group2.wizardrumble.entities.spells.Spell;
+import com.progark.group2.wizardrumble.network.packets.SpellFiredPacket;
 import com.progark.group2.wizardrumble.network.requests.CreateGameRequest;
 import com.progark.group2.wizardrumble.network.requests.CreatePlayerRequest;
+
+import com.progark.group2.wizardrumble.network.requests.PlayerTookDamageRequest;
 import com.progark.group2.wizardrumble.network.packets.GameStartPacket;
 import com.progark.group2.wizardrumble.network.requests.PlayerJoinRequest;
 import com.progark.group2.wizardrumble.network.requests.PlayerMovementRequest;
@@ -22,7 +27,9 @@ import com.progark.group2.wizardrumble.network.responses.PlayerMovementResponse;
 import com.progark.group2.wizardrumble.network.responses.ServerErrorResponse;
 import com.progark.group2.wizardrumble.network.responses.ServerSuccessResponse;
 import com.progark.group2.wizardrumble.states.GameStateManager;
+
 import com.progark.group2.wizardrumble.states.ingamestate.InGameState;
+
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -147,6 +154,10 @@ public class NetworkController extends Listener{
             PlayerMovementResponse response = (PlayerMovementResponse) object;
             handlePlayerMovementResponse(response);
         }
+        else if (object instanceof SpellFiredPacket){
+            SpellFiredPacket packet = (SpellFiredPacket) object;
+            handleSpellCastPacket(packet);
+        }
         else if (object instanceof PlayerLeaveResponse){
             // TODO: Remove the player from players
             PlayerLeaveResponse response = (PlayerLeaveResponse) object;
@@ -195,7 +206,7 @@ public class NetworkController extends Listener{
                 0,
                 response.getSpawnPoint(),
                 0
-        );  //TODO: Change the Vector2 to be starting position
+        );
         players.put(response.getPlayerId(), player);
     }
 
@@ -223,6 +234,22 @@ public class NetworkController extends Listener{
         updateEnemyPosition(response.getPlayerId(), response.getPosition(), response.getRotation());
     }
 
+    private void handleSpellCastPacket(final SpellFiredPacket packet){
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+                // TODO: Update for real spelltypes
+                if(packet.getSpellType().equals("FireBall")){
+                    updateEnemyCastSpells(new FireBall(packet.getSpawnPoint(), packet.getRotation(), packet.getVelocity()));
+                }
+                else{
+                    updateEnemyCastSpells(new FireBall(packet.getSpawnPoint(), packet.getRotation(), packet.getVelocity()));
+                }
+            }
+        });
+
+    }
+
     // =====
 
     // ACTIONS
@@ -246,6 +273,7 @@ public class NetworkController extends Listener{
     private void connectToGame(CreateGameResponse response){
         try {
             // Client tries to connect to the given GameServer
+
             Log.info("Creating connection to assigned GameServer...");
             gameServerClient = createAndConnectClient(
                     TIMEOUT,
@@ -255,12 +283,20 @@ public class NetworkController extends Listener{
             );
             Log.info("Connection to GameServer established!\n");
             // Add listeners to the connection
+
             Log.info("Requesting to join game...");
             requestJoinGame();
 
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void sendPlayerTookDamageRequest(int damage) {
+        PlayerTookDamageRequest request = new PlayerTookDamageRequest();
+        request.setDamage(damage);
+        request.setPlayerId(playerId);
+        gameServerClient.sendTCP(request);
     }
 
     private Client createAndConnectClient(Integer timeout, String host, Integer tcp, Integer udp) throws IOException {
@@ -287,12 +323,27 @@ public class NetworkController extends Listener{
         gameServerClient.sendUDP(request);
     }
 
+    public void castSpell(String type, Vector2 spawnPoint, float rotation, Vector2 velocity){
+        SpellFiredPacket packet = new SpellFiredPacket();
+        packet.setSpellType(type);
+        packet.setSpawnPoint(spawnPoint);
+        packet.setRotation(rotation);
+        packet.setVelocity(velocity);
+        gameServerClient.sendUDP(packet);
+    }
+
     private void updateEnemyPosition(int playerId, Vector2 position, float rotation) {
         players.get(playerId).setPosition(position);
         players.get(playerId).setRotation(rotation);
     }
 
-
+    private void updateEnemyCastSpells(Spell spell){
+        try {
+            InGameState.getInstance().addSpell(spell);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     // =====
 
     // HELPER METHODS

@@ -34,15 +34,16 @@ public class HealthBar extends Actor {
     }
 
     public void updateHealth(int currentHealth){
-        width = currentHealth / Wizard.DEFAULT_HEALTH * totalBarWidth;
+        float widthAsFloat = (float) currentHealth / (float) Wizard.DEFAULT_HEALTH * barWidthMultiplier;
+        width = (int) (widthAsFloat * 100);
         if(currentHealth > Wizard.DEFAULT_HEALTH / 2){
             createTexture(width, Color.GREEN);
         }
-        else if(currentHealth <= Wizard.DEFAULT_HEALTH / 2){
-            createTexture(width,  Color.ORANGE);
+        else if(currentHealth > Wizard.DEFAULT_HEALTH / 4){
+            createTexture(width, Color.ORANGE);
         }
-        else if(currentHealth <= Wizard.DEFAULT_HEALTH / 4){
-            createTexture(width,  Color.RED);
+        else{
+            createTexture(width, Color.RED);
         }
     }
 
