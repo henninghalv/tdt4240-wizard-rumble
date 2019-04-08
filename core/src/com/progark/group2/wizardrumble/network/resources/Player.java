@@ -9,6 +9,7 @@ public class Player {
     private int kills;
     private int rank;
     private int timeAliveInMilliseconds;
+    private boolean isAlive;
     private Vector2 position;
     private float rotation;
 
@@ -21,6 +22,7 @@ public class Player {
         this.kills = kills;
         this.rank = rank;
         this.timeAliveInMilliseconds = timeAliveInMilliseconds;
+        this.isAlive = true;
         this.position = position;
         this.rotation = rotation;
 
@@ -46,6 +48,10 @@ public class Player {
         return timeAliveInMilliseconds;
     }
 
+    public boolean isAlive() {
+        return isAlive;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -64,6 +70,10 @@ public class Player {
 
     public void setTimeAliveInMilliseconds(int timeAliveInMilliseconds) {
         this.timeAliveInMilliseconds = timeAliveInMilliseconds;
+    }
+
+    public void setAlive(boolean alive) {
+        isAlive = alive;
     }
 
     public Vector2 getPosition() {

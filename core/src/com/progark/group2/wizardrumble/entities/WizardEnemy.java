@@ -5,7 +5,7 @@ import com.badlogic.gdx.math.Vector2;
 
 public class WizardEnemy extends Wizard {
 
-    public WizardEnemy(int maxHealth, Vector2 spawnPoint) {
-        super(maxHealth, spawnPoint);
+    public WizardEnemy(Vector2 spawnPoint) {
+        super(spawnPoint);
     }
 }

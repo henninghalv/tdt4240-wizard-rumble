@@ -2,53 +2,35 @@ package com.progark.group2.wizardrumble.entities;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
+import com.progark.group2.wizardrumble.handlers.MapHandler;
+import com.progark.group2.wizardrumble.network.NetworkController;
+import com.progark.group2.wizardrumble.states.ingamestate.InGameState;
 
+import java.io.IOException;
+import java.util.HashMap;
 
 
 public abstract class Wizard extends Entity {
-    private Body b2body; // the body that contains the wizard in the box2d world
-    protected int playerID;
-    protected int health;
-    protected int maxHealth;
-    private int speed = 100;
     public final static int DEFAULT_HEALTH = 100;
-
-    private Touchpad leftJoy; // importer touchpad-objektet som Bjørn lager
-    private Touchpad rightJoy; // importer touchpad-objektet som Bjørn lager
     private final float ANGLE_OFFSET = 270;
+    private int speed = 200;
+    protected int health;
+    private HashMap<String, Texture> directions = new HashMap<String, Texture>();
 
 
-    public Wizard(int maxHealth, Vector2 spawnPoint) {
+    public Wizard(Vector2 spawnPoint) {
         super(spawnPoint, new Vector2(0,0), 0, new Texture("wizard_front.png"), new Vector2(new Texture("wizard_front.png").getWidth(), new Texture("wizard_front.png").getHeight()), "dynamic");
-        super.defineEntity();
-        this.b2body = super.b2body;
+        super.defineRectangleEntity();
         this.position = spawnPoint;
-        this.maxHealth = maxHealth;
+        this.health = DEFAULT_HEALTH;
+        directions.put("up", new Texture("wizard_back.png"));
+        directions.put("down", new Texture("wizard_front.png"));
+        directions.put("left", new Texture("wizard_leftfacing.png"));
+        directions.put("right", new Texture("wizard_rightfacing.png"));
     }
-    public float getOffset(){
-        return ANGLE_OFFSET;
-
-    }
-
-    public int getPlayerID() {
-        return playerID;
-    }
-
-    public void setPlayerID(int playerID) {
-        this.playerID = playerID;
-    }
-
-    public int getHealth() {
-        return health;
-    }
-
-    public void setHealth(int health) {
-        this.health = health;
-    }
-
 
     public void updatePosition(Vector2 direction) {
         // Stops the wizard from moving when you're not using the left joystick.
@@ -56,11 +38,10 @@ public abstract class Wizard extends Entity {
             b2body.setLinearVelocity(0, 0);
         }
         b2body.setLinearVelocity(speed * direction.x, speed * direction.y);
-        position.x = b2body.getPosition().x - (super.texture.getWidth() / 2f);
-        position.y = b2body.getPosition().y - (super.texture.getHeight() / 2f);
+        position.x = b2body.getPosition().x - (texture.getWidth() / 2f);
+        position.y = b2body.getPosition().y - (texture.getHeight() / 2f);
 
     }
-
 
     public void updateRotation(Vector2 direction){
         // Rotation is set with an offset, since the rotation-argument in SpriteBatch.draw() starts
@@ -77,20 +58,42 @@ public abstract class Wizard extends Entity {
         return this.rotation;
     }
 
-
     public Texture getSprite(){
-        return super.texture;
+        return texture;
     }
 
-    public Vector2 getGlobalPosition(){
-        // TODO return global position, if that's even needed
-        return null;
-    }
+    public int getHealth(){ return health; }
 
+    public Body getB2body(){ return b2body; }
+
+    public Texture getDirection(){
+        if(rotation > 600 || rotation < 300){
+            return directions.get("right");
+        }
+        else if(rotation > 500){
+            return directions.get("down");
+        }
+        else if(rotation > 400){
+            return directions.get("left");
+        }
+        else{
+            return directions.get("up");
+        }
+    }
 
     @Override
     public void onCollideWithSpell(int damage) {
-
+        health -= damage;
+        if(this instanceof WizardPlayer){
+            try {
+                InGameState.getInstance().getInGameHud().getHealthBar().updateHealth(health);
+                if(health <= 0){
+                    NetworkController.getInstance().playerDied();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override

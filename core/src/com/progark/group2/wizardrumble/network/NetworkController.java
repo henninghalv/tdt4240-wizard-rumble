@@ -9,11 +9,12 @@ import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.minlog.Log;
 import com.progark.group2.wizardrumble.entities.spells.FireBall;
 import com.progark.group2.wizardrumble.entities.spells.Spell;
+import com.progark.group2.wizardrumble.network.packets.PlayerDeadPacket;
 import com.progark.group2.wizardrumble.network.packets.SpellFiredPacket;
 import com.progark.group2.wizardrumble.network.requests.CreateGameRequest;
 import com.progark.group2.wizardrumble.network.requests.CreatePlayerRequest;
 
-import com.progark.group2.wizardrumble.network.requests.PlayerTookDamageRequest;
+import com.progark.group2.wizardrumble.network.requests.DamagePlayerPacket;
 import com.progark.group2.wizardrumble.network.packets.GameStartPacket;
 import com.progark.group2.wizardrumble.network.requests.PlayerJoinRequest;
 import com.progark.group2.wizardrumble.network.requests.PlayerMovementRequest;
@@ -163,6 +164,20 @@ public class NetworkController extends Listener{
             PlayerLeaveResponse response = (PlayerLeaveResponse) object;
             handlePlayerLeaveRequest(response);
         }
+        else if (object instanceof PlayerDeadPacket){
+            final PlayerDeadPacket packet = (PlayerDeadPacket) object;
+            players.get(packet.getPlayerId()).setAlive(false);
+            Gdx.app.postRunnable(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        InGameState.getInstance().handleEnemyDead(players.get(packet.getPlayerId()).getConnectionId());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
         else if (object instanceof ServerSuccessResponse) {
             // TODO: Delete this if not used. Smells bad.
         }
@@ -292,12 +307,6 @@ public class NetworkController extends Listener{
         }
     }
 
-    public void sendPlayerTookDamageRequest(int damage) {
-        PlayerTookDamageRequest request = new PlayerTookDamageRequest();
-        request.setDamage(damage);
-        request.setPlayerId(playerId);
-        gameServerClient.sendTCP(request);
-    }
 
     private Client createAndConnectClient(Integer timeout, String host, Integer tcp, Integer udp) throws IOException {
         Client client = new Client();
@@ -330,6 +339,23 @@ public class NetworkController extends Listener{
         packet.setRotation(rotation);
         packet.setVelocity(velocity);
         gameServerClient.sendUDP(packet);
+    }
+
+    public void playerDied(){
+        PlayerDeadPacket packet = new PlayerDeadPacket();
+        packet.setPlayerId(playerId);
+        gameServerClient.sendTCP(packet);
+        player.setAlive(false);
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    InGameState.getInstance().handlePlayerDead();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     private void updateEnemyPosition(int playerId, Vector2 position, float rotation) {

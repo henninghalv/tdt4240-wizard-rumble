@@ -8,6 +8,7 @@ import com.esotericsoftware.kryonet.Server;
 import com.esotericsoftware.minlog.Log;
 import com.progark.group2.gameserver.resources.GameStatus;
 import com.progark.group2.wizardrumble.network.packets.GameStartPacket;
+import com.progark.group2.wizardrumble.network.packets.PlayerDeadPacket;
 import com.progark.group2.wizardrumble.network.packets.SpellFiredPacket;
 import com.progark.group2.wizardrumble.network.requests.PlayerJoinRequest;
 import com.progark.group2.wizardrumble.network.requests.PlayerLeaveRequest;
@@ -59,11 +60,11 @@ public class GameServer extends Listener{
 
     private void createSpawnPoints(){
         spawnPoints.put(1, new Vector2(500, 500));
-        spawnPoints.put(2, new Vector2(500, 1000));
-        spawnPoints.put(3, new Vector2(500, 1500));
-        spawnPoints.put(4, new Vector2(1500, 1500));
-        spawnPoints.put(5, new Vector2(1500, 1000));
-        spawnPoints.put(6, new Vector2(1500, 500));
+        spawnPoints.put(2, new Vector2(500, 750));
+        spawnPoints.put(3, new Vector2(500, 1000));
+        spawnPoints.put(4, new Vector2(1000, 1000));
+        spawnPoints.put(5, new Vector2(1000, 750));
+        spawnPoints.put(6, new Vector2(1000, 500));
     }
 
     // =====
@@ -108,6 +109,11 @@ public class GameServer extends Listener{
             PlayerMovementRequest request = (PlayerMovementRequest) object;
             handlePlayerMovementRequest(connection, request);
         }
+        else if (object instanceof PlayerDeadPacket){
+            PlayerDeadPacket packet = (PlayerDeadPacket) object;
+            Log.info("Player died: " + packet.getPlayerId());
+            server.sendToAllExceptTCP(connection.getID(), packet);
+        }
     }
 
     // =====
@@ -147,10 +153,6 @@ public class GameServer extends Listener{
 
     private void handlePlayerMovementRequest(Connection connection, PlayerMovementRequest request){
         sendPlayerMovementResponse(connection, request);
-    }
-
-    private void handleSpellFiredPacket(Connection connection, SpellFiredPacket packet){
-
     }
 
     // =====
