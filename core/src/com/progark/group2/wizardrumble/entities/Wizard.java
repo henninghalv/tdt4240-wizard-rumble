@@ -14,15 +14,11 @@ import java.util.HashMap;
 
 
 public abstract class Wizard extends Entity {
-    private Body b2body; // The body that contains the wizard in the box2d world
-    protected int playerID;
-    protected int health;
-    protected int maxHealth;
-    private int speed = 100;
+
     public final static int DEFAULT_HEALTH = 100;
 
-    private final float ANGLE_OFFSET = 270;
-    private int speed = 200;
+    private final static float ANGLE_OFFSET = 270;
+    private int speed = 50;
     protected int health;
     private HashMap<String, Texture> directions = new HashMap<String, Texture>();
 

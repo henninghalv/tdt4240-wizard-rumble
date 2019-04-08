@@ -19,7 +19,7 @@ public class Application extends Game {
 	// Window parameters
 	public static final int WIDTH = 800;
 	public static final int HEIGHT = 480;
-	public static final float SCALE = 0.5f;
+	public static final float SCALE = 0.125f;
 	public static final String TITLE = "WizardRumble";
 
 

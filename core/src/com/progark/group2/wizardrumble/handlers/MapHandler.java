@@ -10,6 +10,8 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector2;
 
+import static com.progark.group2.wizardrumble.Application.SCALE;
+
 public class MapHandler {
 
     private TmxMapLoader maploader;
@@ -25,7 +27,9 @@ public class MapHandler {
         this.spriteBatch = spriteBatch;
         maploader = new TmxMapLoader();
         map = maploader.load("map2.tmx");
-        renderer = new OrthogonalTiledMapRenderer(map, spriteBatch);
+        renderer = new OrthogonalTiledMapRenderer(map, SCALE, spriteBatch);
+
+
 
         MapProperties prop = map.getProperties();
 
@@ -34,8 +38,8 @@ public class MapHandler {
         int tilePixelWidth = prop.get("tilewidth", Integer.class);
         int tilePixelHeight = prop.get("tileheight", Integer.class);
 
-        int mapPixelWidth = mapWidth * tilePixelWidth;
-        int mapPixelHeight = mapHeight * tilePixelHeight;
+        float mapPixelWidth = mapWidth * tilePixelWidth * SCALE;
+        float mapPixelHeight = mapHeight * tilePixelHeight * SCALE;
 
         mapSize = new Vector2(mapPixelWidth, mapPixelHeight);
         ground = (TiledMapTileLayer) map.getLayers().get(0);
