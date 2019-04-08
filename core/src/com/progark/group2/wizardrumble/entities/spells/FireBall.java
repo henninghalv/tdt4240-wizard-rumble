@@ -7,6 +7,9 @@ import com.badlogic.gdx.math.Vector2;
 
 public class FireBall extends Spell {
     public final static Texture texture = new Texture("fireball_small.png");
+    // Size shit
+    private float width = 20;
+    private float height = 20;
 
     public FireBall(Vector2 spawnPoint, float rotation, Vector2 velocity){
 

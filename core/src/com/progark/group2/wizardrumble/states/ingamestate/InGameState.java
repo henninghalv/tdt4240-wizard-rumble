@@ -177,30 +177,27 @@ public class InGameState extends State {
         float x = x1 * ratio;
         float y = y1 * ratio;
 
+
+        Vector2 spawnPoint = getSpellInitialPosition(wizardPlayer.getPosition(), wizardPlayer.getSize(), FireBall.texture.getHeight(), FireBall.texture.getWidth(),x,y);
+
+        float rotation = wizardPlayer.getRotation();  // rotation
+
+        Vector2 velocity = new Vector2(x, y);  // velocity
+
         // Logic for casting when FireBall has been selected
         if (spell.equals("FireBall")) {
-
-            Vector2 spawnPoint = getSpellInitialPosition(wizardPlayer.getPosition(), wizardPlayer.getSize(), FireBall.texture.getHeight(), FireBall.texture.getWidth(),x,y);
-
-            float rotation = wizardPlayer.getRotation();  // rotation
-
-            Vector2 velocity = new Vector2(x, y);  // velocity
-
             FireBall fb = new FireBall(spawnPoint, rotation, velocity);
             spells.add(fb); // Add to list of casted spells
 
-            // TODO: Send SpellFiredPacket
             network.castSpell("FireBall", spawnPoint, rotation, velocity);
         }
 
         // Logic for casting when Ice has been selected
         if (spell.equals("Ice")) {
-            Ice ic = new Ice( // spawnPoint, rotation, velocity
-                    getSpellInitialPosition(wizardPlayer.getPosition(), wizardPlayer.getSize(), Ice.texture.getHeight(), Ice.texture.getWidth(),x,y),
-                    wizardPlayer.getRotation(), // rotation
-                    new Vector2(x, y)  // velocity
-            );
+            Ice ic = new Ice(spawnPoint, rotation,velocity);
             spells.add(ic); // Add to list of casted spells
+
+            network.castSpell("Ice", spawnPoint, rotation, velocity);
         }
     }
 
@@ -388,7 +385,7 @@ public class InGameState extends State {
     private Vector2 getSpellInitialPosition(Vector2 wizpos, Vector2 wizSize, int spellHeight, int spellWidth, float angleX, float angleY){
         // To not run into the spell.
         int offset = 40; // TODO Tweak this to align with spell size.
-        return new Vector2(wizpos.x + angleX*offset + spellWidth/2f*angleX - wizSize.x/2f,
-                wizpos.y + angleY*offset + spellHeight/2f*angleY - wizSize.y/2f);
+        return new Vector2(wizpos.x + angleX*offset + spellWidth/2f*angleX + wizSize.x/2f,
+                wizpos.y + angleY*offset + spellHeight/2f*angleY + wizSize.y/2f);
     }
 }
