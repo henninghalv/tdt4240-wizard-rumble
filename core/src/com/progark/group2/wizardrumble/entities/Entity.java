@@ -33,10 +33,8 @@ public abstract class Entity {
         return position;
     }
 
-
-
     // Makes a b2body for all entities
-    protected void defineEntity() {
+    protected void defineRectangleEntity() {
         BodyDef bdef = new BodyDef();
         bdef.position.set(position.x + (1/2f * size.x), position.y + (1/2f * size.y));
         if (bodyType.equals("dynamic")){
@@ -55,13 +53,33 @@ public abstract class Entity {
         fixture = b2body.createFixture(fdef);
         fixture.setUserData(this);
     }
+
+    protected void definePolygonEntity(float[] vertices){
+        BodyDef bdef = new BodyDef();
+        bdef.position.set(position.x , position.y);
+        if (bodyType.equals("dynamic")){
+            bdef.type = BodyDef.BodyType.DynamicBody;
+        }
+        else{
+            bdef.type = BodyDef.BodyType.StaticBody;
+        }
+        b2body = InGameState.world.createBody(bdef);
+
+        FixtureDef fdef = new FixtureDef();
+        PolygonShape shape = new PolygonShape();
+        shape.set(vertices);
+        fdef.shape = shape;
+        fixture = b2body.createFixture(fdef);
+        fixture.setUserData(this);
+    }
+
     public Vector2 getSize(){
         return size;
     }
 
     public abstract void onCollideWithSpell(int damage);
 
-     public void setPosition(Vector2 position) {
+    public void setPosition(Vector2 position) {
         this.position = position;
     }
 
@@ -72,7 +90,6 @@ public abstract class Entity {
     public void setRotation(float rotation) {
         this.rotation = rotation;
     }
-
 
     public abstract void update();
 

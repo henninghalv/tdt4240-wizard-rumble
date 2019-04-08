@@ -100,7 +100,7 @@ public class InGameMenuState extends State {
         }
 
         try {
-            this.cameraPosition = InGameState.getInstance().getCamPosition();
+            this.cameraPosition = InGameState.getInstance().getCamera().position;
         } catch (Exception e){
             System.out.println(e.getMessage());
         }

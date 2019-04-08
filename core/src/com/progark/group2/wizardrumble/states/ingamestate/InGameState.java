@@ -4,10 +4,11 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
@@ -46,6 +47,7 @@ public class InGameState extends State {
     private HashMap<Integer, WizardEnemy> wizardEnemies = new HashMap<Integer, WizardEnemy>();
     private TextureRegion wizardPlayerRegion;
     private HashMap<Integer, TextureRegion> wizardEnemyRegions = new HashMap<Integer, TextureRegion>();
+    private Texture playerDeadTexture;
 
     // Currently selected spell
     private String activeSpell;
@@ -84,7 +86,6 @@ public class InGameState extends State {
         camera = new OrthographicCamera();
         gamePort = new FitViewport(WIDTH, HEIGHT, camera);
 
-
         // Start with no active spell
         activeSpell = "FireBall";
 
@@ -93,7 +94,6 @@ public class InGameState extends State {
 
         // Start without any buttons having been touched
         lastTouch = false;
-
 
         // Get the Network Controller
         network = NetworkController.getInstance();
@@ -107,28 +107,28 @@ public class InGameState extends State {
 
         // Setup Box2d and Map
         b2dr = new Box2DDebugRenderer();
-        mapHandler = new MapHandler();
+        mapHandler = new MapHandler(spriteBatch);
 
-        // Creating a WizardPlayer object
-        wizardPlayer = new WizardPlayer(network.getPlayer().getPosition());  // TODO: Give some other spawn point
-
-        // Add a new wizardPlayerRegion around Wizard
-        wizardPlayerRegion = new TextureRegion(wizardPlayer.getSprite());
-
-        // Creating all enemy players
-        for (Player player : network.getPlayers().values()){
-            WizardEnemy enemy = new WizardEnemy(
-                    Wizard.DEFAULT_HEALTH,
-                    player.getPosition() // TODO: Give some other spawn point
-            );
-            wizardEnemies.put(player.getConnectionId(), enemy);
-            TextureRegion enemyRegion = new TextureRegion(enemy.getSprite());
-            wizardEnemyRegions.put(player.getConnectionId(), enemyRegion);
-        }
-
+        playerDeadTexture = new Texture("grave.png");
 
         // Creates map with all elements
         new B2WorldCreator(mapHandler.getMap());
+
+        // Creating a WizardPlayer object
+        wizardPlayer = new WizardPlayer(network.getPlayer().getPosition());
+        // Add a new wizardPlayerRegion around Wizard
+        wizardPlayerRegion = new TextureRegion(wizardPlayer.getSprite());
+
+        addPlayerToMapLayers(wizardPlayer);
+
+        // Creating all enemy players
+        for (Player player : network.getPlayers().values()){
+            WizardEnemy enemy = new WizardEnemy(player.getPosition());
+            wizardEnemies.put(player.getConnectionId(), enemy);
+            TextureRegion enemyRegion = new TextureRegion(enemy.getSprite());
+            wizardEnemyRegions.put(player.getConnectionId(), enemyRegion);
+            addPlayerToMapLayers(enemy);
+        }
 
         // Adds a world contact listener
         world.setContactListener(new WorldContactListener());
@@ -217,6 +217,8 @@ public class InGameState extends State {
 
     @Override
     public void update(float dt) {
+        // Deletes bodies after collision
+        delete();
 
         // Debugging method to let us know if at any point a spell still exists after it's body is destroyed.
         for (Spell spell : spells){
@@ -224,9 +226,6 @@ public class InGameState extends State {
                 System.out.println("Spell isn't properly deleted");
             }
         }
-
-        // Deletes bodies after collision
-        delete();
 
         world.step(1 / 60f, 6, 2);
 
@@ -250,7 +249,6 @@ public class InGameState extends State {
 
         // Probably temporary code. Written to test functionality.
         if (lastTouch && !inGameHud.getRightJoyStick().isTouched()){
-        // if (inGameHud.getRightJoyStick().isTouched()){
             // I think that spells should be cast when the player releases the right joystick, so that you can
             // see the rotation of the player character and not rely on hopefully having touched the joystick correctly
 
@@ -265,7 +263,6 @@ public class InGameState extends State {
                 }
                 castSpell(activeSpell);
                 lastattack = time;
-                //System.out.println(lastattack);
             }
 
         }
@@ -281,9 +278,11 @@ public class InGameState extends State {
 
         // Keep the Wizard object in sync with Player object
         for (Player player : network.getPlayers().values()) {
-            wizardEnemies.get(player.getConnectionId()).setPosition(player.getPosition());
-            wizardEnemies.get(player.getConnectionId()).setRotation(player.getRotation());
-            wizardEnemies.get(player.getConnectionId()).updateBodyPosition(player.getPosition());
+            if(player.isAlive()){
+                wizardEnemies.get(player.getConnectionId()).setPosition(player.getPosition());
+                wizardEnemies.get(player.getConnectionId()).setRotation(player.getRotation());
+                wizardEnemies.get(player.getConnectionId()).updateBodyPosition(player.getPosition());
+            }
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
@@ -298,15 +297,13 @@ public class InGameState extends State {
 
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        mapHandler.render();
+
+        // Draw the ground
+        mapHandler.renderGround();
+
         spriteBatch.begin();
 
-        spriteBatch.draw(wizardPlayerRegion, wizardPlayer.getPosition().x, wizardPlayer.getPosition().y,
-                wizardPlayer.getSprite().getWidth() / 2f,
-                wizardPlayer.getSprite().getHeight() / 2f,
-                wizardPlayer.getSprite().getWidth(), wizardPlayer.getSprite().getHeight(),
-                1, 1, wizardPlayer.getRotation());
-
+        // Draw the game objects above ground
         // Iterate spells to render
         for (Spell spell : spells) {
             spell.render(spriteBatch);
@@ -315,16 +312,43 @@ public class InGameState extends State {
         for (Integer wizardId : wizardEnemies.keySet()) {
             WizardEnemy enemy = wizardEnemies.get(wizardId);
             TextureRegion enemyRegion = wizardEnemyRegions.get(wizardId);
+
+            for (Player player : network.getPlayers().values()){
+                if(player.getConnectionId() == wizardId && player.isAlive()){
+                    enemyRegion.setTexture(enemy.getDirection());
+                    break;
+                }
+            }
+
             spriteBatch.draw(
                     enemyRegion, enemy.getPosition().x, enemy.getPosition().y,
                     enemy.getSprite().getWidth() / 2f,
                     enemy.getSprite().getHeight() / 2f,
                     enemy.getSprite().getWidth(), enemy.getSprite().getHeight(),
-                    1, 1, enemy.getRotation()
+                    1, 1, 0
             );
         }
 
+        if(camera.zoom == 1.0 && wizardPlayer.getHealth() <= 0){
+            handlePlayerDead();
+        }
+
+        if(network.getPlayer().isAlive()){
+            wizardPlayerRegion.setRegion(wizardPlayer.getDirection());
+        }
+
+        spriteBatch.draw(wizardPlayerRegion, wizardPlayer.getPosition().x, wizardPlayer.getPosition().y,
+                wizardPlayer.getSprite().getWidth() / 2f,
+                wizardPlayer.getSprite().getHeight() / 2f,
+                wizardPlayer.getSprite().getWidth(), wizardPlayer.getSprite().getHeight(),
+                1, 1, 0
+        );
+
+
         spriteBatch.end();
+
+        // Draw the trees and rock which the player can go behind
+        mapHandler.renderTreesAndRocks();
         stage.act(Gdx.graphics.getDeltaTime());
         // box2d debug renderer
         // Renders visible boxes around all collidable objects.
@@ -350,8 +374,6 @@ public class InGameState extends State {
         if(!bodiesToDestroy.contains(body,true)){
             bodiesToDestroy.add(body);
         }
-        //bodiesToDestroy.add(body);
-        //System.out.println(bodiesToDestroy);
     }
 
     public void removeSpell(Spell spell){
@@ -370,11 +392,9 @@ public class InGameState extends State {
         this.gameStateManager.push(new InGameMenuState(gameStateManager));
     }
 
-    public Vector3 getCamPosition(){
-        return camera.position;
+    public OrthographicCamera getCamera(){
+        return camera;
     }
-
-    public WizardPlayer getWizardPlayer(){ return wizardPlayer; }
 
     @Override
     public void activate(){
@@ -387,5 +407,31 @@ public class InGameState extends State {
         int offset = 40; // TODO Tweak this to align with spell size.
         return new Vector2(wizpos.x + angleX*offset + spellWidth/2f*angleX + wizSize.x/2f,
                 wizpos.y + angleY*offset + spellHeight/2f*angleY + wizSize.y/2f);
+    }
+
+    public void handlePlayerDead(){
+        // TODO: Tweak the zoom parameter to wanted amount. Should be bigger than 1.0 though
+        camera.zoom = (float) 2.0;
+        camera.position.set(
+                mapHandler.getMapSize().x/2,
+                mapHandler.getMapSize().x/2,
+                0
+        );
+        inGameHud.dispose();
+        wizardPlayer.getB2body().setActive(false);
+        wizardPlayerRegion.setTexture(playerDeadTexture);
+    }
+
+    public void handleEnemyDead(int connectionId){
+        WizardEnemy enemy = wizardEnemies.get(connectionId);
+        TextureRegion enemyRegion = wizardEnemyRegions.get(connectionId);
+        enemy.getB2body().setActive(false);
+        enemyRegion.setTexture(playerDeadTexture);
+    }
+
+    private void addPlayerToMapLayers(Wizard wizard){
+        MapObject object = new MapObject();
+        object.getProperties().put("player", wizard);
+        mapHandler.getMap().getLayers().get("players").getObjects().add(object);
     }
 }
