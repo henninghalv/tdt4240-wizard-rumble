@@ -15,6 +15,7 @@ import java.util.HashMap;
 
 public abstract class Wizard extends Entity {
 
+
     public final static int DEFAULT_HEALTH = 100;
 
     private final static float ANGLE_OFFSET = 270;
