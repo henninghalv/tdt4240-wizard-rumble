@@ -22,7 +22,7 @@ public abstract class Spell extends Entity {
     private Body b2body;
 
     public Spell(Vector2 spawnPoint, float rotation, Vector2 velocity, Texture texture, int damage, float speed, String statusEffect, int cooldown, int castTime){
-        super(spawnPoint, velocity, rotation, texture, new Vector2(texture.getWidth(), texture.getHeight()), "dynamic");
+        super(spawnPoint, velocity, rotation, texture,new Vector2(texture.getWidth(),texture.getHeight()), "dynamic");
         this.damage = damage;
         // Define the spell's physical body in the world
         super.defineEntity();

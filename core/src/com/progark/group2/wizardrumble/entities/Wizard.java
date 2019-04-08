@@ -9,15 +9,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
 
 
 public abstract class Wizard extends Entity {
-    private Body b2body; // the body that contains the wizard in the box2d world
+    private Body b2body; // The body that contains the wizard in the box2d world
     protected int playerID;
     protected int health;
     protected int maxHealth;
     private int speed = 100;
     public final static int DEFAULT_HEALTH = 100;
 
-    private Touchpad leftJoy; // importer touchpad-objektet som Bjørn lager
-    private Touchpad rightJoy; // importer touchpad-objektet som Bjørn lager
     private final float ANGLE_OFFSET = 270;
 
 
