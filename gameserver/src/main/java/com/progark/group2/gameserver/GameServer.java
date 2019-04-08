@@ -60,11 +60,11 @@ public class GameServer extends Listener{
 
     private void createSpawnPoints(){
         spawnPoints.put(1, new Vector2(500, 500));
-        spawnPoints.put(2, new Vector2(500, 1000));
-        spawnPoints.put(3, new Vector2(500, 1500));
-        spawnPoints.put(4, new Vector2(1500, 1500));
-        spawnPoints.put(5, new Vector2(1500, 1000));
-        spawnPoints.put(6, new Vector2(1500, 500));
+        spawnPoints.put(2, new Vector2(500, 750));
+        spawnPoints.put(3, new Vector2(500, 1000));
+        spawnPoints.put(4, new Vector2(1000, 1000));
+        spawnPoints.put(5, new Vector2(1000, 750));
+        spawnPoints.put(6, new Vector2(1000, 500));
     }
 
     // =====
