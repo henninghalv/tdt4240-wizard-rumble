@@ -21,7 +21,7 @@ public abstract class Spell extends Entity {
     private float scale;
 
     public Spell(Vector2 spawnPoint, float rotation, Vector2 velocity, Texture texture, int damage, float speed, String statusEffect, int cooldown, int castTime){
-        super(spawnPoint, velocity, rotation, texture, new Vector2(texture.getWidth(), texture.getHeight()), "dynamic");
+        super(spawnPoint, velocity, rotation, texture,new Vector2(texture.getWidth(),texture.getHeight()), "dynamic");
         this.damage = damage;
         this.speed = speed;
         // Define the spell's physical body in the world
@@ -29,6 +29,8 @@ public abstract class Spell extends Entity {
         //System.out.println(super.texture);
         region = new TextureRegion(texture);
         scale = 0.2f; // Tweak the scale as necessary
+        b2body.setTransform(spawnPoint, (float)Math.toRadians(rotation));
+        this.speed = speed;
     }
 
     public int getDamage(){

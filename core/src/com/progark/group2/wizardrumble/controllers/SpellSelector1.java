@@ -76,10 +76,10 @@ public class SpellSelector1 extends SpellSelector {
     }
 
     private Texture assignButtonTexture(String spellname){
-        if(spellname == "FireBall"){
+        if(spellname.equals( "FireBall")){
             return new Texture("fire_button.png");
         }
-        else if(spellname == "Ice"){
+        else if(spellname.equals("Ice")){
             return new Texture("ice_button.png");
         }
         else{
@@ -89,10 +89,10 @@ public class SpellSelector1 extends SpellSelector {
     }
 
     private Texture assignButtonDownTexture(String spellname){
-        if(spellname == "FireBall"){
+        if(spellname.equals( "FireBall")){
             return new Texture("fire_button_down.png");
         }
-        else if(spellname == "Ice"){
+        else if(spellname.equals("Ice")){
             return new Texture("ice_button_down.png");
         }
         else{
@@ -102,10 +102,10 @@ public class SpellSelector1 extends SpellSelector {
     }
 
     private Texture assignButtonCheckedTexture(String spellname){
-        if(spellname == "FireBall"){
+        if(spellname.equals( "FireBall")){
             return new Texture("fire_button_checked.png");
         }
-        else if(spellname == "Ice"){
+        else if(spellname.equals("Ice")){
             return new Texture("ice_button_checked.png");
         }
         else{

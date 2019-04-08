@@ -15,7 +15,7 @@ public abstract class Entity {
     protected Vector2 velocity;
     protected Texture texture;
     protected Vector2 size;
-    protected float rotation; // Definert som en Vector2.angle()
+    protected float rotation; // Defined as Vector2.angle()
     protected Fixture fixture;
     protected Body b2body;
     protected String bodyType;

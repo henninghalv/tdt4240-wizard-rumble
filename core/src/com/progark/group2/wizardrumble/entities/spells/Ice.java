@@ -17,10 +17,10 @@ public class Ice extends Spell {
 
 
     public Ice(Vector2 spawnPoint, float rotation, Vector2 velocity){
-        super(spawnPoint, rotation, velocity, texture, 10, 300f, "", 3, 1);
+        super(spawnPoint, rotation, velocity, texture,10, 300f, "", 3, 1);
         this.velocity = velocity; // Use speed in spell abstract class in addition to this.
         this.rotation = rotation;
-        this.position = spawnPoint;  // Need to offset this by size of wizard sprite
+        this.position = spawnPoint;
         fireBallSprite = new Texture("fireball.png");
         region = new TextureRegion(fireBallSprite);
         scale = 0.02f;
