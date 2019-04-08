@@ -29,7 +29,6 @@ public abstract class Spell extends Entity {
         //System.out.println(super.texture);
         region = new TextureRegion(texture);
         scale = 0.2f; // Tweak the scale as necessary
-        b2body = super.b2body;
         b2body.setTransform(spawnPoint, (float)Math.toRadians(rotation));
         this.speed = speed;
     }
