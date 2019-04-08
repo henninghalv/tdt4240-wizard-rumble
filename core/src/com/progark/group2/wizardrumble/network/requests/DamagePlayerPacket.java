@@ -1,7 +1,8 @@
 package com.progark.group2.wizardrumble.network.requests;
 
-public class PlayerTookDamageRequest {
+public class DamagePlayerPacket {
     private int playerId;
+    private int damage;
 
     public int getPlayerId() {
         return playerId;
@@ -10,8 +11,6 @@ public class PlayerTookDamageRequest {
     public void setPlayerId(int playerId) {
         this.playerId = playerId;
     }
-
-    private int damage;
 
     public void setDamage(int damage) {
         this.damage = damage;

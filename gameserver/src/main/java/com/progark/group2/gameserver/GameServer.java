@@ -8,6 +8,7 @@ import com.esotericsoftware.kryonet.Server;
 import com.esotericsoftware.minlog.Log;
 import com.progark.group2.gameserver.resources.GameStatus;
 import com.progark.group2.wizardrumble.network.packets.GameStartPacket;
+import com.progark.group2.wizardrumble.network.packets.PlayerDeadPacket;
 import com.progark.group2.wizardrumble.network.packets.SpellFiredPacket;
 import com.progark.group2.wizardrumble.network.requests.PlayerJoinRequest;
 import com.progark.group2.wizardrumble.network.requests.PlayerLeaveRequest;
@@ -108,6 +109,11 @@ public class GameServer extends Listener{
             PlayerMovementRequest request = (PlayerMovementRequest) object;
             handlePlayerMovementRequest(connection, request);
         }
+        else if (object instanceof PlayerDeadPacket){
+            PlayerDeadPacket packet = (PlayerDeadPacket) object;
+            Log.info("Player died: " + packet.getPlayerId());
+            server.sendToAllExceptTCP(connection.getID(), packet);
+        }
     }
 
     // =====
@@ -147,10 +153,6 @@ public class GameServer extends Listener{
 
     private void handlePlayerMovementRequest(Connection connection, PlayerMovementRequest request){
         sendPlayerMovementResponse(connection, request);
-    }
-
-    private void handleSpellFiredPacket(Connection connection, SpellFiredPacket packet){
-
     }
 
     // =====
