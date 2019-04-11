@@ -86,7 +86,7 @@ public class InGameState extends State {
         // Create camera
         camera = new OrthographicCamera();
         // To allow for higher wizard and spell speeds
-        camera.zoom = SCALE;
+        camera.zoom = 1.0f * SCALE;
         gamePort = new FitViewport(WIDTH, HEIGHT, camera);
 
         // Start with fireball as active spell
@@ -144,7 +144,7 @@ public class InGameState extends State {
         bodiesToDestroy = new Array<Body>();
 
         // Set camera to initial wizardPlayer position
-        camera.position.set(wizardPlayer.getPosition().x + wizardPlayer.getSprite().getWidth()/2f, wizardPlayer.getPosition().y + wizardPlayer.getSprite().getHeight()/2f, 0);
+        camera.position.set((wizardPlayer.getPosition().x + wizardPlayer.getSprite().getWidth()/2f)*SCALE, (wizardPlayer.getPosition().y + wizardPlayer.getSprite().getHeight()/2f)*SCALE, 0);
 
      }
 
