@@ -14,11 +14,12 @@ import java.util.HashMap;
 
 
 public abstract class Wizard extends Entity {
-    
+
+
     public final static int DEFAULT_HEALTH = 100;
 
-    private final float ANGLE_OFFSET = 270;
-    private int speed = 200;
+    private final static float ANGLE_OFFSET = 270;
+    private int speed = 35;
     protected int health;
     private HashMap<String, Texture> directions = new HashMap<String, Texture>();
 

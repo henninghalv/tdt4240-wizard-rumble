@@ -10,6 +10,8 @@ import com.progark.group2.wizardrumble.states.ingamestate.InGameState;
 
 import java.io.IOException;
 
+import static com.progark.group2.wizardrumble.Application.SCALE;
+
 public abstract class Spell extends Entity {
     protected int damage;
     protected float speed;
@@ -68,7 +70,7 @@ public abstract class Spell extends Entity {
         sb.draw(region, position.x, position.y,
                 texture.getWidth()/2f,
                 texture.getHeight()/2f,
-                texture.getWidth(), texture.getHeight(),1,1, rotation);
+                texture.getWidth(), texture.getHeight(), SCALE, SCALE, rotation);
     }
 
     @Override
