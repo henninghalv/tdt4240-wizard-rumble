@@ -28,6 +28,7 @@ import com.progark.group2.wizardrumble.network.NetworkController;
 import com.progark.group2.wizardrumble.network.resources.Player;
 import com.progark.group2.wizardrumble.states.GameStateManager;
 import com.progark.group2.wizardrumble.states.InGameMenuState;
+import com.progark.group2.wizardrumble.states.PostGameState;
 import com.progark.group2.wizardrumble.states.State;
 import com.progark.group2.wizardrumble.tools.B2WorldCreator;
 
@@ -141,7 +142,6 @@ public class InGameState extends State {
 
         // Set camera to initial wizardPlayer position
         camera.position.set(wizardPlayer.getPosition().x + wizardPlayer.getSprite().getWidth()/2f, wizardPlayer.getPosition().y + wizardPlayer.getSprite().getHeight()/2f, 0);
-
      }
 
     public static InGameState getInstance() throws IOException {
@@ -219,6 +219,8 @@ public class InGameState extends State {
     public void update(float dt) {
         // Deletes bodies after collision
         delete();
+
+        isGameOver();
 
         // Debugging method to let us know if at any point a spell still exists after it's body is destroyed.
         for (Spell spell : spells){
@@ -433,5 +435,18 @@ public class InGameState extends State {
         MapObject object = new MapObject();
         object.getProperties().put("player", wizard);
         mapHandler.getMap().getLayers().get("players").getObjects().add(object);
+    }
+
+    private void isGameOver(){
+        int playerDeadCount = 0;
+        for(Player player : network.getPlayers().values()){
+            if(!player.isAlive()){
+                playerDeadCount++;
+            }
+            if(playerDeadCount >= network.getPlayers().keySet().size()){
+                System.out.println("Only one player left! Game over!!");
+                gameStateManager.set(PostGameState.getInstance());
+            }
+        }
     }
 }

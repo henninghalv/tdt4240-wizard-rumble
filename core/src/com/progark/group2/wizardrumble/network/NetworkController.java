@@ -1,5 +1,6 @@
 package com.progark.group2.wizardrumble.network;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.math.Vector2;
@@ -44,6 +45,8 @@ public class NetworkController extends Listener{
     private static int playerId = 0;
     private static Player player = null;
     private static HashMap<Integer, Player> players = new HashMap<Integer, Player>();
+
+    private long gameStartTime;
 
     // Master server configuration constants
     private final static int TIMEOUT = 5000;
@@ -135,6 +138,8 @@ public class NetworkController extends Listener{
 
         }
         else if (object instanceof GameStartPacket){
+            GameStartPacket packet = (GameStartPacket) object;
+            gameStartTime = packet.getGameStartTime();
             handleGameStart();
         }
         else if (object instanceof GameJoinedResponse){
@@ -145,7 +150,7 @@ public class NetworkController extends Listener{
                     connection.getID(),
                     0,
                     0,
-                    0,
+                    System.currentTimeMillis(),
                     response.getSpawnPoint(),
                     0
             );
@@ -167,6 +172,8 @@ public class NetworkController extends Listener{
         else if (object instanceof PlayerDeadPacket){
             final PlayerDeadPacket packet = (PlayerDeadPacket) object;
             players.get(packet.getPlayerId()).setAlive(false);
+            players.get(packet.getPlayerId()).setTimeAliveInMilliseconds(packet.getPlayerDeathTime() - gameStartTime);
+            System.out.println("Player " + packet.getPlayerId() + " has died! Time alive: " + (packet.getPlayerDeathTime()-gameStartTime)/1000 + "s");
             Gdx.app.postRunnable(new Runnable() {
                 @Override
                 public void run() {
@@ -218,7 +225,7 @@ public class NetworkController extends Listener{
                 response.getConnectionId(),
                 0,
                 0,
-                0,
+                System.currentTimeMillis(),
                 response.getSpawnPoint(),
                 0
         );
@@ -275,6 +282,7 @@ public class NetworkController extends Listener{
     private void getLocalData(){
         Preferences preferences = Gdx.app.getPreferences("user");
         playerId = preferences.getInteger("playerId", 0);
+//        playerId = 4;
         if(playerId == 0){
             Gdx.input.getTextInput(
                     new UsernamePrompt(),
@@ -344,8 +352,10 @@ public class NetworkController extends Listener{
     public void playerDied(){
         PlayerDeadPacket packet = new PlayerDeadPacket();
         packet.setPlayerId(playerId);
+        packet.setPlayerDeathTime(System.currentTimeMillis());
         gameServerClient.sendTCP(packet);
         player.setAlive(false);
+        player.setTimeAliveInMilliseconds(System.currentTimeMillis() - gameStartTime);
         Gdx.app.postRunnable(new Runnable() {
             @Override
             public void run() {
