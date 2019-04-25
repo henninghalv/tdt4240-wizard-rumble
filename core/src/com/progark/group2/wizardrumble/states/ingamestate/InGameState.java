@@ -191,19 +191,19 @@ public class InGameState extends State {
 
         // Logic for casting when FireBall has been selected
         if (spell.equals("FireBall")) {
-            FireBall fb = new FireBall(spawnPoint, rotation, velocity);
+            FireBall fb = new FireBall(network.getPlayerId(), spawnPoint, rotation, velocity);
             spells.add(fb); // Add to list of casted spells
 
-            network.castSpell("FireBall", spawnPoint, rotation, velocity);
+            network.castSpell(fb);
             System.out.println("Spell position: " + fb.getPosition());
         }
 
         // Logic for casting when Ice has been selected
         if (spell.equals("Ice")) {
-            Ice ic = new Ice(spawnPoint, rotation,velocity);
+            Ice ic = new Ice(network.getPlayerId(), spawnPoint, rotation,velocity);
             spells.add(ic); // Add to list of casted spells
 
-            network.castSpell("Ice", spawnPoint, rotation, velocity);
+            network.castSpell(ic);
         }
         System.out.println(wizardPlayer.getPosition());
 

@@ -18,14 +18,16 @@ public abstract class Spell extends Entity {
     protected String statusEffect;
     protected int cooldown;
     protected int castTime;
+    protected int spellOwnerID;
 
     private TextureRegion region;
     private float scale;
 
-    public Spell(Vector2 spawnPoint, float rotation, Vector2 velocity, Texture texture, int damage, float speed, String statusEffect, int cooldown, int castTime){
+    public Spell(int spellOwnerID, Vector2 spawnPoint, float rotation, Vector2 velocity, Texture texture, int damage, float speed, String statusEffect, int cooldown, int castTime){
         super(spawnPoint, velocity, rotation, texture,new Vector2(texture.getWidth(),texture.getHeight()), "dynamic");
         this.damage = damage;
         this.speed = speed;
+        this.spellOwnerID = spellOwnerID;
         // Define the spell's physical body in the world
         defineRectangleEntity();
         //System.out.println(super.texture);
@@ -41,6 +43,10 @@ public abstract class Spell extends Entity {
 
     public Body getB2body() {
         return b2body;
+    }
+
+    public int getSpellOwnerID() {
+        return spellOwnerID;
     }
 
     private void updatePosition(){

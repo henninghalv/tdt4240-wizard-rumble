@@ -35,6 +35,10 @@ public abstract class Entity {
         return position;
     }
 
+    public Vector2 getVelocity() {
+        return velocity;
+    }
+
     // Makes a b2body for all entities
     protected void defineRectangleEntity() {
         BodyDef bdef = new BodyDef();

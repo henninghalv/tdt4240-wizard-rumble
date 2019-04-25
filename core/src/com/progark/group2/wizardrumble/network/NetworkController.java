@@ -262,10 +262,23 @@ public class NetworkController extends Listener{
             public void run() {
                 // TODO: Update for real spelltypes
                 if(packet.getSpellType().equals("FireBall")){
-                    updateEnemyCastSpells(new FireBall(packet.getSpawnPoint(), packet.getRotation(), packet.getVelocity()));
-                }
-                else{
-                    updateEnemyCastSpells(new FireBall(packet.getSpawnPoint(), packet.getRotation(), packet.getVelocity()));
+                    updateEnemyCastSpells(
+                            new FireBall(
+                                    packet.getSpellOwnerId(),
+                                    packet.getSpawnPoint(),
+                                    packet.getRotation(),
+                                    packet.getVelocity()
+                            )
+                    );
+                } else{
+                    updateEnemyCastSpells(
+                            new FireBall(
+                                    packet.getSpellOwnerId(),
+                                    packet.getSpawnPoint(),
+                                    packet.getRotation(),
+                                    packet.getVelocity()
+                            )
+                    );
                 }
             }
         });
@@ -340,12 +353,12 @@ public class NetworkController extends Listener{
         gameServerClient.sendUDP(request);
     }
 
-    public void castSpell(String type, Vector2 spawnPoint, float rotation, Vector2 velocity){
+    public void castSpell(Spell spell){
         SpellFiredPacket packet = new SpellFiredPacket();
-        packet.setSpellType(type);
-        packet.setSpawnPoint(spawnPoint);
-        packet.setRotation(rotation);
-        packet.setVelocity(velocity);
+        packet.setSpellType(spell.getClass().toString());
+        packet.setSpawnPoint(spell.getPosition());
+        packet.setRotation(spell.getRotation());
+        packet.setVelocity(spell.getVelocity());
         gameServerClient.sendUDP(packet);
     }
 
