@@ -9,6 +9,7 @@ import com.esotericsoftware.minlog.Log;
 import com.progark.group2.gameserver.resources.GameStatus;
 import com.progark.group2.wizardrumble.network.packets.GameStartPacket;
 import com.progark.group2.wizardrumble.network.packets.PlayerDeadPacket;
+import com.progark.group2.wizardrumble.network.packets.PlayerStatsPacket;
 import com.progark.group2.wizardrumble.network.packets.SpellFiredPacket;
 import com.progark.group2.wizardrumble.network.requests.PlayerJoinRequest;
 import com.progark.group2.wizardrumble.network.requests.PlayerLeaveRequest;
@@ -18,17 +19,20 @@ import com.progark.group2.wizardrumble.network.responses.GameJoinedResponse;
 import com.progark.group2.wizardrumble.network.responses.PlayerJoinResponse;
 import com.progark.group2.wizardrumble.network.responses.PlayerLeaveResponse;
 import com.progark.group2.wizardrumble.network.responses.PlayerMovementResponse;
+import com.progark.group2.wizardrumble.network.responses.PlayerStatisticsResponse;
 import com.progark.group2.wizardrumble.network.responses.ServerErrorResponse;
 import com.progark.group2.wizardrumble.network.responses.ServerSuccessResponse;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.stream.Collectors;
 
 public class GameServer extends Listener{
 
     private static Server server;
     private static int TCP_PORT;
     private static int UDP_PORT;
+    private static int TIME_ALIVE_SECONDS = 21600000; // six hours
     private long gameStartTime;
     // List of the six available starting positions on the map.
     private static HashMap<Integer, Vector2> spawnPoints = new HashMap<Integer, Vector2>();
@@ -111,9 +115,24 @@ public class GameServer extends Listener{
         }
         else if (object instanceof PlayerDeadPacket){
             PlayerDeadPacket packet = (PlayerDeadPacket) object;
-            players.get(packet.getKillerId()).incrementKills();
+            players.get(packet.getKillerId()).incrementKills(); // Increase kills for killer
+            players.get(packet.getVictimId()).setAlive(false); // Set victim player as dead
             Log.info("Player died: " + packet.getVictimId() + ", Killed by " + packet.getKillerId());
             server.sendToAllExceptTCP(connection.getID(), packet);
+
+            // Check if game has ended
+            // TODO: Consider finding a nice lambda for this
+            int playersAlive = 0;
+            for (Player p: players.values()) {
+                if (p.isAlive()) playersAlive++;
+            }
+
+            // If game has ended
+            if (playersAlive <= 1) {
+                // Send player stats to all players for scoreboard: kills and ranking
+                sendPlayerStatsResponse(connection);
+                endGame();
+            }
         }
     }
 
@@ -207,6 +226,12 @@ public class GameServer extends Listener{
         server.sendToAllExceptTCP(connection.getID(), response);
     }
 
+    private void sendPlayerStatsResponse(Connection connection) {
+        PlayerStatsPacket response = new PlayerStatsPacket();
+        response.setPlayers(players);
+        server.sendToAllExceptTCP(connection.getID(), response);
+    }
+
     // =====
 
     // ACTIONS
@@ -286,7 +311,7 @@ public class GameServer extends Listener{
      * the server stops and removes itself from the MasterServer.
      */
     private void endGame() {
-        Log.info("ALL PLAYERS ARE DEAD. STOPPING GAMESERVER: GOODBYE WORLD");
+        Log.info("ONE WINNING PLAYER ALIVE. STOPPING GAMESERVER: GOODBYE WORLD");
         // Stop the server connection for all servers
 
         try {
