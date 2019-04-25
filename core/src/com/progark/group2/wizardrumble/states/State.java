@@ -4,7 +4,11 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+
+import static com.progark.group2.wizardrumble.Application.HEIGHT;
+import static com.progark.group2.wizardrumble.Application.WIDTH;
 
 public abstract class State{
 
@@ -17,7 +21,7 @@ public abstract class State{
     public State(GameStateManager gameStateManager){
         this.gameStateManager = gameStateManager;
         this.camera = new OrthographicCamera();
-        this.stage = new Stage(new ScreenViewport());
+        this.stage = new Stage(new FitViewport(WIDTH, HEIGHT));
         Gdx.input.setInputProcessor(stage);
     }
 
