@@ -282,7 +282,7 @@ public class NetworkController extends Listener{
     private void getLocalData(){
         Preferences preferences = Gdx.app.getPreferences("user");
         playerId = preferences.getInteger("playerId", 0);
-//        playerId = 4;
+//        playerId = 3;
         if(playerId == 0){
             Gdx.input.getTextInput(
                     new UsernamePrompt(),

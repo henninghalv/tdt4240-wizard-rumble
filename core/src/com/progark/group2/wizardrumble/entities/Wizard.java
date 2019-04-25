@@ -92,6 +92,7 @@ public abstract class Wizard extends Entity {
                 InGameState.getInstance().getInGameHud().getHealthBar().updateHealth(health);
                 if(health <= 0){
                     NetworkController.getInstance().playerDied();
+                    NetworkController.getInstance().getPlayer().setAlive(false);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
