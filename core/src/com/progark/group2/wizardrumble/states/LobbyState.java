@@ -13,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.progark.group2.wizardrumble.network.NetworkController;
 import com.progark.group2.wizardrumble.network.resources.Player;
@@ -21,6 +22,9 @@ import com.progark.group2.wizardrumble.states.resources.UIButton;
 
 import java.io.IOException;
 import java.util.HashMap;
+
+import static com.progark.group2.wizardrumble.Application.HEIGHT;
+import static com.progark.group2.wizardrumble.Application.WIDTH;
 
 public class LobbyState extends State {
 
@@ -153,7 +157,7 @@ public class LobbyState extends State {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        stage = new Stage(new ScreenViewport());
+        stage = new Stage(new FitViewport(WIDTH, HEIGHT));
         Gdx.input.setInputProcessor(stage);
 
         // Layout styling

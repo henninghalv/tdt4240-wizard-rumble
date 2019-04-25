@@ -3,6 +3,7 @@ package com.progark.group2.wizardrumble.states;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -82,8 +83,8 @@ public class PostGameState extends State {
         textStyle = new Label.LabelStyle(font, font.getColor());
         Label label = new Label("Game over!", textStyle);
         label.setAlignment(Align.center);
-        label.setSize((float)Gdx.graphics.getWidth()/2, (float)Gdx.graphics.getHeight()/4);
-        table.add(label).size((float)Gdx.graphics.getWidth()/2, (float)Gdx.graphics.getHeight()/4).colspan(3);
+        label.setSize((float)WIDTH/2, (float)HEIGHT/4);
+        table.add(label).size((float)WIDTH/2, (float)HEIGHT/4).colspan(3);
         table.row();
 
         Label placement = new Label("Placement ", textStyle);
@@ -158,9 +159,10 @@ public class PostGameState extends State {
 
     @Override
     public void render(SpriteBatch spriteBatch) {
-        spriteBatch.begin();
-        this.endGameOverlay.draw(spriteBatch);
-        spriteBatch.end();
+        spriteBatch.setProjectionMatrix(camera.combined);
+
+        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         stage.draw();
     }

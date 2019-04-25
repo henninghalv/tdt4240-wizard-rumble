@@ -14,11 +14,15 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.progark.group2.wizardrumble.network.NetworkController;
 import com.progark.group2.wizardrumble.states.resources.UIButton;
 
 import java.io.IOException;
+
+import static com.progark.group2.wizardrumble.Application.HEIGHT;
+import static com.progark.group2.wizardrumble.Application.WIDTH;
 
 
 /** The main menu that is shown when the game is launched. The listeners must be added individually
@@ -150,7 +154,7 @@ public class MainMenuState extends State {
         // Getting NetworkController
         network = NetworkController.getInstance();
 
-        this.stage = new Stage(new ScreenViewport());
+        this.stage = new Stage(new FitViewport(WIDTH, HEIGHT));
         Gdx.input.setInputProcessor(stage);
 
         // Layout styling
