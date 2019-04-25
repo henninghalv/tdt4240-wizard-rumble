@@ -10,6 +10,7 @@ import com.esotericsoftware.minlog.Log;
 import com.progark.group2.wizardrumble.entities.spells.FireBall;
 import com.progark.group2.wizardrumble.entities.spells.Spell;
 import com.progark.group2.wizardrumble.network.packets.PlayerDeadPacket;
+import com.progark.group2.wizardrumble.network.packets.PlayerStatsPacket;
 import com.progark.group2.wizardrumble.network.packets.SpellFiredPacket;
 import com.progark.group2.wizardrumble.network.requests.CreateGameRequest;
 import com.progark.group2.wizardrumble.network.requests.CreatePlayerRequest;
@@ -28,6 +29,7 @@ import com.progark.group2.wizardrumble.network.responses.ServerErrorResponse;
 import com.progark.group2.wizardrumble.network.responses.ServerSuccessResponse;
 import com.progark.group2.wizardrumble.states.GameStateManager;
 
+import com.progark.group2.wizardrumble.states.PostGameState;
 import com.progark.group2.wizardrumble.states.ingamestate.InGameState;
 
 import java.io.IOException;
@@ -174,6 +176,13 @@ public class NetworkController extends Listener{
                     }
                 }
             });
+        } else if (object instanceof PlayerStatsPacket) {
+            // Player has ended. Show scorescreen
+            try {
+                GameStateManager.getInstance().set(PostGameState.getInstance());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         } else if (object instanceof ServerSuccessResponse) {
             // TODO: Delete this if not used. Smells bad.
         } else if (object instanceof ServerErrorResponse) {

@@ -228,12 +228,6 @@ public class InGameState extends State {
         // Deletes bodies after collision
         delete();
 
-        try {
-            isGameOver();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         // Debugging method to let us know if at any point a spell still exists after it's body is destroyed.
         for (Spell spell : spells){
             if(spell.getB2body() == (null)){
@@ -447,23 +441,5 @@ public class InGameState extends State {
         MapObject object = new MapObject();
         object.getProperties().put("player", wizard);
         mapHandler.getMap().getLayers().get("players").getObjects().add(object);
-    }
-
-    private void isGameOver() throws IOException {
-        int playerDeadCount = 0;
-        for(Player player : network.getPlayers().values()){
-            if(!player.isAlive()){
-                playerDeadCount++;
-            }
-        }
-
-        if(playerDeadCount >= network.getPlayers().keySet().size()){
-            System.out.println("Only one player left! Game over!!");
-            gameStateManager.set(PostGameState.getInstance());
-        }
-        else if(playerDeadCount >= network.getPlayers().keySet().size()-1 && !network.getPlayer().isAlive()){
-            System.out.println("Only one player left! Game over!!");
-            gameStateManager.set(PostGameState.getInstance());
-        }
     }
 }

@@ -19,20 +19,17 @@ import com.progark.group2.wizardrumble.network.responses.GameJoinedResponse;
 import com.progark.group2.wizardrumble.network.responses.PlayerJoinResponse;
 import com.progark.group2.wizardrumble.network.responses.PlayerLeaveResponse;
 import com.progark.group2.wizardrumble.network.responses.PlayerMovementResponse;
-import com.progark.group2.wizardrumble.network.responses.PlayerStatisticsResponse;
 import com.progark.group2.wizardrumble.network.responses.ServerErrorResponse;
 import com.progark.group2.wizardrumble.network.responses.ServerSuccessResponse;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.stream.Collectors;
 
 public class GameServer extends Listener{
 
     private static Server server;
     private static int TCP_PORT;
     private static int UDP_PORT;
-    private static int TIME_ALIVE_SECONDS = 21600000; // six hours
     private long gameStartTime;
     // List of the six available starting positions on the map.
     private static HashMap<Integer, Vector2> spawnPoints = new HashMap<Integer, Vector2>();

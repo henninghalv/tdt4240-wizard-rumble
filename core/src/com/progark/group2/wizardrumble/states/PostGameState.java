@@ -27,9 +27,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Map;
-
-import sun.font.GlyphLayout;
 
 import static com.progark.group2.wizardrumble.Application.HEIGHT;
 import static com.progark.group2.wizardrumble.Application.WIDTH;
@@ -38,7 +35,6 @@ public class PostGameState extends State {
     private static PostGameState instance = null;
     private NetworkController network;
     private Label.LabelStyle textStyle;
-    private Map stats;
 
     private Table table;
     private Sprite endGameOverlay;
