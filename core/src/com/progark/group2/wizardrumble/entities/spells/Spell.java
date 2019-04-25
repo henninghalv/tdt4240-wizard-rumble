@@ -61,7 +61,7 @@ public abstract class Spell extends Entity {
     }
 
     @Override
-    public void onCollideWithSpell(int damage) {
+    public void onCollideWithSpell(Spell spell) {
 
     }
 

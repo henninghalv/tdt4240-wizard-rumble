@@ -1,6 +1,5 @@
 package com.progark.group2.wizardrumble.network;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.math.Vector2;
@@ -15,7 +14,6 @@ import com.progark.group2.wizardrumble.network.packets.SpellFiredPacket;
 import com.progark.group2.wizardrumble.network.requests.CreateGameRequest;
 import com.progark.group2.wizardrumble.network.requests.CreatePlayerRequest;
 
-import com.progark.group2.wizardrumble.network.requests.DamagePlayerPacket;
 import com.progark.group2.wizardrumble.network.packets.GameStartPacket;
 import com.progark.group2.wizardrumble.network.requests.PlayerJoinRequest;
 import com.progark.group2.wizardrumble.network.requests.PlayerMovementRequest;
@@ -171,14 +169,14 @@ public class NetworkController extends Listener{
         }
         else if (object instanceof PlayerDeadPacket){
             final PlayerDeadPacket packet = (PlayerDeadPacket) object;
-            players.get(packet.getPlayerId()).setAlive(false);
-            players.get(packet.getPlayerId()).setTimeAliveInMilliseconds(packet.getPlayerDeathTime() - gameStartTime);
-            System.out.println("Player " + packet.getPlayerId() + " has died! Time alive: " + (packet.getPlayerDeathTime()-gameStartTime)/1000 + "s");
+            players.get(packet.getVictimId()).setAlive(false);
+            players.get(packet.getVictimId()).setTimeAliveInMilliseconds(packet.getPlayerDeathTime() - gameStartTime);
+            System.out.println("Player " + packet.getVictimId() + " has died! Time alive: " + (packet.getPlayerDeathTime()-gameStartTime)/1000 + "s");
             Gdx.app.postRunnable(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        InGameState.getInstance().handleEnemyDead(players.get(packet.getPlayerId()).getConnectionId());
+                        InGameState.getInstance().handleEnemyDead(players.get(packet.getVictimId()).getConnectionId());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -362,9 +360,10 @@ public class NetworkController extends Listener{
         gameServerClient.sendUDP(packet);
     }
 
-    public void playerDied(){
+    public void playerKilledBy(int killerId){
         PlayerDeadPacket packet = new PlayerDeadPacket();
-        packet.setPlayerId(playerId);
+        packet.setVictimId(playerId);
+        packet.setKillerId(killerId);
         packet.setPlayerDeathTime(System.currentTimeMillis());
         gameServerClient.sendTCP(packet);
         player.setAlive(false);

@@ -60,8 +60,8 @@ public class Player {
         this.connectionId = connectionId;
     }
 
-    public void setKills(int kills) {
-        this.kills = kills;
+    public void incrementKills() {
+        this.kills++;
     }
 
     public void setRank(int rank) {

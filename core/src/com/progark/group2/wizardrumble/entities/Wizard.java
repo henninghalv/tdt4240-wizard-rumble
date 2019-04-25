@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
+import com.progark.group2.wizardrumble.entities.spells.Spell;
 import com.progark.group2.wizardrumble.handlers.MapHandler;
 import com.progark.group2.wizardrumble.network.NetworkController;
 import com.progark.group2.wizardrumble.states.ingamestate.InGameState;
@@ -85,13 +86,13 @@ public abstract class Wizard extends Entity {
     }
 
     @Override
-    public void onCollideWithSpell(int damage) {
-        health -= damage;
+    public void onCollideWithSpell(Spell spell) {
+        health -= spell.getDamage();
         if(this instanceof WizardPlayer){
             try {
                 InGameState.getInstance().getInGameHud().getHealthBar().updateHealth(health);
                 if(health <= 0){
-                    NetworkController.getInstance().playerDied();
+                    NetworkController.getInstance().playerKilledBy(spell.getSpellOwnerID());
                 }
             } catch (IOException e) {
                 e.printStackTrace();

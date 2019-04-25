@@ -8,6 +8,7 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.progark.group2.wizardrumble.entities.spells.Spell;
 import com.progark.group2.wizardrumble.states.ingamestate.InGameState;
 
 import static com.progark.group2.wizardrumble.Application.SCALE;
@@ -83,7 +84,7 @@ public abstract class Entity {
         return size;
     }
 
-    public abstract void onCollideWithSpell(int damage);
+    public abstract void onCollideWithSpell(Spell spell);
 
     public void setPosition(Vector2 position) {
         this.position = position;

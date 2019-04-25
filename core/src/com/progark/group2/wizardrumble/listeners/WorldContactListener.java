@@ -27,7 +27,7 @@ public class WorldContactListener implements ContactListener {
 
             if(object.getUserData() != null && Entity.class.isAssignableFrom(object.getUserData().getClass())){
                 Spell spellObject = ((Spell) spell.getUserData());
-                ((Entity) object.getUserData()).onCollideWithSpell(spellObject.getDamage());
+                ((Entity) object.getUserData()).onCollideWithSpell(spellObject);
                 try {
                     spellObject.destroySpell();
                 } catch (IOException e) {

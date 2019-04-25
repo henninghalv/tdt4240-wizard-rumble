@@ -111,7 +111,8 @@ public class GameServer extends Listener{
         }
         else if (object instanceof PlayerDeadPacket){
             PlayerDeadPacket packet = (PlayerDeadPacket) object;
-            Log.info("Player died: " + packet.getPlayerId());
+            players.get(packet.getKillerId()).incrementKills();
+            Log.info("Player died: " + packet.getVictimId() + ", Killed by " + packet.getKillerId());
             server.sendToAllExceptTCP(connection.getID(), packet);
         }
     }
