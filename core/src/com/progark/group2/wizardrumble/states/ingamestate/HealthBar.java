@@ -34,6 +34,9 @@ public class HealthBar extends Actor {
     }
 
     public void updateHealth(int currentHealth){
+        if (currentHealth < 0){
+            currentHealth = 0;
+        }
         float widthAsFloat = (float) currentHealth / (float) Wizard.DEFAULT_HEALTH * barWidthMultiplier;
         width = (int) (widthAsFloat * 100);
         if(currentHealth > Wizard.DEFAULT_HEALTH / 2){

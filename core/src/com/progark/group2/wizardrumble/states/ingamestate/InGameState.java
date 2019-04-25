@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import static com.progark.group2.wizardrumble.Application.HEIGHT;
+import static com.progark.group2.wizardrumble.Application.SCALE;
 import static com.progark.group2.wizardrumble.Application.WIDTH;
 
 public class InGameState extends State {
@@ -85,15 +86,18 @@ public class InGameState extends State {
 
         // Create camera
         camera = new OrthographicCamera();
+        // To allow for higher wizard and spell speeds
+        camera.zoom = 1.0f * SCALE;
         gamePort = new FitViewport(WIDTH, HEIGHT, camera);
 
-        // Start with no active spell
+        // Start with fireball as active spell
         activeSpell = "FireBall";
 
         // Start with no casted spells
         spells = new ArrayList<Spell>();
 
-        // Start without any buttons having been touched
+        // This is used to cast spells when right joystick is released.
+        // Starts as not being touched, obviously.
         lastTouch = false;
 
         // Get the Network Controller
@@ -141,7 +145,8 @@ public class InGameState extends State {
         bodiesToDestroy = new Array<Body>();
 
         // Set camera to initial wizardPlayer position
-        camera.position.set(wizardPlayer.getPosition().x + wizardPlayer.getSprite().getWidth()/2f, wizardPlayer.getPosition().y + wizardPlayer.getSprite().getHeight()/2f, 0);
+        camera.position.set((wizardPlayer.getPosition().x + wizardPlayer.getSprite().getWidth()/2f)*SCALE, (wizardPlayer.getPosition().y + wizardPlayer.getSprite().getHeight()/2f)*SCALE, 0);
+
      }
 
     public static InGameState getInstance() throws IOException {
@@ -190,6 +195,7 @@ public class InGameState extends State {
             spells.add(fb); // Add to list of casted spells
 
             network.castSpell("FireBall", spawnPoint, rotation, velocity);
+            System.out.println("Spell position: " + fb.getPosition());
         }
 
         // Logic for casting when Ice has been selected
@@ -199,6 +205,8 @@ public class InGameState extends State {
 
             network.castSpell("Ice", spawnPoint, rotation, velocity);
         }
+        System.out.println(wizardPlayer.getPosition());
+
     }
 
     public void addSpell(Spell spell){
@@ -327,7 +335,7 @@ public class InGameState extends State {
                     enemy.getSprite().getWidth() / 2f,
                     enemy.getSprite().getHeight() / 2f,
                     enemy.getSprite().getWidth(), enemy.getSprite().getHeight(),
-                    1, 1, 0
+                    SCALE, SCALE, 0
             );
         }
 
@@ -343,7 +351,7 @@ public class InGameState extends State {
                 wizardPlayer.getSprite().getWidth() / 2f,
                 wizardPlayer.getSprite().getHeight() / 2f,
                 wizardPlayer.getSprite().getWidth(), wizardPlayer.getSprite().getHeight(),
-                1, 1, 0
+                SCALE, SCALE, 0
         );
 
 
@@ -406,14 +414,14 @@ public class InGameState extends State {
 
     private Vector2 getSpellInitialPosition(Vector2 wizpos, Vector2 wizSize, int spellHeight, int spellWidth, float angleX, float angleY){
         // To not run into the spell.
-        int offset = 40; // TODO Tweak this to align with spell size.
-        return new Vector2(wizpos.x + angleX*offset + spellWidth/2f*angleX + wizSize.x/2f,
-                wizpos.y + angleY*offset + spellHeight/2f*angleY + wizSize.y/2f);
+        float offset = 25*SCALE; // TODO Tweak this to align with spell size.
+        return new Vector2(wizpos.x + wizSize.x/2f + angleX*offset + spellWidth/2f*angleX*SCALE,
+                wizpos.y + wizSize.y/2f + angleY*offset + spellHeight/2f*angleY*SCALE);
     }
 
     public void handlePlayerDead(){
         // TODO: Tweak the zoom parameter to wanted amount. Should be bigger than 1.0 though
-        camera.zoom = (float) 2.0;
+        camera.zoom = 2*SCALE;
         camera.position.set(
                 mapHandler.getMapSize().x/2,
                 mapHandler.getMapSize().x/2,

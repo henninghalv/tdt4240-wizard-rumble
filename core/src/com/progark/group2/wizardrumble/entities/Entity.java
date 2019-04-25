@@ -10,6 +10,8 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.progark.group2.wizardrumble.states.ingamestate.InGameState;
 
+import static com.progark.group2.wizardrumble.Application.SCALE;
+
 public abstract class Entity {
     protected Vector2 position;
     protected Vector2 velocity;
@@ -36,7 +38,7 @@ public abstract class Entity {
     // Makes a b2body for all entities
     protected void defineRectangleEntity() {
         BodyDef bdef = new BodyDef();
-        bdef.position.set(position.x + (1/2f * size.x), position.y + (1/2f * size.y));
+        bdef.position.set((position.x + (1/2f * size.x)) * SCALE, (position.y + (1/2f * size.y)) * SCALE);
         if (bodyType.equals("dynamic")){
             bdef.type = BodyDef.BodyType.DynamicBody;
         }
@@ -47,7 +49,7 @@ public abstract class Entity {
 
         FixtureDef fdef = new FixtureDef();
         PolygonShape shape = new PolygonShape();
-        shape.setAsBox(size.x / 2f, size.y / 2f);
+        shape.setAsBox((size.x / 2f) * SCALE, (size.y / 2f) * SCALE);
 
         fdef.shape = shape;
         fixture = b2body.createFixture(fdef);
