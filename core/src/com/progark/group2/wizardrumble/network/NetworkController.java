@@ -123,24 +123,20 @@ public class NetworkController extends Listener{
             Log.info("Received CreatePlayerResponse");
             CreatePlayerResponse response = (CreatePlayerResponse) object;
             handleCreatePlayerResponse(response);
-        }
-        else if (object instanceof CreateGameResponse) {
+        } else if (object instanceof CreateGameResponse) {
             Log.info("Received CreateGameResponse");
             CreateGameResponse response = (CreateGameResponse) object;
             handleCreateGameResponse(response);
-        }
-        else if (object instanceof PlayerJoinResponse){
+        } else if (object instanceof PlayerJoinResponse){
             Log.info("Received PlayerJoinResponse");
             PlayerJoinResponse response = (PlayerJoinResponse) object;
             handlePlayerJoinResponse(response);
 
-        }
-        else if (object instanceof GameStartPacket){
+        } else if (object instanceof GameStartPacket){
             GameStartPacket packet = (GameStartPacket) object;
             gameStartTime = packet.getGameStartTime();
             handleGameStart();
-        }
-        else if (object instanceof GameJoinedResponse){
+        } else if (object instanceof GameJoinedResponse){
             GameJoinedResponse response = (GameJoinedResponse) object;
             Log.info("Connection ID: " + connection.getID());
             Player player = new Player(
@@ -153,21 +149,17 @@ public class NetworkController extends Listener{
                     0
             );
             NetworkController.player = player;
-        }
-        else if (object instanceof PlayerMovementResponse){
+        } else if (object instanceof PlayerMovementResponse){
             PlayerMovementResponse response = (PlayerMovementResponse) object;
             handlePlayerMovementResponse(response);
-        }
-        else if (object instanceof SpellFiredPacket){
+        } else if (object instanceof SpellFiredPacket){
             SpellFiredPacket packet = (SpellFiredPacket) object;
             handleSpellCastPacket(packet);
-        }
-        else if (object instanceof PlayerLeaveResponse){
+        } else if (object instanceof PlayerLeaveResponse){
             // TODO: Remove the player from players
             PlayerLeaveResponse response = (PlayerLeaveResponse) object;
             handlePlayerLeaveRequest(response);
-        }
-        else if (object instanceof PlayerDeadPacket){
+        } else if (object instanceof PlayerDeadPacket){
             final PlayerDeadPacket packet = (PlayerDeadPacket) object;
             players.get(packet.getVictimId()).setAlive(false);
             players.get(packet.getVictimId()).setTimeAliveInMilliseconds(packet.getPlayerDeathTime() - gameStartTime);
@@ -182,11 +174,9 @@ public class NetworkController extends Listener{
                     }
                 }
             });
-        }
-        else if (object instanceof ServerSuccessResponse) {
+        } else if (object instanceof ServerSuccessResponse) {
             // TODO: Delete this if not used. Smells bad.
-        }
-        else if (object instanceof ServerErrorResponse) {
+        } else if (object instanceof ServerErrorResponse) {
             // If there is a server error
             ServerErrorResponse response = (ServerErrorResponse) object;
             Log.error("Client got this error message: " + response.getErrorMsg());
