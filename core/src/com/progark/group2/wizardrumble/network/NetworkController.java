@@ -178,6 +178,9 @@ public class NetworkController extends Listener{
             });
         } else if (object instanceof PlayerStatsPacket) {
             // Player has ended. Show scorescreen
+            PlayerStatsPacket packet = (PlayerStatsPacket) object;
+            players = packet.getPlayers(); // Update local player stats
+
             try {
                 GameStateManager.getInstance().set(PostGameState.getInstance());
             } catch (IOException e) {
@@ -365,7 +368,6 @@ public class NetworkController extends Listener{
         packet.setKillerId(killerId);
         packet.setPlayerDeathTime(System.currentTimeMillis());
         gameServerClient.sendTCP(packet);
-        player.setAlive(false);
         player.setTimeAliveInMilliseconds(System.currentTimeMillis() - gameStartTime);
         Gdx.app.postRunnable(new Runnable() {
             @Override
