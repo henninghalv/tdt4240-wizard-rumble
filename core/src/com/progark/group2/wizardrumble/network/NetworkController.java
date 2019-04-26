@@ -10,11 +10,11 @@ import com.esotericsoftware.minlog.Log;
 import com.progark.group2.wizardrumble.entities.spells.FireBall;
 import com.progark.group2.wizardrumble.entities.spells.Spell;
 import com.progark.group2.wizardrumble.network.packets.PlayerDeadPacket;
+import com.progark.group2.wizardrumble.network.packets.PlayerStatsPacket;
 import com.progark.group2.wizardrumble.network.packets.SpellFiredPacket;
 import com.progark.group2.wizardrumble.network.requests.CreateGameRequest;
 import com.progark.group2.wizardrumble.network.requests.CreatePlayerRequest;
 
-import com.progark.group2.wizardrumble.network.requests.DamagePlayerPacket;
 import com.progark.group2.wizardrumble.network.packets.GameStartPacket;
 import com.progark.group2.wizardrumble.network.requests.PlayerJoinRequest;
 import com.progark.group2.wizardrumble.network.requests.PlayerMovementRequest;
@@ -29,6 +29,8 @@ import com.progark.group2.wizardrumble.network.responses.ServerErrorResponse;
 import com.progark.group2.wizardrumble.network.responses.ServerSuccessResponse;
 import com.progark.group2.wizardrumble.states.GameStateManager;
 
+import com.progark.group2.wizardrumble.states.PostGameState;
+import com.progark.group2.wizardrumble.states.State;
 import com.progark.group2.wizardrumble.states.ingamestate.InGameState;
 
 import java.io.IOException;
@@ -40,10 +42,13 @@ public class NetworkController extends Listener{
     private static Client masterServerClient;
     private static Client gameServerClient;
     private static Preferences userPreferences = Gdx.app.getPreferences("user");
+    private static InGameState gameState;
 
     private static int playerId = 0;
     private static Player player = null;
     private static HashMap<Integer, Player> players = new HashMap<Integer, Player>();
+
+    private long gameStartTime;
 
     // Master server configuration constants
     private final static int TIMEOUT = 5000;
@@ -122,22 +127,20 @@ public class NetworkController extends Listener{
             Log.info("Received CreatePlayerResponse");
             CreatePlayerResponse response = (CreatePlayerResponse) object;
             handleCreatePlayerResponse(response);
-        }
-        else if (object instanceof CreateGameResponse) {
+        } else if (object instanceof CreateGameResponse) {
             Log.info("Received CreateGameResponse");
             CreateGameResponse response = (CreateGameResponse) object;
             handleCreateGameResponse(response);
-        }
-        else if (object instanceof PlayerJoinResponse){
+        } else if (object instanceof PlayerJoinResponse){
             Log.info("Received PlayerJoinResponse");
             PlayerJoinResponse response = (PlayerJoinResponse) object;
             handlePlayerJoinResponse(response);
 
-        }
-        else if (object instanceof GameStartPacket){
+        } else if (object instanceof GameStartPacket){
+            GameStartPacket packet = (GameStartPacket) object;
+            gameStartTime = packet.getGameStartTime();
             handleGameStart();
-        }
-        else if (object instanceof GameJoinedResponse){
+        } else if (object instanceof GameJoinedResponse){
             GameJoinedResponse response = (GameJoinedResponse) object;
             Log.info("Connection ID: " + connection.getID());
             Player player = new Player(
@@ -145,43 +148,51 @@ public class NetworkController extends Listener{
                     connection.getID(),
                     0,
                     0,
-                    0,
+                    System.currentTimeMillis(),
                     response.getSpawnPoint(),
                     0
             );
             NetworkController.player = player;
-        }
-        else if (object instanceof PlayerMovementResponse){
+        } else if (object instanceof PlayerMovementResponse){
             PlayerMovementResponse response = (PlayerMovementResponse) object;
             handlePlayerMovementResponse(response);
-        }
-        else if (object instanceof SpellFiredPacket){
+        } else if (object instanceof SpellFiredPacket){
             SpellFiredPacket packet = (SpellFiredPacket) object;
             handleSpellCastPacket(packet);
-        }
-        else if (object instanceof PlayerLeaveResponse){
+        } else if (object instanceof PlayerLeaveResponse){
             // TODO: Remove the player from players
             PlayerLeaveResponse response = (PlayerLeaveResponse) object;
             handlePlayerLeaveRequest(response);
-        }
-        else if (object instanceof PlayerDeadPacket){
+        } else if (object instanceof PlayerDeadPacket){
             final PlayerDeadPacket packet = (PlayerDeadPacket) object;
-            players.get(packet.getPlayerId()).setAlive(false);
+            players.get(packet.getVictimId()).setAlive(false);
+            players.get(packet.getVictimId()).setTimeAliveInMilliseconds(packet.getPlayerDeathTime() - gameStartTime);
+            System.out.println("Player " + packet.getVictimId() + " has died! Time alive: " + (packet.getPlayerDeathTime()-gameStartTime)/1000 + "s");
             Gdx.app.postRunnable(new Runnable() {
                 @Override
                 public void run() {
+                   gameState.handleEnemyDead(players.get(packet.getVictimId()).getConnectionId());
+                }
+            });
+        } else if (object instanceof PlayerStatsPacket) {
+            // Game has ended. Show scorescreen
+            PlayerStatsPacket packet = (PlayerStatsPacket) object;
+            players = packet.getPlayers(); // Update local player stats
+            Gdx.app.postRunnable(new Runnable() {
+                @Override
+                public void run(){
                     try {
-                        InGameState.getInstance().handleEnemyDead(players.get(packet.getPlayerId()).getConnectionId());
+                        // Delete the game instance to be able to play again.
+                        GameStateManager.getInstance().set(new PostGameState(GameStateManager.getInstance()));
+
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
             });
-        }
-        else if (object instanceof ServerSuccessResponse) {
+        } else if (object instanceof ServerSuccessResponse) {
             // TODO: Delete this if not used. Smells bad.
-        }
-        else if (object instanceof ServerErrorResponse) {
+        } else if (object instanceof ServerErrorResponse) {
             // If there is a server error
             ServerErrorResponse response = (ServerErrorResponse) object;
             Log.error("Client got this error message: " + response.getErrorMsg());
@@ -205,9 +216,9 @@ public class NetworkController extends Listener{
     private void handleCreateGameResponse(CreateGameResponse response){
         Log.info("Requesting Game Creation...");
         connectToGame(response);
-        Log.info("Closing connection to MasterServer...");
-        closeClientConnection(masterServerClient); // TODO: Do we need to do this??
-        Log.info("Connection to MasterServer closed!\n");
+//        Log.info("Closing connection to MasterServer...");
+//        closeClientConnection(masterServerClient); // TODO: Do we need to do this??
+//        Log.info("Connection to MasterServer closed!\n");
         Log.info("Game created and connected! Waiting for players...\n");
     }
 
@@ -218,7 +229,7 @@ public class NetworkController extends Listener{
                 response.getConnectionId(),
                 0,
                 0,
-                0,
+                System.currentTimeMillis(),
                 response.getSpawnPoint(),
                 0
         );
@@ -234,13 +245,12 @@ public class NetworkController extends Listener{
         Gdx.app.postRunnable(new Runnable() {
             @Override
             public void run() {
-                InGameState state = null;
                 try {
-                    state = InGameState.getInstance();
+                    gameState = new InGameState(GameStateManager.getInstance());
+                    GameStateManager.getInstance().set(gameState);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                GameStateManager.getInstance().set(state);
             }
             });
     }
@@ -255,10 +265,23 @@ public class NetworkController extends Listener{
             public void run() {
                 // TODO: Update for real spelltypes
                 if(packet.getSpellType().equals("FireBall")){
-                    updateEnemyCastSpells(new FireBall(packet.getSpawnPoint(), packet.getRotation(), packet.getVelocity()));
-                }
-                else{
-                    updateEnemyCastSpells(new FireBall(packet.getSpawnPoint(), packet.getRotation(), packet.getVelocity()));
+                    updateEnemyCastSpells(
+                            new FireBall(
+                                    packet.getSpellOwnerId(),
+                                    packet.getSpawnPoint(),
+                                    packet.getRotation(),
+                                    packet.getVelocity()
+                            )
+                    );
+                } else{
+                    updateEnemyCastSpells(
+                            new FireBall(
+                                    packet.getSpellOwnerId(),
+                                    packet.getSpawnPoint(),
+                                    packet.getRotation(),
+                                    packet.getVelocity()
+                            )
+                    );
                 }
             }
         });
@@ -274,7 +297,8 @@ public class NetworkController extends Listener{
      */
     private void getLocalData(){
         Preferences preferences = Gdx.app.getPreferences("user");
-        playerId = preferences.getInteger("playerId", 0);
+//        playerId = preferences.getInteger("playerId", 0);
+        playerId = 1;
         if(playerId == 0){
             Gdx.input.getTextInput(
                     new UsernamePrompt(),
@@ -332,30 +356,29 @@ public class NetworkController extends Listener{
         gameServerClient.sendUDP(request);
     }
 
-    public void castSpell(String type, Vector2 spawnPoint, float rotation, Vector2 velocity){
+    public void castSpell(Spell spell){
         SpellFiredPacket packet = new SpellFiredPacket();
-        packet.setSpellType(type);
-        packet.setSpawnPoint(spawnPoint);
-        packet.setRotation(rotation);
-        packet.setVelocity(velocity);
+        packet.setSpellType(spell.getClass().toString());
+        packet.setSpawnPoint(spell.getPosition());
+        packet.setRotation(spell.getRotation());
+        packet.setVelocity(spell.getVelocity());
+        packet.setSpellOwnerId(spell.getSpellOwnerID());
         gameServerClient.sendUDP(packet);
     }
 
-    public void playerDied(){
-        PlayerDeadPacket packet = new PlayerDeadPacket();
-        packet.setPlayerId(playerId);
-        gameServerClient.sendTCP(packet);
-        player.setAlive(false);
+    public void playerKilledBy(int killerId){
         Gdx.app.postRunnable(new Runnable() {
             @Override
             public void run() {
-                try {
-                    InGameState.getInstance().handlePlayerDead();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                gameState.handlePlayerDead();
             }
         });
+        PlayerDeadPacket packet = new PlayerDeadPacket();
+        packet.setVictimId(playerId);
+        packet.setKillerId(killerId);
+        packet.setPlayerDeathTime(System.currentTimeMillis());
+        gameServerClient.sendTCP(packet);
+        player.setTimeAliveInMilliseconds(System.currentTimeMillis() - gameStartTime);
     }
 
     private void updateEnemyPosition(int playerId, Vector2 position, float rotation) {
@@ -364,11 +387,7 @@ public class NetworkController extends Listener{
     }
 
     private void updateEnemyCastSpells(Spell spell){
-        try {
-            InGameState.getInstance().addSpell(spell);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        gameState.addSpell(spell);
     }
     // =====
 
@@ -382,6 +401,10 @@ public class NetworkController extends Listener{
 
     public Player getPlayer() {
         return player;
+    }
+
+    public InGameState getGameState(){
+        return gameState;
     }
 
     // =====

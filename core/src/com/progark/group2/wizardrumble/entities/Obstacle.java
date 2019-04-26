@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.progark.group2.wizardrumble.entities.spells.Spell;
 
 public class Obstacle extends Entity {
 
@@ -20,7 +21,7 @@ public class Obstacle extends Entity {
     }
 
     @Override
-    public void onCollideWithSpell(int damage) {
+    public void onCollideWithSpell(Spell spell) {
 
     }
 

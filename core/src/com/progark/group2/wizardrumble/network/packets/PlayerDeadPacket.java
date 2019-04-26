@@ -1,16 +1,31 @@
 package com.progark.group2.wizardrumble.network.packets;
 
 public class PlayerDeadPacket {
-    private int playerId;
+    private int victimId;
+    private int killerId;
+    private long playerDeathTime;
 
     public PlayerDeadPacket() {
     }
 
-    public int getPlayerId() {
-        return playerId;
+    public int getVictimId() {
+        return victimId;
     }
 
-    public void setPlayerId(int playerId) {
-        this.playerId = playerId;
+    public int getKillerId() {
+        return killerId;
     }
+
+    public void setVictimId(int victimId) {
+        this.victimId = victimId;
+    }
+
+    public void setKillerId(int killerId) {
+        this.killerId = killerId;
+    }
+
+    public long getPlayerDeathTime() { return playerDeathTime; }
+
+    public void setPlayerDeathTime(long playerDeathTime) { this.playerDeathTime = playerDeathTime; }
+
 }

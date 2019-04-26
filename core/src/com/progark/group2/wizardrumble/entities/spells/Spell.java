@@ -6,6 +6,8 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.progark.group2.wizardrumble.entities.Entity;
+import com.progark.group2.wizardrumble.network.NetworkController;
+import com.progark.group2.wizardrumble.states.GameStateManager;
 import com.progark.group2.wizardrumble.states.ingamestate.InGameState;
 
 import java.io.IOException;
@@ -18,14 +20,16 @@ public abstract class Spell extends Entity {
     protected String statusEffect;
     protected int cooldown;
     protected int castTime;
+    protected int spellOwnerID;
 
     private TextureRegion region;
     private float scale;
 
-    public Spell(Vector2 spawnPoint, float rotation, Vector2 velocity, Texture texture, int damage, float speed, String statusEffect, int cooldown, int castTime){
+    public Spell(int spellOwnerID, Vector2 spawnPoint, float rotation, Vector2 velocity, Texture texture, int damage, float speed, String statusEffect, int cooldown, int castTime){
         super(spawnPoint, velocity, rotation, texture,new Vector2(texture.getWidth(),texture.getHeight()), "dynamic");
         this.damage = damage;
         this.speed = speed;
+        this.spellOwnerID = spellOwnerID;
         // Define the spell's physical body in the world
         defineRectangleEntity();
         //System.out.println(super.texture);
@@ -43,6 +47,10 @@ public abstract class Spell extends Entity {
         return b2body;
     }
 
+    public int getSpellOwnerID() {
+        return spellOwnerID;
+    }
+
     private void updatePosition(){
         b2body.setLinearVelocity(speed * velocity.x, speed * velocity.y);
         position.x = b2body.getPosition().x - (texture.getWidth() / 2f);
@@ -50,12 +58,12 @@ public abstract class Spell extends Entity {
     }
 
     public void destroySpell() throws IOException {
-        InGameState.getInstance().addToBodyList(b2body);
-        InGameState.getInstance().removeSpell(this);
+        NetworkController.getInstance().getGameState().addToBodyList(b2body);
+        NetworkController.getInstance().getGameState().removeSpell(this);
     }
 
     @Override
-    public void onCollideWithSpell(int damage) {
+    public void onCollideWithSpell(Spell spell) {
 
     }
 

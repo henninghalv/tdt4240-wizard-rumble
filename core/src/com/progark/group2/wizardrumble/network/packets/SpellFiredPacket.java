@@ -7,6 +7,7 @@ public class SpellFiredPacket extends Packet {
     private Vector2 spawnPoint;
     private Vector2 velocity;
     private float rotation;
+    private int spellOwnerId;
 
     public SpellFiredPacket() {
     }
@@ -21,6 +22,14 @@ public class SpellFiredPacket extends Packet {
 
     public Vector2 getSpawnPoint() {
         return spawnPoint;
+    }
+
+    public int getSpellOwnerId() {
+        return spellOwnerId;
+    }
+
+    public void setSpellOwnerId(int spellOwnerId) {
+        this.spellOwnerId = spellOwnerId;
     }
 
     public void setSpawnPoint(Vector2 spawnPoint) {

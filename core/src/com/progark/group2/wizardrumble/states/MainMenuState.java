@@ -14,11 +14,15 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.progark.group2.wizardrumble.network.NetworkController;
 import com.progark.group2.wizardrumble.states.resources.UIButton;
 
 import java.io.IOException;
+
+import static com.progark.group2.wizardrumble.Application.HEIGHT;
+import static com.progark.group2.wizardrumble.Application.WIDTH;
 
 
 /** The main menu that is shown when the game is launched. The listeners must be added individually
@@ -107,7 +111,7 @@ public class MainMenuState extends State {
     }
 
     private void startGame() throws IOException {
-        GameStateManager.getInstance().set(LobbyState.getInstance());
+        GameStateManager.getInstance().set(new LobbyState(gameStateManager));
     }
 
     private void openSettings(){
@@ -127,7 +131,7 @@ public class MainMenuState extends State {
     @Override
 
     public void render(SpriteBatch spriteBatch) {
-        Gdx.gl.glClearColor(0, 1, 0, 1);
+        Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         stage.draw();
@@ -150,7 +154,7 @@ public class MainMenuState extends State {
         // Getting NetworkController
         network = NetworkController.getInstance();
 
-        this.stage = new Stage(new ScreenViewport());
+        this.stage = new Stage(new FitViewport(WIDTH, HEIGHT));
         Gdx.input.setInputProcessor(stage);
 
         // Layout styling
@@ -161,7 +165,7 @@ public class MainMenuState extends State {
 
         // Title
         BitmapFont font = new BitmapFont();
-        font.setColor(Color.BLACK);
+        font.setColor(Color.WHITE);
         this.titleStyle = new Label.LabelStyle(font, font.getColor());
 
         Label label = new Label(this.title, titleStyle);

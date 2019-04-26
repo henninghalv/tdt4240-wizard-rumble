@@ -9,6 +9,7 @@ import com.esotericsoftware.minlog.Log;
 import com.progark.group2.gameserver.resources.GameStatus;
 import com.progark.group2.wizardrumble.network.packets.GameStartPacket;
 import com.progark.group2.wizardrumble.network.packets.PlayerDeadPacket;
+import com.progark.group2.wizardrumble.network.packets.PlayerStatsPacket;
 import com.progark.group2.wizardrumble.network.packets.SpellFiredPacket;
 import com.progark.group2.wizardrumble.network.requests.PlayerJoinRequest;
 import com.progark.group2.wizardrumble.network.requests.PlayerLeaveRequest;
@@ -29,6 +30,7 @@ public class GameServer extends Listener{
     private static Server server;
     private static int TCP_PORT;
     private static int UDP_PORT;
+    private long gameStartTime;
     // List of the six available starting positions on the map.
     private static HashMap<Integer, Vector2> spawnPoints = new HashMap<Integer, Vector2>();
     // List of all players that has joined the game with their stats for this game
@@ -94,9 +96,8 @@ public class GameServer extends Listener{
         }
         else if (object instanceof GameStartPacket){
             GameStartPacket packet = (GameStartPacket) object;
-            server.sendToAllTCP(packet);
             try {
-                startGame();
+                startGame(packet);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -111,8 +112,25 @@ public class GameServer extends Listener{
         }
         else if (object instanceof PlayerDeadPacket){
             PlayerDeadPacket packet = (PlayerDeadPacket) object;
-            Log.info("Player died: " + packet.getPlayerId());
+            System.out.println("Killer id: " + packet.getKillerId());
+            players.get(packet.getKillerId()).incrementKills(); // Increase kills for killer
+            players.get(packet.getVictimId()).setAlive(false); // Set victim player as dead
+            Log.info("Player died: " + packet.getVictimId() + ", Killed by " + packet.getKillerId());
             server.sendToAllExceptTCP(connection.getID(), packet);
+
+            // Check if game has ended
+            // TODO: Consider finding a nice lambda for this
+            int playersAlive = 0;
+            for (Player p: players.values()) {
+                if (p.isAlive()) playersAlive++;
+            }
+
+            // If game has ended
+            if (playersAlive <= 1) {
+                // Send player stats to all players for scoreboard: kills and ranking
+                sendPlayerStatsResponse();
+                endGame();
+            }
         }
     }
 
@@ -206,6 +224,12 @@ public class GameServer extends Listener{
         server.sendToAllExceptTCP(connection.getID(), response);
     }
 
+    private void sendPlayerStatsResponse() {
+        PlayerStatsPacket packet = new PlayerStatsPacket();
+        packet.setPlayers(players);
+        server.sendToAllTCP(packet);
+    }
+
     // =====
 
     // ACTIONS
@@ -227,7 +251,7 @@ public class GameServer extends Listener{
         );
 
         players.put(playerId, player);
-
+        System.out.println("Server has: " + players.keySet().size() + "/6 players!");
         if(players.keySet().size() == MasterServer.getMaximumPlayers()){
             Log.info("Server full! Updating status...");
             MasterServer.getInstance().updateGameServerStatus(this, GameStatus.IN_PROGRESS);
@@ -256,58 +280,17 @@ public class GameServer extends Listener{
     // =====
 
     // GAME LOGIC
-//    /**
-//     * Subtracts the player's health equal to the damage taken
-//     * and updates the game data correspondingly.
-//     * @param playerID  (int) the id of the player taken damage
-//     * @param damage    (int) damage taken
-//     */
-//    public void takeDamage(int playerID, int damage) {
-//        // The player's previous health
-//        int previousHealth = players.get(playerID).getHealth();
-//
-//        // Update player's health
-//        players.get(playerID).setHealth(previousHealth - damage);
-//
-//        if (previousHealth - damage <= 0) {
-//            // TODO: send player is dead request to all clients
-//            PlayerDeadRequest request = new PlayerDeadRequest();
-//            request.setPlayerID(playerID);
-//        }
-//    }
-
-    /**
-     * Sends all players health status to all clients.
-     * This should be called between a set time interval
-     * to update all clients about the health to all players.
-     */
-    // TODO: Call this function between a set time interval.
-//    public void sendPlayersHealthStatusRequest() {
-//        PlayersHealthStatusRequest request = new PlayersHealthStatusRequest();
-//        HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
-//
-//        // Add each players health status to the map
-//        for (int playerID : players.keySet()) {
-//            map.put(playerID, players.get(playerID).getHealth());
-//        }
-//
-//        // Add the health status in the request
-//        request.setMap(map);
-//
-//        // Send health status update to all clients
-//        for (Server server : servers) {
-//            // TODO: Go through all clients joined and send this request through connection.sendTCP(request).
-//        }
-//    }
-//
     /**
      * Tell the master server that this server no longer is on standby,
      * but in progress. Start game after 30 seconds from when two players joined or
      * when the game server is full.
      */
-    private void startGame() throws IOException {
+    private void startGame(GameStartPacket packet) throws IOException {
         Log.info("Starting game...");
+        gameStartTime = System.currentTimeMillis();
         MasterServer.getInstance().updateGameServerStatus(this, GameStatus.IN_PROGRESS);
+        packet.setGameStartTime(gameStartTime);
+        server.sendToAllTCP(packet);
         Log.info("Done!\n");
 
 //        if (players.keySet().size() == MasterServer.getMaximumPlayers()) {
@@ -326,18 +309,11 @@ public class GameServer extends Listener{
      * the server stops and removes itself from the MasterServer.
      */
     private void endGame() {
-        // TODO: Create a timeout for when the server should shutdown anyway
-
-        // TODO: send request with metadata (scoreboard data) to all clients
-
-
-        // TODO: FIll response with players metadata
-
-        // Send the response back to client
-        //connection.sendTCP(response);
-        Log.info("ALL PLAYERS ARE DEAD. STOPPING GAMESERVER: GOODBYE WORLD");
-        // Stop the server connection for all servers
-
+        Log.info("ONE WINNING PLAYER ALIVE. STOPPING GAMESERVER: GOODBYE WORLD");
+        // Stop the server connection for all players
+        for(Connection connection : server.getConnections()){
+            connection.close();
+        }
         try {
             // Try removing this from the master server
             // This should open the used ports in master server
@@ -345,23 +321,8 @@ public class GameServer extends Listener{
         } catch (IOException e) {
             e.printStackTrace();
         }
+        server.close();
     }
-
-//    /**
-//     * Return whether all players are dead and the game has ended.
-//     * @return  Boolean     True if all players have died
-//     */
-//    private boolean hasGameEnded() {
-//        int playersAlive = 0;
-//        for (int playerID : players.keySet()) {
-//            // Count every player alive
-//            if (players.get(playerID).getHealth() > 0) {
-//                playersAlive++;
-//            }
-//        }
-//        return playersAlive <= 1;
-//    }
-
     // =====
 
 }
