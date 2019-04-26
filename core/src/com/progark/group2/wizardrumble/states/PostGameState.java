@@ -37,7 +37,6 @@ public class PostGameState extends State {
     private Label.LabelStyle textStyle;
 
     private Table table;
-    private Sprite endGameOverlay;
     private Vector3 cameraPosition;
     private ArrayList<Player> playerPlacements;
 
@@ -61,7 +60,7 @@ public class PostGameState extends State {
         Collections.sort(playerPlacements, new Comparator<Player>() {
             @Override
             public int compare(Player player1, Player player2) {
-                if(player1.getTimeAliveInMilliseconds() > player2.getTimeAliveInMilliseconds()){
+                if(player1.getTimeAliveInMilliseconds() < player2.getTimeAliveInMilliseconds()){
                     return -1;
                 }
                 else if(player1.getTimeAliveInMilliseconds() == player2.getTimeAliveInMilliseconds()){
@@ -123,16 +122,8 @@ public class PostGameState extends State {
 
         this.stage.addActor(table);
 
-        this.endGameOverlay = new Sprite(new Texture("black.png"));
-        this.endGameOverlay.setSize(WIDTH, HEIGHT);
-        this.endGameOverlay.setAlpha(0.5f);
-    }
-
-    public static PostGameState getInstance() throws IOException {
-        if(instance == null){
-            return new PostGameState(GameStateManager.getInstance());
-        }
-        return instance;
+        // Remove all players
+        network.getPlayers().clear();
     }
 
     public void updateDB(){
@@ -146,11 +137,11 @@ public class PostGameState extends State {
             this.onBackButtonPress();
         }
 
-        try {
-            this.cameraPosition = InGameState.getInstance().getCamera().position;
-        } catch (Exception e){
-            System.out.println(e.getMessage());
-        }
+//        try {
+//            this.cameraPosition = InGameState.getInstance().getCamera().position;
+//        } catch (Exception e){
+//            System.out.println(e.getMessage());
+//        }
     }
 
     @Override

@@ -111,7 +111,7 @@ public class MainMenuState extends State {
     }
 
     private void startGame() throws IOException {
-        GameStateManager.getInstance().set(LobbyState.getInstance());
+        GameStateManager.getInstance().set(new LobbyState(gameStateManager));
     }
 
     private void openSettings(){
@@ -131,7 +131,7 @@ public class MainMenuState extends State {
     @Override
 
     public void render(SpriteBatch spriteBatch) {
-        Gdx.gl.glClearColor(0, 1, 0, 1);
+        Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         stage.draw();
@@ -165,7 +165,7 @@ public class MainMenuState extends State {
 
         // Title
         BitmapFont font = new BitmapFont();
-        font.setColor(Color.BLACK);
+        font.setColor(Color.WHITE);
         this.titleStyle = new Label.LabelStyle(font, font.getColor());
 
         Label label = new Label(this.title, titleStyle);

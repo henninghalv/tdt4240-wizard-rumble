@@ -6,6 +6,8 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.progark.group2.wizardrumble.entities.Entity;
+import com.progark.group2.wizardrumble.network.NetworkController;
+import com.progark.group2.wizardrumble.states.GameStateManager;
 import com.progark.group2.wizardrumble.states.ingamestate.InGameState;
 
 import java.io.IOException;
@@ -56,8 +58,8 @@ public abstract class Spell extends Entity {
     }
 
     public void destroySpell() throws IOException {
-        InGameState.getInstance().addToBodyList(b2body);
-        InGameState.getInstance().removeSpell(this);
+        NetworkController.getInstance().getGameState().addToBodyList(b2body);
+        NetworkController.getInstance().getGameState().removeSpell(this);
     }
 
     @Override

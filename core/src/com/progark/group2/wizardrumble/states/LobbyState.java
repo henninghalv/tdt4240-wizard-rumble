@@ -34,29 +34,30 @@ public class LobbyState extends State {
     private Label.LabelStyle titleStyle;
     private HashMap<Integer, Player> players = new HashMap<Integer, Player>();
 
-    private static LobbyState instance = null;
+//    private static LobbyState instance = null;
 
     private final String title = "Lobby - waiting for players...";
 
-    private LobbyState(GameStateManager gameStateManager) throws IOException {
+    protected LobbyState(GameStateManager gameStateManager) throws IOException {
         super(gameStateManager);
         initialize();
     }
 
-    public static LobbyState getInstance() throws IOException {
-        if (instance == null) {
-            instance = new LobbyState(GameStateManager.getInstance());
-        }
-        return instance;
-    }
+//    public static LobbyState getInstance() throws IOException {
+//        if (instance == null) {
+//            instance = new LobbyState(GameStateManager.getInstance());
+//        }
+//        return instance;
+//    }
 
     private void createPanels() {
+        table.add(new UIButton(new Texture("UI/blue_button01.png"), network.getPlayer().getName()).getButton()).spaceBottom(10f).pad(0F);
+        table.row();
+
         for (Integer playerId : players.keySet()) {
-            table.add(new UIButton(new Texture("UI/blue_button00.png"), players.get(playerId).getName()).getButton()).pad(0F);
+            table.add(new UIButton(new Texture("UI/blue_button01.png"), players.get(playerId).getName()).getButton()).pad(0F);
             table.row();
         }
-        table.add(new UIButton(new Texture("UI/blue_button00.png"), network.getPlayer().getName()).getButton()).pad(0F);
-        table.row();
     }
 
     private void createBackButton() {
@@ -108,10 +109,6 @@ public class LobbyState extends State {
         network.requestGameStart();
     }
 
-    public void startGame(InGameState state) {
-        this.gameStateManager.set(state);
-    }
-
     @Override
     public void handleInput() {
 
@@ -132,7 +129,7 @@ public class LobbyState extends State {
 
     @Override
     public void render(SpriteBatch spriteBatch) {
-        Gdx.gl.glClearColor(0, 1, 0, 1);
+        Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         stage.draw();
     }
@@ -167,7 +164,7 @@ public class LobbyState extends State {
 
         // Title
         BitmapFont font = new BitmapFont();
-        font.setColor(Color.BLACK);
+        font.setColor(Color.WHITE);
         this.titleStyle = new Label.LabelStyle(font, font.getColor());
 
         Label label = new Label(this.title, titleStyle);
@@ -176,7 +173,7 @@ public class LobbyState extends State {
         table.add(label).size((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/4);
         table.row();
 
-        table.debug();
+//        table.debug();
         stage.addActor(table);
     }
 }

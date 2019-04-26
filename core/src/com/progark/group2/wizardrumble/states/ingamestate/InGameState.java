@@ -46,9 +46,9 @@ public class InGameState extends State {
     private NetworkController network;
 
     private WizardPlayer wizardPlayer;
-    private HashMap<Integer, WizardEnemy> wizardEnemies = new HashMap<Integer, WizardEnemy>();
+    private HashMap<Integer, WizardEnemy> wizardEnemies;
     private TextureRegion wizardPlayerRegion;
-    private HashMap<Integer, TextureRegion> wizardEnemyRegions = new HashMap<Integer, TextureRegion>();
+    private HashMap<Integer, TextureRegion> wizardEnemyRegions;
     private Texture playerDeadTexture;
 
     // Currently selected spell
@@ -66,12 +66,12 @@ public class InGameState extends State {
     private SpriteBatch spriteBatch;
 
     // Box2d variables
-    public final static World world = new World(new Vector2(0, 0), true);
+    public static World world;
     private Box2DDebugRenderer b2dr;
     private Array<Body> bodiesToDestroy;
 
 
-    private static InGameState instance = null;
+//    private static InGameState instance = null;
     private InGameHud inGameHud;
 
     // Last touch boolean for when rightJoyStick was touched last frame.
@@ -81,8 +81,12 @@ public class InGameState extends State {
     private float lastAimY;
 
 
-    private InGameState(GameStateManager gameStateManager) throws IOException {
+    public InGameState(GameStateManager gameStateManager) throws IOException {
         super(gameStateManager);
+
+        world  = new World(new Vector2(0, 0), true);
+        wizardEnemies = new HashMap<Integer, WizardEnemy>();
+        wizardEnemyRegions = new HashMap<Integer, TextureRegion>();
 
         // Create camera
         camera = new OrthographicCamera();
@@ -147,14 +151,18 @@ public class InGameState extends State {
         // Set camera to initial wizardPlayer position
         camera.position.set((wizardPlayer.getPosition().x + wizardPlayer.getSprite().getWidth()/2f)*SCALE, (wizardPlayer.getPosition().y + wizardPlayer.getSprite().getHeight()/2f)*SCALE, 0);
 
-     }
-
-    public static InGameState getInstance() throws IOException {
-        if (instance == null){
-            instance = new InGameState(GameStateManager.getInstance());
-        }
-        return instance;
     }
+//
+//     public static void resetInstance(){
+//        instance = null;
+//     }
+//
+//    public static InGameState getInstance() throws IOException {
+//        if (instance == null){
+//            instance = new InGameState(GameStateManager.getInstance());
+//        }
+//        return instance;
+//    }
 
 
     private void updateWizardRotation(){
@@ -196,6 +204,7 @@ public class InGameState extends State {
 
             network.castSpell(fb);
             System.out.println("Spell position: " + fb.getPosition());
+            System.out.println("Spell player id: " + fb.getSpellOwnerID());
         }
 
         // Logic for casting when Ice has been selected
@@ -227,6 +236,8 @@ public class InGameState extends State {
     public void update(float dt) {
         // Deletes bodies after collision
         delete();
+
+        checkWizardPlayerHealth();
 
         // Debugging method to let us know if at any point a spell still exists after it's body is destroyed.
         for (Spell spell : spells){
@@ -338,6 +349,7 @@ public class InGameState extends State {
         }
 
         if(camera.zoom == 1*SCALE && wizardPlayer.getHealth() <= 0){
+            System.out.println("PLAYERDEAD!!!!");
             handlePlayerDead();
         }
 
@@ -441,5 +453,9 @@ public class InGameState extends State {
         MapObject object = new MapObject();
         object.getProperties().put("player", wizard);
         mapHandler.getMap().getLayers().get("players").getObjects().add(object);
+    }
+
+    private void checkWizardPlayerHealth(){
+        inGameHud.getHealthBar().updateHealth(wizardPlayer.getHealth());
     }
 }

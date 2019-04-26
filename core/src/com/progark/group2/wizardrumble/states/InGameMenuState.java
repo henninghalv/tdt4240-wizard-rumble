@@ -99,11 +99,11 @@ public class InGameMenuState extends State {
             this.onBackButtonPress();
         }
 
-        try {
-            this.cameraPosition = InGameState.getInstance().getCamera().position;
-        } catch (Exception e){
-            System.out.println(e.getMessage());
-        }
+//        try {
+//            this.cameraPosition = InGameState.getInstance().getCamera().position;
+//        } catch (Exception e){
+//            System.out.println(e.getMessage());
+//        }
     }
 
     @Override

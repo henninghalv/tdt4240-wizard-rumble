@@ -112,6 +112,7 @@ public class GameServer extends Listener{
         }
         else if (object instanceof PlayerDeadPacket){
             PlayerDeadPacket packet = (PlayerDeadPacket) object;
+            System.out.println("Killer id: " + packet.getKillerId());
             players.get(packet.getKillerId()).incrementKills(); // Increase kills for killer
             players.get(packet.getVictimId()).setAlive(false); // Set victim player as dead
             Log.info("Player died: " + packet.getVictimId() + ", Killed by " + packet.getKillerId());
@@ -127,7 +128,7 @@ public class GameServer extends Listener{
             // If game has ended
             if (playersAlive <= 1) {
                 // Send player stats to all players for scoreboard: kills and ranking
-                sendPlayerStatsResponse(connection);
+                sendPlayerStatsResponse();
                 endGame();
             }
         }
@@ -223,10 +224,10 @@ public class GameServer extends Listener{
         server.sendToAllExceptTCP(connection.getID(), response);
     }
 
-    private void sendPlayerStatsResponse(Connection connection) {
-        PlayerStatsPacket response = new PlayerStatsPacket();
-        response.setPlayers(players);
-        server.sendToAllExceptTCP(connection.getID(), response);
+    private void sendPlayerStatsResponse() {
+        PlayerStatsPacket packet = new PlayerStatsPacket();
+        packet.setPlayers(players);
+        server.sendToAllTCP(packet);
     }
 
     // =====
@@ -309,8 +310,10 @@ public class GameServer extends Listener{
      */
     private void endGame() {
         Log.info("ONE WINNING PLAYER ALIVE. STOPPING GAMESERVER: GOODBYE WORLD");
-        // Stop the server connection for all servers
-
+        // Stop the server connection for all players
+        for(Connection connection : server.getConnections()){
+            connection.close();
+        }
         try {
             // Try removing this from the master server
             // This should open the used ports in master server
@@ -318,6 +321,7 @@ public class GameServer extends Listener{
         } catch (IOException e) {
             e.printStackTrace();
         }
+        server.close();
     }
     // =====
 

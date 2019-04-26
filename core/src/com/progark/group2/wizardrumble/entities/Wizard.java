@@ -20,7 +20,7 @@ public abstract class Wizard extends Entity {
     public final static int DEFAULT_HEALTH = 100;
 
     private final static float ANGLE_OFFSET = 270;
-    private int speed = 35;
+    private int speed = 25;
     protected int health;
     private HashMap<String, Texture> directions = new HashMap<String, Texture>();
 
@@ -87,10 +87,11 @@ public abstract class Wizard extends Entity {
 
     @Override
     public void onCollideWithSpell(Spell spell) {
+        System.out.println("Spell owner ID: " + spell.getSpellOwnerID());
         health -= spell.getDamage();
         if(this instanceof WizardPlayer){
             try {
-                InGameState.getInstance().getInGameHud().getHealthBar().updateHealth(health);
+//                InGameState.getInstance().getInGameHud().getHealthBar().updateHealth(health);
                 if(health <= 0){
                     NetworkController.getInstance().playerKilledBy(spell.getSpellOwnerID());
                 }

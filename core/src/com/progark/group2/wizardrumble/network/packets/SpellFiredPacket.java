@@ -28,6 +28,10 @@ public class SpellFiredPacket extends Packet {
         return spellOwnerId;
     }
 
+    public void setSpellOwnerId(int spellOwnerId) {
+        this.spellOwnerId = spellOwnerId;
+    }
+
     public void setSpawnPoint(Vector2 spawnPoint) {
         this.spawnPoint = spawnPoint;
     }
