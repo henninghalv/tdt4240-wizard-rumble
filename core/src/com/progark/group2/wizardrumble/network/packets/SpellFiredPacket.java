@@ -2,7 +2,7 @@ package com.progark.group2.wizardrumble.network.packets;
 
 import com.badlogic.gdx.math.Vector2;
 
-public class SpellFiredPacket extends Packet {
+public class SpellFiredPacket{
     private String spellType;
     private Vector2 spawnPoint;
     private Vector2 velocity;

@@ -18,12 +18,10 @@ public class WorldContactListener implements ContactListener {
         Fixture fixA = contact.getFixtureA();
         Fixture fixB = contact.getFixtureB();
 
-
         // Checks if one and only one fixture is a spell
         if (!(fixA.getUserData().getClass().getSuperclass().equals(Spell.class) && fixB.getUserData().getClass().getSuperclass().equals(Spell.class)) && (fixA.getUserData().getClass().getSuperclass().equals(Spell.class) || fixB.getUserData().getClass().getSuperclass().equals(Spell.class))){
-            Fixture spell = fixA.getUserData() == "spell" ? fixA : fixB;
-            Fixture object = spell == fixA ? fixB : fixA;
-
+            Fixture spell = fixA.getUserData().getClass().getSuperclass().equals(Spell.class) ? fixA : fixB;
+            Fixture object = spell.equals(fixA) ? fixB : fixA;
 
             if(object.getUserData() != null && Entity.class.isAssignableFrom(object.getUserData().getClass())){
                 Spell spellObject = ((Spell) spell.getUserData());

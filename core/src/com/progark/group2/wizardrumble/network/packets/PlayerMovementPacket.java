@@ -1,8 +1,8 @@
-package com.progark.group2.wizardrumble.network.requests;
+package com.progark.group2.wizardrumble.network.packets;
 
 import com.badlogic.gdx.math.Vector2;
 
-public class PlayerMovementRequest extends Request {
+public class PlayerMovementPacket {
 
     private Vector2 position;
     private float rotation;

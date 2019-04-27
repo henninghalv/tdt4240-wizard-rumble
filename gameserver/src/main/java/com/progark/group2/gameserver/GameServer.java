@@ -9,18 +9,16 @@ import com.esotericsoftware.minlog.Log;
 import com.progark.group2.gameserver.resources.GameStatus;
 import com.progark.group2.wizardrumble.network.packets.GameStartPacket;
 import com.progark.group2.wizardrumble.network.packets.PlayerDeadPacket;
-import com.progark.group2.wizardrumble.network.packets.PlayerStatsPacket;
+import com.progark.group2.wizardrumble.network.packets.GameEndPacket;
+import com.progark.group2.wizardrumble.network.packets.PlayerMovementPacket;
 import com.progark.group2.wizardrumble.network.packets.SpellFiredPacket;
 import com.progark.group2.wizardrumble.network.requests.PlayerJoinRequest;
 import com.progark.group2.wizardrumble.network.requests.PlayerLeaveRequest;
-import com.progark.group2.wizardrumble.network.requests.PlayerMovementRequest;
 import com.progark.group2.wizardrumble.network.resources.Player;
 import com.progark.group2.wizardrumble.network.responses.GameJoinedResponse;
 import com.progark.group2.wizardrumble.network.responses.PlayerJoinResponse;
 import com.progark.group2.wizardrumble.network.responses.PlayerLeaveResponse;
-import com.progark.group2.wizardrumble.network.responses.PlayerMovementResponse;
 import com.progark.group2.wizardrumble.network.responses.ServerErrorResponse;
-import com.progark.group2.wizardrumble.network.responses.ServerSuccessResponse;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -87,7 +85,6 @@ public class GameServer extends Listener{
         }
         else if (object instanceof PlayerLeaveRequest){
             PlayerLeaveRequest request = (PlayerLeaveRequest) object;
-            sendServerSuccessResponse(connection, "Goodbye!");
             try {
                 handlePlayerLeaveRequest(connection, request);
             } catch (IOException e) {
@@ -106,31 +103,15 @@ public class GameServer extends Listener{
             SpellFiredPacket packet = (SpellFiredPacket) object;
             server.sendToAllExceptUDP(connection.getID(), packet);
         }
-        else if (object instanceof PlayerMovementRequest){
-            PlayerMovementRequest request = (PlayerMovementRequest) object;
-            handlePlayerMovementRequest(connection, request);
+        else if (object instanceof PlayerMovementPacket){
+            PlayerMovementPacket packet = (PlayerMovementPacket) object;
+            players.get(packet.getPlayerId()).setPosition(packet.getPosition());
+            players.get(packet.getPlayerId()).setRotation(packet.getRotation());
+            server.sendToAllExceptUDP(connection.getID(), packet);
         }
         else if (object instanceof PlayerDeadPacket){
             PlayerDeadPacket packet = (PlayerDeadPacket) object;
-            System.out.println("Killer id: " + packet.getKillerId());
-            players.get(packet.getKillerId()).incrementKills(); // Increase kills for killer
-            players.get(packet.getVictimId()).setAlive(false); // Set victim player as dead
-            Log.info("Player died: " + packet.getVictimId() + ", Killed by " + packet.getKillerId());
-            server.sendToAllExceptTCP(connection.getID(), packet);
-
-            // Check if game has ended
-            // TODO: Consider finding a nice lambda for this
-            int playersAlive = 0;
-            for (Player p: players.values()) {
-                if (p.isAlive()) playersAlive++;
-            }
-
-            // If game has ended
-            if (playersAlive <= 1) {
-                // Send player stats to all players for scoreboard: kills and ranking
-                sendPlayerStatsResponse();
-                endGame();
-            }
+            handlePlayerDeadPacket(connection, packet);
         }
     }
 
@@ -169,24 +150,28 @@ public class GameServer extends Listener{
         sendPlayerLeaveResponse(connection, request);
     }
 
-    private void handlePlayerMovementRequest(Connection connection, PlayerMovementRequest request){
-        sendPlayerMovementResponse(connection, request);
+    private void handlePlayerDeadPacket(Connection connection, PlayerDeadPacket packet){
+        players.get(packet.getKillerId()).incrementKills(); // Increase kills for killer
+        players.get(packet.getVictimId()).setAlive(false); // Set victim player as dead
+        players.get(packet.getVictimId()).setTimeAliveInMilliseconds(packet.getPlayerDeathTime() - gameStartTime); // Set time of death
+        Log.info("Player died: " + packet.getVictimId() + ", Killed by " + packet.getKillerId());
+        server.sendToAllExceptTCP(connection.getID(), packet);
+
+        // Check if game has ended
+        if(checkIfGameOver()){
+            for(Player player : players.values()){
+                if(player.isAlive()){
+                    player.setTimeAliveInMilliseconds(packet.getPlayerDeathTime() - gameStartTime); // Same time as last death
+                }
+            }
+            sendGameEndResponse();
+            endGame();
+        }
     }
 
     // =====
 
     // RESPONSES
-
-    /**
-     * Sends a generic Server Success Response with a simple message
-     * @param connection
-     * @param message
-     */
-    private void sendServerSuccessResponse(Connection connection, String message){
-        ServerSuccessResponse response = new ServerSuccessResponse();
-        response.setSuccessMessage(message);
-        connection.sendTCP(response);
-    }
 
     /**
      * Sends a server error message to the client. Fire this where something can fail on the server side.
@@ -197,16 +182,6 @@ public class GameServer extends Listener{
         ServerErrorResponse errorResponse = new ServerErrorResponse();
         errorResponse.setErrorMsg(message);
         connection.sendTCP(errorResponse);
-    }
-
-    private void sendPlayerMovementResponse(Connection connection, PlayerMovementRequest request){
-        PlayerMovementResponse response = new PlayerMovementResponse();
-        response.setPlayerId(request.getPlayerId());
-        response.setPosition(request.getPosition());
-        response.setRotation(request.getRotation());
-        players.get(request.getPlayerId()).setPosition(request.getPosition());
-        players.get(request.getPlayerId()).setRotation(request.getRotation());
-        server.sendToAllExceptUDP(connection.getID(), response);
     }
 
     private void sendPlayerJoinResponse(Connection connection, int playerId, Player player){
@@ -224,8 +199,8 @@ public class GameServer extends Listener{
         server.sendToAllExceptTCP(connection.getID(), response);
     }
 
-    private void sendPlayerStatsResponse() {
-        PlayerStatsPacket packet = new PlayerStatsPacket();
+    private void sendGameEndResponse() {
+        GameEndPacket packet = new GameEndPacket();
         packet.setPlayers(players);
         server.sendToAllTCP(packet);
     }
@@ -264,7 +239,6 @@ public class GameServer extends Listener{
         MasterServer.getInstance().updateGameServerStatus(this, GameStatus.STAND_BY);
     }
 
-
     // =====
 
     // HELPER METHODS
@@ -292,16 +266,24 @@ public class GameServer extends Listener{
         packet.setGameStartTime(gameStartTime);
         server.sendToAllTCP(packet);
         Log.info("Done!\n");
+        // TODO: Consider adding a time delay before game starts.
+    }
 
-//        if (players.keySet().size() == MasterServer.getMaximumPlayers()) {
-//            // set gameserver status to inprogress
-//        }
-//
-//        if (players.keySet().size() >= 2) {
-//            // Start countdown from 30 sec.
-//            // After this countdown, set gameserver status to inprogress
-//
-//        }
+    private boolean checkIfGameOver(){
+        // Check if game has ended
+        // TODO: Consider finding a nice lambda for this
+        int playersAlive = 0;
+        for (Player p: players.values()) {
+            if (p.isAlive()) playersAlive++;
+        }
+
+        // If game has ended
+        if (playersAlive <= 1) {
+            // Send player stats to all players for scoreboard: kills and ranking
+            return true;
+        }
+
+        return false;
     }
 //
     /**
@@ -309,7 +291,7 @@ public class GameServer extends Listener{
      * the server stops and removes itself from the MasterServer.
      */
     private void endGame() {
-        Log.info("ONE WINNING PLAYER ALIVE. STOPPING GAMESERVER: GOODBYE WORLD");
+        Log.info("Game is over! Closing game server...");
         // Stop the server connection for all players
         for(Connection connection : server.getConnections()){
             connection.close();
@@ -322,6 +304,7 @@ public class GameServer extends Listener{
             e.printStackTrace();
         }
         server.close();
+        Log.info("Done!");
     }
     // =====
 
