@@ -2,6 +2,7 @@ package com.progark.group2.wizardrumble.states;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -94,15 +95,9 @@ public class InGameMenuState extends State {
 
     @Override
     public void update(float dt) {
-        //TODO esc doesn't work, but not crucial for phone
-        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
-            this.onBackButtonPress();
-        }
-
-//        try {
-//            this.cameraPosition = InGameState.getInstance().getCamera().position;
-//        } catch (Exception e){
-//            System.out.println(e.getMessage());
+//        //TODO esc doesn't work, but not crucial for phone
+//        if (Gdx.input.isKeyJustPressed(Input.Keys.BACK)){
+//            this.gameStateManager.pop();
 //        }
     }
 
