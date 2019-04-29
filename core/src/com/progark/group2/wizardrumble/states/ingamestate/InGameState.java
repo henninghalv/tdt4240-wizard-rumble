@@ -236,10 +236,9 @@ public class InGameState extends State {
         float x = x1 * ratio;
         float y = y1 * ratio;
 
-
         Vector2 spawnPoint = getSpellInitialPosition(wizardPlayer.getPosition(), wizardPlayer.getSize(), FireBall.texture.getHeight(), FireBall.texture.getWidth(),x,y);
 
-        float rotation = wizardPlayer.getRotation();  // rotation
+        float rotation = wizardPlayer.getRotation(); // rotation
 
         Vector2 velocity = new Vector2(x, y);  // velocity
 
@@ -329,11 +328,11 @@ public class InGameState extends State {
         mapHandler.setView(camera);
 
         if(wizardPlayer.getB2body().isActive()){
+            // Checks if player tries to cast spell and the spell is ready
+            checkSpellCooldown();
             updateWizardPositionAndRotation();
             //Update camera to follow player.
             updateCamera();
-            // Checks if player tries to cast spell and the spell is ready
-            checkSpellCooldown();
         }
 
         lastTouch = inGameHud.getRightJoyStick().isTouched();
@@ -354,7 +353,8 @@ public class InGameState extends State {
             }
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+        Gdx.input.setCatchBackKey(true);
+        if (Gdx.input.isKeyJustPressed(Input.Keys.BACK)) {
             this.onBackButtonPress();
         }
     }
