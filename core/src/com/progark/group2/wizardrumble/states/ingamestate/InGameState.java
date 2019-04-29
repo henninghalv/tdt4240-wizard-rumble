@@ -30,6 +30,8 @@ import com.progark.group2.wizardrumble.states.GameStateManager;
 import com.progark.group2.wizardrumble.states.InGameMenuState;
 import com.progark.group2.wizardrumble.states.State;
 import com.progark.group2.wizardrumble.tools.B2WorldCreator;
+import com.progark.group2.wizardrumble.tools.SoundManager;
+import com.progark.group2.wizardrumble.tools.SoundType;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,6 +45,7 @@ import static com.progark.group2.wizardrumble.Application.WIDTH;
 public class InGameState extends State {
 
     private NetworkController network;
+    private SoundManager soundManager;
 
     private WizardPlayer wizardPlayer;
     private HashMap<Integer, WizardEnemy> wizardEnemies;
@@ -89,6 +92,9 @@ public class InGameState extends State {
 
         // Get the Network Controller
         network = NetworkController.getInstance();
+        // Get the Sound Manager
+        soundManager = SoundManager.getInstance();
+        soundManager.switchMusic("battle");
 
         // Setting up the state
         setupCameraAndWorld();
@@ -246,7 +252,7 @@ public class InGameState extends State {
         if (spell.equals("FireBall")) {
             FireBall fb = new FireBall(network.getPlayerId(), spawnPoint, rotation, velocity);
             spells.add(fb); // Add to list of casted spells
-
+            fb.playSound(1.0f);
             network.castSpell(fb);
             System.out.println("Spell position: " + fb.getPosition());
             System.out.println("Spell player id: " + fb.getSpellOwnerID());
@@ -256,7 +262,7 @@ public class InGameState extends State {
         if (spell.equals("Ice")) {
             Ice ic = new Ice(network.getPlayerId(), spawnPoint, rotation,velocity);
             spells.add(ic); // Add to list of casted spells
-
+            ic.playSound(1.0f);
             network.castSpell(ic);
         }
         System.out.println(wizardPlayer.getPosition());
@@ -271,6 +277,7 @@ public class InGameState extends State {
     }
 
     public void addSpell(Spell spell){
+        spell.playSound(0.5f);
         spells.add(spell);
     }
 

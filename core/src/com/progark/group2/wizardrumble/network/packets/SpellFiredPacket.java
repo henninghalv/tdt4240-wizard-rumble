@@ -1,9 +1,10 @@
 package com.progark.group2.wizardrumble.network.packets;
 
 import com.badlogic.gdx.math.Vector2;
+import com.progark.group2.wizardrumble.entities.spells.SpellType;
 
 public class SpellFiredPacket{
-    private String spellType;
+    private SpellType spellType;
     private Vector2 spawnPoint;
     private Vector2 velocity;
     private float rotation;
@@ -12,11 +13,11 @@ public class SpellFiredPacket{
     public SpellFiredPacket() {
     }
 
-    public String getSpellType() {
+    public SpellType getSpellType() {
         return spellType;
     }
 
-    public void setSpellType(String spellType) {
+    public void setSpellType(SpellType spellType) {
         this.spellType = spellType;
     }
 

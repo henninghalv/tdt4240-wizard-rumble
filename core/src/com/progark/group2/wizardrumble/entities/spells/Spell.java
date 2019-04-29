@@ -21,11 +21,12 @@ public abstract class Spell extends Entity {
     protected int cooldown;
     protected int castTime;
     protected int spellOwnerID;
+    protected SpellType spellType;
 
     private TextureRegion region;
     private float scale;
 
-    public Spell(int spellOwnerID, Vector2 spawnPoint, float rotation, Vector2 velocity, Texture texture, int damage, float speed, String statusEffect, int cooldown, int castTime){
+    public Spell(int spellOwnerID, Vector2 spawnPoint, float rotation, Vector2 velocity, Texture texture, int damage, float speed, String statusEffect, int cooldown, int castTime, SpellType type){
         super(spawnPoint, velocity, rotation, texture,new Vector2(texture.getWidth(),texture.getHeight()), "dynamic");
         this.damage = damage;
         this.speed = speed;
@@ -37,6 +38,7 @@ public abstract class Spell extends Entity {
         scale = 0.2f; // Tweak the scale as necessary
         b2body.setTransform(spawnPoint, (float)Math.toRadians(rotation));
         this.speed = speed;
+        spellType = type;
     }
 
     public int getDamage(){
@@ -51,6 +53,10 @@ public abstract class Spell extends Entity {
         return spellOwnerID;
     }
 
+    public SpellType getSpellType() {
+        return spellType;
+    }
+
     private void updatePosition(){
         b2body.setLinearVelocity(speed * velocity.x, speed * velocity.y);
         position.x = b2body.getPosition().x - (texture.getWidth() / 2f);
@@ -61,6 +67,8 @@ public abstract class Spell extends Entity {
         NetworkController.getInstance().getGameState().addToBodyList(b2body);
         NetworkController.getInstance().getGameState().removeSpell(this);
     }
+
+    public abstract void playSound(float volume);
 
     @Override
     public void onCollideWithSpell(Spell spell) {

@@ -4,6 +4,8 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
+import com.progark.group2.wizardrumble.tools.SoundManager;
+import com.progark.group2.wizardrumble.tools.SoundType;
 
 public class Ice extends Spell {
 
@@ -17,7 +19,7 @@ public class Ice extends Spell {
 
 
     public Ice(int spellOwnerID, Vector2 spawnPoint, float rotation, Vector2 velocity){
-        super(spellOwnerID, spawnPoint, rotation, velocity, texture,10, 300f, "", 3, 1);
+        super(spellOwnerID, spawnPoint, rotation, velocity, texture,10, 300f, "", 3, 1, SpellType.ICE);
         this.velocity = velocity; // Use speed in spell abstract class in addition to this.
         this.rotation = rotation;
         this.position = spawnPoint;
@@ -28,6 +30,11 @@ public class Ice extends Spell {
     }
 
 
+    @Override
+    public void playSound(float volume) {
+        System.out.println("Playing Ice sound...");
+        SoundManager.getInstance().playSound(SoundType.ICE, volume);
+    }
 
     @Override
     public void dispose() {

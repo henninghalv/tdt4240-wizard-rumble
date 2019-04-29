@@ -8,7 +8,9 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.minlog.Log;
 import com.progark.group2.wizardrumble.entities.spells.FireBall;
+import com.progark.group2.wizardrumble.entities.spells.Ice;
 import com.progark.group2.wizardrumble.entities.spells.Spell;
+import com.progark.group2.wizardrumble.entities.spells.SpellType;
 import com.progark.group2.wizardrumble.network.packets.PlayerDeadPacket;
 import com.progark.group2.wizardrumble.network.packets.GameEndPacket;
 import com.progark.group2.wizardrumble.network.packets.PlayerMovementPacket;
@@ -51,7 +53,7 @@ public class NetworkController extends Listener{
 
     // Master server configuration constants
     private final static int TIMEOUT = 5000;
-    private final static String MASTER_SERVER_HOST = "localhost";  // Set this to the local IP address of your computer when running the server
+    private final static String MASTER_SERVER_HOST = "10.22.79.189";  // Set this to the local IP address of your computer when running the server
     private final static int MASTER_SERVER_TCP_PORT = 54555;
     private final static int MASTER_SERVER_UDP_PORT = 54777;
 
@@ -220,22 +222,13 @@ public class NetworkController extends Listener{
             @Override
             public void run() {
                 // TODO: Update for real spelltypes
-                if(packet.getSpellType().equals("FireBall")){
+                if(packet.getSpellType().equals(SpellType.FIREBALL)){
                     updateEnemyCastSpells(
-                            new FireBall(
-                                    packet.getSpellOwnerId(),
-                                    packet.getSpawnPoint(),
-                                    packet.getRotation(),
-                                    packet.getVelocity()
-                            )
+                            new FireBall(packet.getSpellOwnerId(), packet.getSpawnPoint(), packet.getRotation(), packet.getVelocity())
                     );
                 } else{
                     updateEnemyCastSpells(
-                            new FireBall(
-                                    packet.getSpellOwnerId(),
-                                    packet.getSpawnPoint(),
-                                    packet.getRotation(),
-                                    packet.getVelocity()
+                            new Ice(packet.getSpellOwnerId(), packet.getSpawnPoint(), packet.getRotation(), packet.getVelocity()
                             )
                     );
                 }
@@ -354,12 +347,12 @@ public class NetworkController extends Listener{
 
     public void castSpell(Spell spell){
         SpellFiredPacket packet = new SpellFiredPacket();
-        packet.setSpellType(spell.getClass().toString());
+        packet.setSpellType(spell.getSpellType());
         packet.setSpawnPoint(spell.getPosition());
         packet.setRotation(spell.getRotation());
         packet.setVelocity(spell.getVelocity());
         packet.setSpellOwnerId(spell.getSpellOwnerID());
-        gameServerClient.sendUDP(packet);
+        gameServerClient.sendTCP(packet);
     }
 
     private void updateEnemyCastSpells(Spell spell){

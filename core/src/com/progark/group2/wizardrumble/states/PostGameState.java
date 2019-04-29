@@ -2,6 +2,7 @@ package com.progark.group2.wizardrumble.states;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
@@ -22,6 +23,7 @@ import com.progark.group2.wizardrumble.network.NetworkController;
 import com.progark.group2.wizardrumble.network.resources.Player;
 import com.progark.group2.wizardrumble.states.ingamestate.InGameState;
 import com.progark.group2.wizardrumble.states.resources.UIButton;
+import com.progark.group2.wizardrumble.tools.SoundManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -128,6 +130,7 @@ public class PostGameState extends State {
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 try {
                     GameStateManager.getInstance().set(MainMenuState.getInstance());
+                    SoundManager.getInstance().switchMusic("menu");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
