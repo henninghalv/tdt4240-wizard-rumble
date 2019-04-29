@@ -4,11 +4,11 @@ import com.progark.group2.wizardrumble.network.resources.Player;
 
 import java.util.HashMap;
 
-public class PlayerStatsPacket {
+public class GameEndPacket {
 
     private HashMap<Integer, Player> players;
 
-    public PlayerStatsPacket() {
+    public GameEndPacket() {
     }
 
     public HashMap<Integer, Player> getPlayers() {

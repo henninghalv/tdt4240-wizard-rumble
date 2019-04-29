@@ -8,12 +8,6 @@ import com.progark.group2.wizardrumble.entities.spells.Spell;
 
 public class Obstacle extends Entity {
 
-    public Obstacle(Polygon polygon) {
-        super(new Vector2(polygon.getX(), polygon.getY()), new Vector2(0,0), 0, null, new Vector2(0,0), "static");
-        definePolygonEntity(polygon.getVertices());
-        fixture.setUserData(this);
-    }
-
     public Obstacle(Rectangle rect){
         super(new Vector2(rect.getX(), rect.getY()), new Vector2(0,0), 0, null, new Vector2(rect.width, rect.height), "static");
         defineRectangleEntity();

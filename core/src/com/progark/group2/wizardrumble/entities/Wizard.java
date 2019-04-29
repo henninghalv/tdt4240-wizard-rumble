@@ -16,19 +16,18 @@ import java.util.HashMap;
 
 public abstract class Wizard extends Entity {
 
-
     public final static int DEFAULT_HEALTH = 100;
-
     private final static float ANGLE_OFFSET = 270;
+
     private int speed = 25;
     protected int health;
     private HashMap<String, Texture> directions = new HashMap<String, Texture>();
+    private Texture playerDeadTexture = new Texture("grave.png");
 
 
     public Wizard(Vector2 spawnPoint) {
         super(spawnPoint, new Vector2(0,0), 0, new Texture("wizard_front.png"), new Vector2(new Texture("wizard_front.png").getWidth(), new Texture("wizard_front.png").getHeight()), "dynamic");
         super.defineRectangleEntity();
-        this.position = spawnPoint;
         this.health = DEFAULT_HEALTH;
         directions.put("up", new Texture("wizard_back.png"));
         directions.put("down", new Texture("wizard_front.png"));
@@ -44,7 +43,6 @@ public abstract class Wizard extends Entity {
         b2body.setLinearVelocity(speed * direction.x, speed * direction.y);
         position.x = b2body.getPosition().x - (texture.getWidth() / 2f);
         position.y = b2body.getPosition().y - (texture.getHeight() / 2f);
-
     }
 
     public void updateRotation(Vector2 direction){
@@ -55,22 +53,20 @@ public abstract class Wizard extends Entity {
     }
 
     public void updateBodyPosition(Vector2 position){
-        b2body.setTransform(position.x + (super.texture.getWidth() / 2f), position.y + (super.texture.getWidth() / 2f), 0);
+        b2body.setTransform(position.x + (texture.getWidth() / 2f), position.y + (texture.getWidth() / 2f), 0);
     }
 
     public float getRotation(){
         return this.rotation;
     }
 
-    public Texture getSprite(){
-        return texture;
-    }
+    public Texture getPlayerDeadSprite() { return playerDeadTexture; }
 
     public int getHealth(){ return health; }
 
     public Body getB2body(){ return b2body; }
 
-    public Texture getDirection(){
+    public Texture getPlayerSprite(){
         if(rotation > 600 || rotation < 300){
             return directions.get("right");
         }
@@ -91,7 +87,6 @@ public abstract class Wizard extends Entity {
         health -= spell.getDamage();
         if(this instanceof WizardPlayer){
             try {
-//                InGameState.getInstance().getInGameHud().getHealthBar().updateHealth(health);
                 if(health <= 0){
                     NetworkController.getInstance().playerKilledBy(spell.getSpellOwnerID());
                 }

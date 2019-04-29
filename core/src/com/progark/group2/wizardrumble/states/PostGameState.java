@@ -37,7 +37,6 @@ public class PostGameState extends State {
     private Label.LabelStyle textStyle;
 
     private Table table;
-    private Vector3 cameraPosition;
     private ArrayList<Player> playerPlacements;
 
     public PostGameState(GameStateManager gameStateManager) throws IOException {
@@ -60,13 +59,23 @@ public class PostGameState extends State {
         Collections.sort(playerPlacements, new Comparator<Player>() {
             @Override
             public int compare(Player player1, Player player2) {
-                if(player1.getTimeAliveInMilliseconds() < player2.getTimeAliveInMilliseconds()){
+                if(player1.getTimeAliveInMilliseconds() > player2.getTimeAliveInMilliseconds()){
                     return -1;
-                }
-                else if(player1.getTimeAliveInMilliseconds() == player2.getTimeAliveInMilliseconds()){
-                    return 0;
-                }
-                else{
+                } else if(player1.getTimeAliveInMilliseconds() == player2.getTimeAliveInMilliseconds()){
+                    if(player1.getKills() > player2.getKills()){
+                        return -1;
+                    } else if(player1.getKills() == player2.getKills()){
+                        if(player1.isAlive()){
+                            return -1;
+                        } else if(player2.isAlive()){
+                            return 1;
+                        } else{
+                            return 0;
+                        }
+                    } else {
+                        return 1;
+                    }
+                } else{
                     return 1;
                 }
             }
@@ -79,23 +88,31 @@ public class PostGameState extends State {
         Label label = new Label("Game over!", textStyle);
         label.setAlignment(Align.center);
         label.setSize((float)WIDTH/2, (float)HEIGHT/4);
-        table.add(label).size((float)WIDTH/2, (float)HEIGHT/4).colspan(3);
+        table.add(label).size((float)WIDTH/2, (float)HEIGHT/4).colspan(4);
         table.row();
 
         Label placement = new Label("Placement ", textStyle);
         Label playerName = new Label("Player names", textStyle);
+        Label timeAlive = new Label("Time alive", textStyle);
         Label playerKills = new Label("Kills", textStyle);
         table.add(placement).pad(1f);
         table.add(playerName).pad(1f);
+        table.add(timeAlive).pad(1f);
         table.add(playerKills).pad(1f);
         table.row();
 
         for(int i = 0; i < playerPlacements.size(); i++){
-            placement = new Label(Integer.toString(i+1)+".", textStyle);
+            placement = new Label(i+1+".", textStyle);
             playerName = new Label(playerPlacements.get(i).getName(), textStyle);
+            if(playerPlacements.get(i).getTimeAliveInMilliseconds() == 0){
+                timeAlive = new Label("NaN", textStyle);
+            } else {
+                timeAlive = new Label(playerPlacements.get(i).getTimeAliveInMilliseconds()/1000 + "s", textStyle);
+            }
             playerKills = new Label(Integer.toString(playerPlacements.get(i).getKills()), textStyle);
             table.add(placement).pad(1f);
             table.add(playerName).pad(1f);
+            table.add(timeAlive).pad(1f);
             table.add(playerKills).pad(1f);
             table.row();
         }
@@ -126,22 +143,9 @@ public class PostGameState extends State {
         network.getPlayers().clear();
     }
 
-    public void updateDB(){
-
-    }
-
     @Override
     public void update(float dt) {
-        //TODO esc doesn't work, but not crucial for phone
-        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
-            this.onBackButtonPress();
-        }
 
-//        try {
-//            this.cameraPosition = InGameState.getInstance().getCamera().position;
-//        } catch (Exception e){
-//            System.out.println(e.getMessage());
-//        }
     }
 
     @Override

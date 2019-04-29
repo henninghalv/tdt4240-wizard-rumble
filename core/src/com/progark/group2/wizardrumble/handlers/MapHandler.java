@@ -29,8 +29,6 @@ public class MapHandler {
         map = maploader.load("map2.tmx");
         renderer = new OrthogonalTiledMapRenderer(map, SCALE, spriteBatch);
 
-
-
         MapProperties prop = map.getProperties();
 
         int mapWidth = prop.get("width", Integer.class);

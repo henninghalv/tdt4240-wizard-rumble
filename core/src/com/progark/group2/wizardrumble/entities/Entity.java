@@ -32,13 +32,6 @@ public abstract class Entity {
         this.bodyType = bodyType;
     }
 
-    public Vector2 getPosition() {
-        return position;
-    }
-
-    public Vector2 getVelocity() {
-        return velocity;
-    }
 
     // Makes a b2body for all entities
     protected void defineRectangleEntity() {
@@ -61,25 +54,6 @@ public abstract class Entity {
         fixture.setUserData(this);
     }
 
-    protected void definePolygonEntity(float[] vertices){
-        BodyDef bdef = new BodyDef();
-        bdef.position.set(position.x , position.y);
-        if (bodyType.equals("dynamic")){
-            bdef.type = BodyDef.BodyType.DynamicBody;
-        }
-        else{
-            bdef.type = BodyDef.BodyType.StaticBody;
-        }
-        b2body = InGameState.world.createBody(bdef);
-
-        FixtureDef fdef = new FixtureDef();
-        PolygonShape shape = new PolygonShape();
-        shape.set(vertices);
-        fdef.shape = shape;
-        fixture = b2body.createFixture(fdef);
-        fixture.setUserData(this);
-    }
-
     public Vector2 getSize(){
         return size;
     }
@@ -88,6 +62,14 @@ public abstract class Entity {
 
     public void setPosition(Vector2 position) {
         this.position = position;
+    }
+
+    public Vector2 getPosition() {
+        return position;
+    }
+
+    public Vector2 getVelocity() {
+        return velocity;
     }
 
     public float getRotation() {

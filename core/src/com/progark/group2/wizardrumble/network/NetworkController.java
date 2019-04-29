@@ -10,31 +10,30 @@ import com.esotericsoftware.minlog.Log;
 import com.progark.group2.wizardrumble.entities.spells.FireBall;
 import com.progark.group2.wizardrumble.entities.spells.Spell;
 import com.progark.group2.wizardrumble.network.packets.PlayerDeadPacket;
-import com.progark.group2.wizardrumble.network.packets.PlayerStatsPacket;
+import com.progark.group2.wizardrumble.network.packets.GameEndPacket;
+import com.progark.group2.wizardrumble.network.packets.PlayerMovementPacket;
 import com.progark.group2.wizardrumble.network.packets.SpellFiredPacket;
 import com.progark.group2.wizardrumble.network.requests.CreateGameRequest;
 import com.progark.group2.wizardrumble.network.requests.CreatePlayerRequest;
 
 import com.progark.group2.wizardrumble.network.packets.GameStartPacket;
 import com.progark.group2.wizardrumble.network.requests.PlayerJoinRequest;
-import com.progark.group2.wizardrumble.network.requests.PlayerMovementRequest;
 import com.progark.group2.wizardrumble.network.resources.Player;
 import com.progark.group2.wizardrumble.network.responses.CreateGameResponse;
 import com.progark.group2.wizardrumble.network.responses.CreatePlayerResponse;
 import com.progark.group2.wizardrumble.network.responses.GameJoinedResponse;
 import com.progark.group2.wizardrumble.network.responses.PlayerJoinResponse;
 import com.progark.group2.wizardrumble.network.responses.PlayerLeaveResponse;
-import com.progark.group2.wizardrumble.network.responses.PlayerMovementResponse;
 import com.progark.group2.wizardrumble.network.responses.ServerErrorResponse;
-import com.progark.group2.wizardrumble.network.responses.ServerSuccessResponse;
 import com.progark.group2.wizardrumble.states.GameStateManager;
 
 import com.progark.group2.wizardrumble.states.PostGameState;
-import com.progark.group2.wizardrumble.states.State;
 import com.progark.group2.wizardrumble.states.ingamestate.InGameState;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Random;
+import java.util.Stack;
 
 public class NetworkController extends Listener{
 
@@ -135,7 +134,6 @@ public class NetworkController extends Listener{
             Log.info("Received PlayerJoinResponse");
             PlayerJoinResponse response = (PlayerJoinResponse) object;
             handlePlayerJoinResponse(response);
-
         } else if (object instanceof GameStartPacket){
             GameStartPacket packet = (GameStartPacket) object;
             gameStartTime = packet.getGameStartTime();
@@ -143,19 +141,10 @@ public class NetworkController extends Listener{
         } else if (object instanceof GameJoinedResponse){
             GameJoinedResponse response = (GameJoinedResponse) object;
             Log.info("Connection ID: " + connection.getID());
-            Player player = new Player(
-                    userPreferences.getString("username"),
-                    connection.getID(),
-                    0,
-                    0,
-                    System.currentTimeMillis(),
-                    response.getSpawnPoint(),
-                    0
-            );
-            NetworkController.player = player;
-        } else if (object instanceof PlayerMovementResponse){
-            PlayerMovementResponse response = (PlayerMovementResponse) object;
-            handlePlayerMovementResponse(response);
+            NetworkController.player = createPlayer(userPreferences.getString("username"), connection.getID(), response.getSpawnPoint());
+        } else if (object instanceof PlayerMovementPacket){
+            PlayerMovementPacket packet = (PlayerMovementPacket) object;
+            handlePlayerMovementResponse(packet);
         } else if (object instanceof SpellFiredPacket){
             SpellFiredPacket packet = (SpellFiredPacket) object;
             handleSpellCastPacket(packet);
@@ -164,34 +153,12 @@ public class NetworkController extends Listener{
             PlayerLeaveResponse response = (PlayerLeaveResponse) object;
             handlePlayerLeaveRequest(response);
         } else if (object instanceof PlayerDeadPacket){
-            final PlayerDeadPacket packet = (PlayerDeadPacket) object;
-            players.get(packet.getVictimId()).setAlive(false);
-            players.get(packet.getVictimId()).setTimeAliveInMilliseconds(packet.getPlayerDeathTime() - gameStartTime);
-            System.out.println("Player " + packet.getVictimId() + " has died! Time alive: " + (packet.getPlayerDeathTime()-gameStartTime)/1000 + "s");
-            Gdx.app.postRunnable(new Runnable() {
-                @Override
-                public void run() {
-                   gameState.handleEnemyDead(players.get(packet.getVictimId()).getConnectionId());
-                }
-            });
-        } else if (object instanceof PlayerStatsPacket) {
+            PlayerDeadPacket packet = (PlayerDeadPacket) object;
+            handlePlayerDeath(packet);
+        } else if (object instanceof GameEndPacket) {
             // Game has ended. Show scorescreen
-            PlayerStatsPacket packet = (PlayerStatsPacket) object;
-            players = packet.getPlayers(); // Update local player stats
-            Gdx.app.postRunnable(new Runnable() {
-                @Override
-                public void run(){
-                    try {
-                        // Delete the game instance to be able to play again.
-                        GameStateManager.getInstance().set(new PostGameState(GameStateManager.getInstance()));
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-        } else if (object instanceof ServerSuccessResponse) {
-            // TODO: Delete this if not used. Smells bad.
+            GameEndPacket packet = (GameEndPacket) object;
+            handleGameEnd(packet);
         } else if (object instanceof ServerErrorResponse) {
             // If there is a server error
             ServerErrorResponse response = (ServerErrorResponse) object;
@@ -216,23 +183,12 @@ public class NetworkController extends Listener{
     private void handleCreateGameResponse(CreateGameResponse response){
         Log.info("Requesting Game Creation...");
         connectToGame(response);
-//        Log.info("Closing connection to MasterServer...");
-//        closeClientConnection(masterServerClient); // TODO: Do we need to do this??
-//        Log.info("Connection to MasterServer closed!\n");
         Log.info("Game created and connected! Waiting for players...\n");
     }
 
     private void handlePlayerJoinResponse(PlayerJoinResponse response) {
         Log.info("Player joined: " + response.getPlayerName());
-        Player player = new Player(
-                response.getPlayerName(),
-                response.getConnectionId(),
-                0,
-                0,
-                System.currentTimeMillis(),
-                response.getSpawnPoint(),
-                0
-        );
+        Player player = createPlayer(response.getPlayerName(), response.getConnectionId(), response.getSpawnPoint());
         players.put(response.getPlayerId(), player);
     }
 
@@ -255,7 +211,7 @@ public class NetworkController extends Listener{
             });
     }
 
-    private void handlePlayerMovementResponse(PlayerMovementResponse response){
+    private void handlePlayerMovementResponse(PlayerMovementPacket response){
         updateEnemyPosition(response.getPlayerId(), response.getPosition(), response.getRotation());
     }
 
@@ -288,6 +244,43 @@ public class NetworkController extends Listener{
 
     }
 
+    private void handlePlayerDeath(final PlayerDeadPacket packet){
+        players.get(packet.getVictimId()).setAlive(false);
+        if(packet.getKillerId() == playerId){
+            player.incrementKills();
+        }
+        System.out.println("Player " + packet.getVictimId() + " has died! Time alive: " + (packet.getPlayerDeathTime()-gameStartTime)/1000 + "s");
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+                gameState.handleEnemyDead(players.get(packet.getVictimId()).getConnectionId());
+            }
+        });
+    }
+
+    private void handleGameEnd(final GameEndPacket packet){
+        for(Integer id: packet.getPlayers().keySet()){
+            if(id != playerId){
+                players.put(id, packet.getPlayers().get(id));
+            } else{
+                player.setTimeAliveInMilliseconds(packet.getPlayers().get(id).getTimeAliveInMilliseconds());
+            }
+        }
+
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run(){
+                try {
+                    // Delete the game instance to be able to play again.
+                    GameStateManager.getInstance().set(new PostGameState(GameStateManager.getInstance()));
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
     // =====
 
     // ACTIONS
@@ -297,8 +290,7 @@ public class NetworkController extends Listener{
      */
     private void getLocalData(){
         Preferences preferences = Gdx.app.getPreferences("user");
-//        playerId = preferences.getInteger("playerId", 0);
-        playerId = 1;
+        playerId = preferences.getInteger("playerId", 0);
         if(playerId == 0){
             Gdx.input.getTextInput(
                     new UsernamePrompt(),
@@ -307,6 +299,11 @@ public class NetworkController extends Listener{
                     "Username"
             );
         }
+    }
+
+    private Player createPlayer(String name, int id, Vector2 spawnpoint){
+        Player player = new Player(name, id, 0, 0, 0, spawnpoint, 0);
+        return player;
     }
 
     private void connectToGame(CreateGameResponse response){
@@ -331,7 +328,6 @@ public class NetworkController extends Listener{
         }
     }
 
-
     private Client createAndConnectClient(Integer timeout, String host, Integer tcp, Integer udp) throws IOException {
         Client client = new Client();
         client.start();
@@ -341,19 +337,19 @@ public class NetworkController extends Listener{
         return client;
     }
 
-    private void closeClientConnection(Client client){
-        client.close();
-        client.stop();
-    }
-
     // GAME LOGIC
 
     public void updatePlayerPosition(Vector2 position, float rotation){
-        PlayerMovementRequest request = new PlayerMovementRequest();
-        request.setPlayerId(playerId);
-        request.setPosition(position);
-        request.setRotation(rotation);
-        gameServerClient.sendUDP(request);
+        PlayerMovementPacket packet = new PlayerMovementPacket();
+        packet.setPlayerId(playerId);
+        packet.setPosition(position);
+        packet.setRotation(rotation);
+        gameServerClient.sendUDP(packet);
+    }
+
+    private void updateEnemyPosition(int playerId, Vector2 position, float rotation) {
+        players.get(playerId).setPosition(position);
+        players.get(playerId).setRotation(rotation);
     }
 
     public void castSpell(Spell spell){
@@ -364,6 +360,10 @@ public class NetworkController extends Listener{
         packet.setVelocity(spell.getVelocity());
         packet.setSpellOwnerId(spell.getSpellOwnerID());
         gameServerClient.sendUDP(packet);
+    }
+
+    private void updateEnemyCastSpells(Spell spell){
+        gameState.addSpell(spell);
     }
 
     public void playerKilledBy(int killerId){
@@ -379,16 +379,9 @@ public class NetworkController extends Listener{
         packet.setPlayerDeathTime(System.currentTimeMillis());
         gameServerClient.sendTCP(packet);
         player.setTimeAliveInMilliseconds(System.currentTimeMillis() - gameStartTime);
+        player.setAlive(false);
     }
 
-    private void updateEnemyPosition(int playerId, Vector2 position, float rotation) {
-        players.get(playerId).setPosition(position);
-        players.get(playerId).setRotation(rotation);
-    }
-
-    private void updateEnemyCastSpells(Spell spell){
-        gameState.addSpell(spell);
-    }
     // =====
 
     // HELPER METHODS

@@ -1,6 +1,6 @@
 package com.progark.group2.wizardrumble.network.packets;
 
-public class GameStartPacket extends Packet {
+public class GameStartPacket{
     private long gameStartTime;
     public GameStartPacket() {
     }

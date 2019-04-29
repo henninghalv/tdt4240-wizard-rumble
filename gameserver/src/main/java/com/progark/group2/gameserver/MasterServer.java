@@ -51,7 +51,7 @@ public class MasterServer extends Listener{
         server = createAndConnectMasterServer();
         Log.info("Done!\n");
         // Add a receiver listener to server
-        Log.info("Adding listener for PlayerJoinRequest...");
+        Log.info("Adding listeners...");
         server.addListener(this);
         Log.info("Done!\n");
     }
@@ -261,7 +261,6 @@ public class MasterServer extends Listener{
         return 0;
     }
 
-
     /**
      * Add server to the list of all servers on standby
      * @param server    GameServer object
@@ -288,7 +287,7 @@ public class MasterServer extends Listener{
         TCP_PORTS.put(tcpPort, PortStatus.OPEN);
         // Open udpPort
         TCP_PORTS.put(udpPort, PortStatus.OPEN);
-        // Remove gameserver from MasterServer
+        // Remove GameServer from MasterServer
         this.gameServers.remove(server);
     }
     // =====
