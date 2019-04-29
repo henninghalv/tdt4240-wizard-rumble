@@ -9,7 +9,7 @@ import java.io.IOException;
 
 
 public class WizardPlayer extends Wizard {
-    public WizardPlayer(Vector2 spawnPoint) {
-        super(spawnPoint);
+    public WizardPlayer(Vector2 spawnPoint, int id) {
+        super(spawnPoint, id);
     }
 }

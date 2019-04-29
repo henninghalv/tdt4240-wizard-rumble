@@ -25,14 +25,22 @@ public abstract class Wizard extends Entity {
     private Texture playerDeadTexture = new Texture("grave.png");
 
 
-    public Wizard(Vector2 spawnPoint) {
-        super(spawnPoint, new Vector2(0,0), 0, new Texture("wizard_front.png"), new Vector2(new Texture("wizard_front.png").getWidth(), new Texture("wizard_front.png").getHeight()), "dynamic");
+    public Wizard(Vector2 spawnPoint, int id) {
+        super(spawnPoint, new Vector2(0,0), 0, new Texture("wizard/blue/wizard_front.png"), new Vector2(new Texture("wizard_front.png").getWidth(), new Texture("wizard_front.png").getHeight()), "dynamic");
+        String path = "";
+        if(id == 1) path = "wizard/black/";
+        else if(id == 2) path = "wizard/green/";
+        else if(id == 3) path = "wizard/purple/";
+        else if(id == 4) path = "wizard/yellow/";
+        else if(id == 5) path = "wizard/red/";
+        else path = "wizard/blue/";
+        super.texture = new Texture(path + "wizard_front.png");
         super.defineRectangleEntity();
         this.health = DEFAULT_HEALTH;
-        directions.put("up", new Texture("wizard_back.png"));
-        directions.put("down", new Texture("wizard_front.png"));
-        directions.put("left", new Texture("wizard_leftfacing.png"));
-        directions.put("right", new Texture("wizard_rightfacing.png"));
+        directions.put("up", new Texture(path + "wizard_back.png"));
+        directions.put("down", new Texture(path + "wizard_front.png"));
+        directions.put("left", new Texture(path + "wizard_leftfacing.png"));
+        directions.put("right", new Texture(path + "wizard_rightfacing.png"));
     }
 
     public void updatePosition(Vector2 direction) {

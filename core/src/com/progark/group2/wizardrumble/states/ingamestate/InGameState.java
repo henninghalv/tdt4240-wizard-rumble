@@ -152,7 +152,7 @@ public class InGameState extends State {
 
     private void setupPlayer(){
         // Creating a WizardPlayer object
-        wizardPlayer = new WizardPlayer(network.getPlayer().getPosition());
+        wizardPlayer = new WizardPlayer(network.getPlayer().getPosition(), network.getPlayer().getConnectionId());
         // Add a new wizardPlayerRegion around Wizard
         wizardPlayerRegion = new TextureRegion(wizardPlayer.getPlayerSprite());
         addPlayerToMapLayers(wizardPlayer);
@@ -161,7 +161,7 @@ public class InGameState extends State {
     private void setupEnemies(){
         // Creating all enemy players
         for (Player player : network.getPlayers().values()){
-            WizardEnemy enemy = new WizardEnemy(player.getPosition());
+            WizardEnemy enemy = new WizardEnemy(player.getPosition(), player.getConnectionId());
             wizardEnemies.put(player.getConnectionId(), enemy);
             TextureRegion enemyRegion = new TextureRegion(enemy.getPlayerSprite());
             wizardEnemyRegions.put(player.getConnectionId(), enemyRegion);

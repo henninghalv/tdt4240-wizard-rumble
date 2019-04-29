@@ -5,7 +5,7 @@ import com.badlogic.gdx.math.Vector2;
 
 public class WizardEnemy extends Wizard {
 
-    public WizardEnemy(Vector2 spawnPoint) {
-        super(spawnPoint);
+    public WizardEnemy(Vector2 spawnPoint, int id) {
+        super(spawnPoint, id);
     }
 }
