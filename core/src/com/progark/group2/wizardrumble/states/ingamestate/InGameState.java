@@ -59,7 +59,7 @@ public class InGameState extends State {
     private long lastattack;
 
     // Spells that have been cast
-    private List<Spell> spells;
+    private ArrayList<Spell> spells;
 
     private OrthographicCamera camera;
     private Viewport gamePort;
@@ -251,23 +251,19 @@ public class InGameState extends State {
         // Logic for casting when FireBall has been selected
         if (spell.equals("FireBall")) {
             FireBall fb = new FireBall(network.getPlayerId(), spawnPoint, rotation, velocity);
-            spells.add(fb); // Add to list of casted spells
+            fb.cast(spells, network);
             fb.playSound(1.0f);
             SoundManager.getInstance().playSound(SoundType.FIRECAST, 1.0f);
-            network.castSpell(fb);
-            System.out.println("Spell position: " + fb.getPosition());
-            System.out.println("Spell player id: " + fb.getSpellOwnerID());
         }
 
         // Logic for casting when Ice has been selected
         if (spell.equals("Ice")) {
-            Ice ic = new Ice(network.getPlayerId(), spawnPoint, rotation,velocity);
-            spells.add(ic); // Add to list of casted spells
-            ic.playSound(1.0f);
+            Vector2 pivot = new Vector2(wizardPlayer.getPosition().x + wizardPlayer.getSize().x/2f, wizardPlayer.getPosition().y + wizardPlayer.getSize().y/2f);
+            Ice icicles = new Ice(network.getPlayerId(), spawnPoint, rotation, velocity, pivot);
+            icicles.cast(spells, network);
+            icicles.playSound(1.0f);
             SoundManager.getInstance().playSound(SoundType.ICECAST, 1.0f);
-            network.castSpell(ic);
         }
-        System.out.println(wizardPlayer.getPosition());
 
     }
 
@@ -377,6 +373,11 @@ public class InGameState extends State {
 
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        Gdx.input.setCatchBackKey(true);
+        if (Gdx.input.isKeyPressed(Input.Keys.BACK)){
+            onBackButtonPress();
+        }
 
         // Draw the ground
         mapHandler.renderGround();

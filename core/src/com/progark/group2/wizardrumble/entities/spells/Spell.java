@@ -11,6 +11,7 @@ import com.progark.group2.wizardrumble.states.GameStateManager;
 import com.progark.group2.wizardrumble.states.ingamestate.InGameState;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import static com.progark.group2.wizardrumble.Application.SCALE;
 
@@ -24,10 +25,9 @@ public abstract class Spell extends Entity {
     protected SpellType spellType;
 
     private TextureRegion region;
-    private float scale;
 
-    public Spell(int spellOwnerID, Vector2 spawnPoint, float rotation, Vector2 velocity, Texture texture, int damage, float speed, String statusEffect, int cooldown, int castTime, SpellType type){
-        super(spawnPoint, velocity, rotation, texture,new Vector2(texture.getWidth(),texture.getHeight()), "dynamic");
+    public Spell(int spellOwnerID, Vector2 spawnPoint, float rotation, Vector2 velocity, Vector2 size, Texture texture, int damage, float speed, String statusEffect, int cooldown, int castTime, SpellType type){
+        super(spawnPoint, velocity, rotation, texture, size, "dynamic");
         this.damage = damage;
         this.speed = speed;
         this.spellOwnerID = spellOwnerID;
@@ -35,7 +35,6 @@ public abstract class Spell extends Entity {
         defineRectangleEntity();
         //System.out.println(super.texture);
         region = new TextureRegion(texture);
-        scale = 0.2f; // Tweak the scale as necessary
         b2body.setTransform(spawnPoint, (float)Math.toRadians(rotation));
         this.speed = speed;
         spellType = type;
@@ -59,8 +58,8 @@ public abstract class Spell extends Entity {
 
     private void updatePosition(){
         b2body.setLinearVelocity(speed * velocity.x, speed * velocity.y);
-        position.x = b2body.getPosition().x - (texture.getWidth() / 2f);
-        position.y = b2body.getPosition().y - (texture.getHeight() / 2f);
+        position.x = b2body.getPosition().x - (size.x / 2f);
+        position.y = b2body.getPosition().y - (size.y / 2f);
     }
 
     public void destroySpell() throws IOException {
@@ -75,6 +74,8 @@ public abstract class Spell extends Entity {
 
     }
 
+    public abstract void cast(ArrayList<Spell> spells, NetworkController network);
+
     @Override
     public void update() {
         updatePosition();
@@ -84,9 +85,9 @@ public abstract class Spell extends Entity {
     @Override
     public void render(SpriteBatch sb) {
         sb.draw(region, position.x, position.y,
-                texture.getWidth()/2f,
-                texture.getHeight()/2f,
-                texture.getWidth(), texture.getHeight(), SCALE, SCALE, rotation);
+                    size.x/2f,
+                    size.y/2f,
+                    size.x, size.y, SCALE, SCALE, rotation);
     }
 
     @Override
