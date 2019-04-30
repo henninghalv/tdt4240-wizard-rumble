@@ -236,7 +236,6 @@ public class InGameState extends State {
         float x = x1 * ratio;
         float y = y1 * ratio;
 
-
         Vector2 spawnPoint = getSpellInitialPosition(wizardPlayer.getPosition(), wizardPlayer.getSize(), FireBall.texture.getHeight(), FireBall.texture.getWidth(),x,y);
 
         float rotation = wizardPlayer.getRotation();  // rotation
@@ -247,9 +246,6 @@ public class InGameState extends State {
         if (spell.equals("FireBall")) {
             FireBall fb = new FireBall(network.getPlayerId(), spawnPoint, rotation, velocity);
             fb.cast(spells, network);
-
-            System.out.println("Spell position: " + fb.getPosition());
-            System.out.println("Spell player id: " + fb.getSpellOwnerID());
         }
 
         // Logic for casting when Ice has been selected

@@ -25,10 +25,9 @@ public class Ice extends Spell {
 
     @Override
     public void cast(ArrayList<Spell> spells, NetworkController network) {
-        Vector2 posTransposed = new Vector2(position.x - pivot.x, position.y - pivot.y);
-
+        //Vector2 posTransposed = new Vector2(position.x - pivot.x, position.y - pivot.y);
+        Vector2 posTransposed = new Vector2(position.x - pivot.x, position.y - pivot.y).rotate(ANGLE_OFFSET);
         // Right Ice rotation calculation
-        posTransposed.rotate(ANGLE_OFFSET);
         Ice rightIce = new Ice(
                 spellOwnerID,
                 new Vector2(pivot.x + posTransposed.x, pivot.y + posTransposed.y),
@@ -38,7 +37,7 @@ public class Ice extends Spell {
         );
 
         // Left Ice rotation calculation
-        posTransposed.rotate(-2*ANGLE_OFFSET);
+        posTransposed = new Vector2(position.x - pivot.x, position.y - pivot.y).rotate(-ANGLE_OFFSET);
         Ice leftIce = new Ice(
                 spellOwnerID,
                 new Vector2(pivot.x + posTransposed.x, pivot.y + posTransposed.y),

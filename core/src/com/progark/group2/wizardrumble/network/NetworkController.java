@@ -221,7 +221,6 @@ public class NetworkController extends Listener{
             @Override
             public void run() {
                 // TODO: Update for real spelltypes
-                System.out.println("Spell type: " + packet.getSpellType());
                 if(packet.getSpellType().equals("FireBall")){
                     updateEnemyCastSpells(
                             new FireBall(
@@ -254,9 +253,7 @@ public class NetworkController extends Listener{
         });
 
     }
-/*
-*  if (packet.getSpellType().equals("Ice"))
-* */
+
     private void handlePlayerDeath(final PlayerDeadPacket packet){
         players.get(packet.getVictimId()).setAlive(false);
         if(packet.getKillerId() == playerId){
