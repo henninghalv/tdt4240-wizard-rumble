@@ -11,17 +11,17 @@ import java.util.ArrayList;
 
 public class Ice extends Spell {
 
-    public final static Texture texture = new Texture("fireball_small.png");
+    public final static Texture texture = new Texture("ice.png");
     private final float ANGLE_OFFSET = 25;
     private Vector2 pivot;
 
     public Ice(int spellOwnerID, Vector2 spawnPoint, float rotation, Vector2 velocity, Vector2 pivot){
-        super(spellOwnerID, spawnPoint, rotation, velocity, new Vector2(texture.getWidth()*0.4f, texture.getHeight()*0.4f), texture,10, 60f, "", 3, 1, SpellType.ICE);
+        super(spellOwnerID, spawnPoint, rotation, velocity, new Vector2(texture.getWidth()*0.2f, texture.getHeight()*0.2f), texture,10, 60f, "", 3, 1, SpellType.ICE);
         this.pivot = pivot;
     }
 
     public Ice(int spellOwnerID, Vector2 spawnPoint, float rotation, Vector2 velocity){
-        super(spellOwnerID, spawnPoint, rotation, velocity, new Vector2(texture.getWidth()*0.4f, texture.getHeight()*0.4f), texture,10, 60f, "", 3, 1, SpellType.ICE);
+        super(spellOwnerID, spawnPoint, rotation, velocity, new Vector2(texture.getWidth()*0.2f, texture.getHeight()*0.2f), texture,10, 60f, "", 3, 1, SpellType.ICE);
     }
 
     @Override
@@ -58,7 +58,6 @@ public class Ice extends Spell {
 
     @Override
     public void playSound(float volume) {
-        System.out.println("Playing Ice sound...");
         SoundManager.getInstance().playSound(SoundType.ICE, volume);
     }
 

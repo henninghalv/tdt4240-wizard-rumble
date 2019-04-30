@@ -24,7 +24,6 @@ public class FireBall extends Spell {
 
     @Override
     public void playSound(float volume){
-        System.out.println("Playing Fireball sound...");
         SoundManager.getInstance().playSound(SoundType.FIRE, volume);
     }
 }
