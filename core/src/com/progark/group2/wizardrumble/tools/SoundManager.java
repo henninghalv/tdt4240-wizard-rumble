@@ -78,10 +78,10 @@ public class SoundManager extends ApplicationAdapter {
                 iceSounds.get(new Random().nextInt(iceSounds.size())).play(volume);
                 break;
             case FIRECAST:
-//                fireCastSounds.get(new Random().nextInt(fireCastSounds.size())).play(volume);
+                fireCastSounds.get(new Random().nextInt(fireCastSounds.size())).play(volume);
                 break;
             case ICECAST:
-//                iceCastSounds.get(new Random().nextInt(iceCastSounds.size())).play(volume);
+                iceCastSounds.get(new Random().nextInt(iceCastSounds.size())).play(volume);
                 break;
 
         }

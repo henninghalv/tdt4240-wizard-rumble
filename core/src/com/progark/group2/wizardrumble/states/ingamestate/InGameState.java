@@ -253,6 +253,7 @@ public class InGameState extends State {
             FireBall fb = new FireBall(network.getPlayerId(), spawnPoint, rotation, velocity);
             spells.add(fb); // Add to list of casted spells
             fb.playSound(1.0f);
+            SoundManager.getInstance().playSound(SoundType.FIRECAST, 1.0f);
             network.castSpell(fb);
             System.out.println("Spell position: " + fb.getPosition());
             System.out.println("Spell player id: " + fb.getSpellOwnerID());
@@ -263,6 +264,7 @@ public class InGameState extends State {
             Ice ic = new Ice(network.getPlayerId(), spawnPoint, rotation,velocity);
             spells.add(ic); // Add to list of casted spells
             ic.playSound(1.0f);
+            SoundManager.getInstance().playSound(SoundType.ICECAST, 1.0f);
             network.castSpell(ic);
         }
         System.out.println(wizardPlayer.getPosition());
