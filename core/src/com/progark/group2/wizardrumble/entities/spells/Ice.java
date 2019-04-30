@@ -3,10 +3,11 @@ package com.progark.group2.wizardrumble.entities.spells;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import com.progark.group2.wizardrumble.network.NetworkController;
+import com.progark.group2.wizardrumble.tools.SoundManager;
+import com.progark.group2.wizardrumble.tools.SoundType;
 
 import java.util.ArrayList;
 
-import static com.progark.group2.wizardrumble.Application.SCALE;
 
 public class Ice extends Spell {
 
@@ -15,12 +16,12 @@ public class Ice extends Spell {
     private Vector2 pivot;
 
     public Ice(int spellOwnerID, Vector2 spawnPoint, float rotation, Vector2 velocity, Vector2 pivot){
-        super(spellOwnerID, spawnPoint, rotation, velocity, new Vector2(texture.getWidth()*0.4f, texture.getHeight()*0.4f), texture,10, 60f, "", 3, 1);
+        super(spellOwnerID, spawnPoint, rotation, velocity, new Vector2(texture.getWidth()*0.4f, texture.getHeight()*0.4f), texture,10, 60f, "", 3, 1, SpellType.ICE);
         this.pivot = pivot;
     }
 
     public Ice(int spellOwnerID, Vector2 spawnPoint, float rotation, Vector2 velocity){
-        super(spellOwnerID, spawnPoint, rotation, velocity, new Vector2(texture.getWidth()*0.4f, texture.getHeight()*0.4f), texture,10, 60f, "", 3, 1);
+        super(spellOwnerID, spawnPoint, rotation, velocity, new Vector2(texture.getWidth()*0.4f, texture.getHeight()*0.4f), texture,10, 60f, "", 3, 1, SpellType.ICE);
     }
 
     @Override
@@ -54,4 +55,11 @@ public class Ice extends Spell {
         network.castSpell(leftIce);
 
     }
+
+    @Override
+    public void playSound(float volume) {
+        System.out.println("Playing Ice sound...");
+        SoundManager.getInstance().playSound(SoundType.ICE, volume);
+    }
+
 }
