@@ -8,6 +8,7 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.minlog.Log;
 import com.progark.group2.wizardrumble.entities.spells.FireBall;
+import com.progark.group2.wizardrumble.entities.spells.Ice;
 import com.progark.group2.wizardrumble.entities.spells.Spell;
 import com.progark.group2.wizardrumble.network.packets.PlayerDeadPacket;
 import com.progark.group2.wizardrumble.network.packets.GameEndPacket;
@@ -220,6 +221,7 @@ public class NetworkController extends Listener{
             @Override
             public void run() {
                 // TODO: Update for real spelltypes
+                System.out.println("Spell type: " + packet.getSpellType());
                 if(packet.getSpellType().equals("FireBall")){
                     updateEnemyCastSpells(
                             new FireBall(
@@ -229,7 +231,16 @@ public class NetworkController extends Listener{
                                     packet.getVelocity()
                             )
                     );
-                } else{
+                } else if (packet.getSpellType().equals("Ice")){
+                    updateEnemyCastSpells(
+                            new Ice(
+                                    packet.getSpellOwnerId(),
+                                    packet.getSpawnPoint(),
+                                    packet.getRotation(),
+                                    packet.getVelocity()
+                            )
+                    );
+                } else {
                     updateEnemyCastSpells(
                             new FireBall(
                                     packet.getSpellOwnerId(),
@@ -243,7 +254,9 @@ public class NetworkController extends Listener{
         });
 
     }
-
+/*
+*  if (packet.getSpellType().equals("Ice"))
+* */
     private void handlePlayerDeath(final PlayerDeadPacket packet){
         players.get(packet.getVictimId()).setAlive(false);
         if(packet.getKillerId() == playerId){
@@ -354,7 +367,7 @@ public class NetworkController extends Listener{
 
     public void castSpell(Spell spell){
         SpellFiredPacket packet = new SpellFiredPacket();
-        packet.setSpellType(spell.getClass().toString());
+        packet.setSpellType(spell.getClass().getSimpleName());
         packet.setSpawnPoint(spell.getPosition());
         packet.setRotation(spell.getRotation());
         packet.setVelocity(spell.getVelocity());

@@ -56,7 +56,7 @@ public class InGameState extends State {
     private long lastattack;
 
     // Spells that have been cast
-    private List<Spell> spells;
+    private ArrayList<Spell> spells;
 
     private OrthographicCamera camera;
     private Viewport gamePort;
@@ -246,21 +246,18 @@ public class InGameState extends State {
         // Logic for casting when FireBall has been selected
         if (spell.equals("FireBall")) {
             FireBall fb = new FireBall(network.getPlayerId(), spawnPoint, rotation, velocity);
-            spells.add(fb); // Add to list of casted spells
+            fb.cast(spells, network);
 
-            network.castSpell(fb);
             System.out.println("Spell position: " + fb.getPosition());
             System.out.println("Spell player id: " + fb.getSpellOwnerID());
         }
 
         // Logic for casting when Ice has been selected
         if (spell.equals("Ice")) {
-            Ice ic = new Ice(network.getPlayerId(), spawnPoint, rotation,velocity);
-            spells.add(ic); // Add to list of casted spells
-
-            network.castSpell(ic);
+            Vector2 pivot = new Vector2(wizardPlayer.getPosition().x + wizardPlayer.getSize().x/2f, wizardPlayer.getPosition().y + wizardPlayer.getSize().y/2f);
+            Ice icicles = new Ice(network.getPlayerId(), spawnPoint, rotation, velocity, pivot);
+            icicles.cast(spells, network);
         }
-        System.out.println(wizardPlayer.getPosition());
 
     }
 
