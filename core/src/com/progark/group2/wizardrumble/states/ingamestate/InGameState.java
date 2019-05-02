@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapObject;
@@ -54,9 +55,7 @@ public class InGameState extends State {
 
     // Currently selected spell
     private String activeSpell;
-
-    private long cooldown;
-    private long lastattack;
+    private ArrayList<Long> lastattacks;
 
     // Spells that have been cast
     private ArrayList<Spell> spells;
@@ -104,6 +103,8 @@ public class InGameState extends State {
         setupEnemies();
         updatePositions();
 
+
+
         // Set camera to initial wizardPlayer position
         camera.position.set((wizardPlayer.getPosition().x + wizardPlayer.getPlayerSprite().getWidth()/2f)*SCALE, (wizardPlayer.getPosition().y + wizardPlayer.getPlayerSprite().getHeight()/2f)*SCALE, 0);
 
@@ -145,6 +146,7 @@ public class InGameState extends State {
     }
 
     private void setupSpells(){
+        lastattacks = new ArrayList<Long>();
         // Start with fireball as active spell
         activeSpell = "FireBall";
 
@@ -152,8 +154,9 @@ public class InGameState extends State {
         // Starts as not being touched, obviously.
         lastTouch = false;
 
-        cooldown = 2000;
-        lastattack = -2000; // To allow spellcasting at the start of the game.
+        lastattacks.add(-(getCooldown("FireBall")));
+        lastattacks.add(-(getCooldown("Ice")));
+
     }
 
     private void setupPlayer(){
@@ -252,6 +255,7 @@ public class InGameState extends State {
         if (spell.equals("FireBall")) {
             FireBall fb = new FireBall(network.getPlayerId(), spawnPoint, rotation, velocity);
             fb.cast(spells, network);
+            inGameHud.getSpellSelector().disableButton("FireBall");
             fb.playSound(1.0f);
             SoundManager.getInstance().playSound(SoundType.FIRECAST, 1.0f);
         }
@@ -261,6 +265,7 @@ public class InGameState extends State {
             Vector2 pivot = new Vector2(wizardPlayer.getPosition().x + wizardPlayer.getSize().x/2f, wizardPlayer.getPosition().y + wizardPlayer.getSize().y/2f);
             Ice icicles = new Ice(network.getPlayerId(), spawnPoint, rotation, velocity, pivot);
             icicles.cast(spells, network);
+            inGameHud.getSpellSelector().disableButton("Ice");
             icicles.playSound(1.0f);
             SoundManager.getInstance().playSound(SoundType.ICECAST, 1.0f);
         }
@@ -300,17 +305,28 @@ public class InGameState extends State {
 
             long time = System.currentTimeMillis();
 
-            if (time > lastattack + cooldown){
-                for (String spell : inGameHud.getSpellNames()) {
-                    if (spell.equals(inGameHud.getSpellSelector().getSpellSelected())) {
-                        activeSpell = spell;
-                        break;
-                    }
+            for (String spell : inGameHud.getSpellNames()) {
+                if (spell.equals(inGameHud.getSpellSelector().getSpellSelected())) {
+                    activeSpell = spell;
+                    break;
                 }
-                castSpell(activeSpell);
-                lastattack = time;
             }
 
+            if (time > lastattacks.get(inGameHud.getSpellNames().indexOf(activeSpell)) + getCooldown(activeSpell)){
+                castSpell(activeSpell);
+                lastattacks.set(inGameHud.getSpellNames().indexOf(activeSpell), time);
+            }
+
+        }
+    }
+
+    // Checks if cooldown time is over, and enables the buttons.
+    private void timer(){
+        for(int i = 0; i < inGameHud.getSpellNames().size(); i++){
+            long time = lastattacks.get(i) + getCooldown(inGameHud.getSpellNames().get(i)) - System.currentTimeMillis();
+            if(time < 0){
+                inGameHud.getSpellSelector().enableButton(inGameHud.getSpellNames().get(i));
+            }
         }
     }
 
@@ -357,6 +373,8 @@ public class InGameState extends State {
                 wizardEnemies.get(player.getConnectionId()).updateBodyPosition(player.getPosition());
             }
         }
+
+        timer();
 
         Gdx.input.setCatchBackKey(true);
         if (Gdx.input.isKeyJustPressed(Input.Keys.BACK)) {
@@ -492,6 +510,13 @@ public class InGameState extends State {
             world.destroyBody(body);
         }
         bodiesToDestroy.clear();
+    }
+
+    private long getCooldown(String spellname){
+        if(spellname.equals("FireBall")){
+            return FireBall.cooldown;
+        }
+        return Ice.cooldown;
     }
 
     // ==========
