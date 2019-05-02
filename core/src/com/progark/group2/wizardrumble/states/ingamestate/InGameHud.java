@@ -8,6 +8,7 @@ import com.progark.group2.wizardrumble.controllers.AimInput1;
 import com.progark.group2.wizardrumble.controllers.MovementInput1;
 import com.progark.group2.wizardrumble.controllers.SpellSelector1;
 import com.progark.group2.wizardrumble.controllers.SpellSelector;
+import com.progark.group2.wizardrumble.states.ingamestate.HealthBar;
 
 
 import java.util.ArrayList;
