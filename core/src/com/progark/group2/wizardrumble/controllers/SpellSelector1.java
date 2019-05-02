@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Array;
 
 import static com.progark.group2.wizardrumble.Application.WIDTH;
 
@@ -26,10 +27,13 @@ public class SpellSelector1 extends SpellSelector {
 
     public SpellSelector1(List<String> listOfSpells, Stage stage) {
         super(listOfSpells, stage);
+        buttonList = new ArrayList<ImageButton>();
         createSpellButtons();
     }
 
     private ImageButton spellButton;
+
+    private ArrayList<ImageButton> buttonList;
 
     private void createSpellButtons() {
         if (listOfSpells.size() == 0) {
@@ -45,19 +49,27 @@ public class SpellSelector1 extends SpellSelector {
         // Instantiate all spells in the list and add them to one buttonGroup
         for (int i = 0; i < super.listOfSpells.size(); i++) {
             Texture buttonTexture = assignButtonTexture(listOfSpells.get(i));
+            Texture buttonCooldownTexture = assignButtonCooldownTexture(listOfSpells.get(i));
             Texture buttonDownTexture = assignButtonDownTexture(listOfSpells.get(i));
             Texture buttonCheckedTexture = assignButtonCheckedTexture(listOfSpells.get(i));
 
             Drawable drawableButtonDefault = new TextureRegionDrawable(new TextureRegion(buttonTexture));
+            Drawable drawableButtonCooldown = new TextureRegionDrawable(new TextureRegion(buttonCooldownTexture));
             Drawable drawableButtonDown = new TextureRegionDrawable(new TextureRegion(buttonDownTexture));
             Drawable drawableButtonChecked = new TextureRegionDrawable(new TextureRegion(buttonCheckedTexture));
 
+
+            //spellButton = new ImageButton(drawableButtonDefault, drawableButtonDown, drawableButtonChecked);
+
             ImageButton.ImageButtonStyle style = new ImageButton.ImageButtonStyle();
+
             style.imageChecked = drawableButtonChecked;
             style.imageUp = drawableButtonDefault;
             style.imageDown = drawableButtonDown;
+            style.imageDisabled = drawableButtonCooldown;
 
             spellButton = new ImageButton(style);
+
 
             // Places the buttons relative to the right joystick and the predefined list
             spellButton.setX(WIDTH - AimInput1.diameter + xCoords.get(i));
@@ -73,14 +85,15 @@ public class SpellSelector1 extends SpellSelector {
             addListenerToSpellButton(spellButton, listOfSpells.get(i));
 
             spellSelector.add(spellButton);
+            buttonList.add(spellButton);
 
             stage.addActor(spellButton);
+
         }
 
         // Ensures only one spell can be selected at any time(radio buttons)
         spellSelector.setMaxCheckCount(1);
-        spellSelector.setMinCheckCount(0);
-
+        spellSelector.setMinCheckCount(1);
     }
 
     private Texture assignButtonTexture(String spellname){
@@ -120,6 +133,28 @@ public class SpellSelector1 extends SpellSelector {
             // THIS SHOULD NEVER HAPPEN!
             return null;
         }
+    }
+
+    private Texture assignButtonCooldownTexture(String spellname){
+        if(spellname.equals( "FireBall")){
+            return new Texture("fire_button_cooldown.png");
+        }
+        else if(spellname.equals("Ice")){
+            return new Texture("ice_button_cooldown.png");
+        }
+        else{
+            // THIS SHOULD NEVER HAPPEN!
+            return null;
+        }
+    }
+
+    public void disableButton(String spellname){
+        buttonList.get(listOfSpells.indexOf(spellname)).setDisabled(true);
+
+    }
+
+    public void enableButton(String spellname){
+        buttonList.get(listOfSpells.indexOf(spellname)).setDisabled(false);
     }
 
 

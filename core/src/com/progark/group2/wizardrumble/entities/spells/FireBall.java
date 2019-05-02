@@ -2,17 +2,18 @@ package com.progark.group2.wizardrumble.entities.spells;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
+import com.progark.group2.wizardrumble.network.NetworkController;
 import com.progark.group2.wizardrumble.tools.SoundManager;
 import com.progark.group2.wizardrumble.tools.SoundType;
-import com.progark.group2.wizardrumble.network.NetworkController;
 
 import java.util.ArrayList;
 
 public class FireBall extends Spell {
     public final static Texture texture = new Texture("fireball_small.png");
+    public final static long cooldown = 3000;
 
     public FireBall(int spellOwnerID, Vector2 spawnPoint, float rotation, Vector2 velocity){
-        super(spellOwnerID, spawnPoint, rotation, velocity,  new Vector2(texture.getWidth()*0.8f,texture.getHeight()*0.8f), texture,10, 60, "", 5, 1, SpellType.FIREBALL);
+        super(spellOwnerID, spawnPoint, rotation, velocity,  new Vector2(texture.getWidth()*0.8f,texture.getHeight()*0.8f), texture,100, 60, "", cooldown, 1, SpellType.FIREBALL);
     }
 
     @Override

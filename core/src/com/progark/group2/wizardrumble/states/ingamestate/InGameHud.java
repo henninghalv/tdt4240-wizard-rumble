@@ -8,6 +8,7 @@ import com.progark.group2.wizardrumble.controllers.AimInput1;
 import com.progark.group2.wizardrumble.controllers.MovementInput1;
 import com.progark.group2.wizardrumble.controllers.SpellSelector1;
 import com.progark.group2.wizardrumble.controllers.SpellSelector;
+import com.progark.group2.wizardrumble.states.ingamestate.HealthBar;
 
 
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ public class InGameHud {
     private MovementInput1 leftJoyStick;
     private AimInput1 rightJoyStick;
 
-    private SpellSelector spellSelector;
+    private SpellSelector1 spellSelector;
     private ArrayList<String> spellNames;
 
     public InGameHud(SpriteBatch spriteBatch) {
@@ -67,7 +68,7 @@ public class InGameHud {
         return rightJoyStick;
     }
 
-    public SpellSelector getSpellSelector() {
+    public SpellSelector1 getSpellSelector() {
         return spellSelector;
     }
 
