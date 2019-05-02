@@ -25,7 +25,7 @@ public abstract class Spell extends Entity {
     private TextureRegion region;
     private float scale;
 
-    public Spell(int spellOwnerID, Vector2 spawnPoint, float rotation, Vector2 velocity, Texture texture, int damage, float speed, String statusEffect, int cooldown, int castTime){
+    public Spell(int spellOwnerID, Vector2 spawnPoint, float rotation, Vector2 velocity, Texture texture, int damage, float speed, String statusEffect, long cooldown, int castTime){
         super(spawnPoint, velocity, rotation, texture,new Vector2(texture.getWidth(),texture.getHeight()), "dynamic");
         this.damage = damage;
         this.speed = speed;
