@@ -25,7 +25,7 @@ public class InGameHud {
     private MovementInput1 leftJoyStick;
     private AimInput1 rightJoyStick;
 
-    private SpellSelector spellSelector;
+    private SpellSelector1 spellSelector;
     private ArrayList<String> spellNames;
 
     public InGameHud(SpriteBatch spriteBatch) {
@@ -68,7 +68,7 @@ public class InGameHud {
         return rightJoyStick;
     }
 
-    public SpellSelector getSpellSelector() {
+    public SpellSelector1 getSpellSelector() {
         return spellSelector;
     }
 
