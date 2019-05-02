@@ -18,12 +18,12 @@ public class Ice extends Spell {
 
 
     public Ice(int spellOwnerID, Vector2 spawnPoint, float rotation, Vector2 velocity, Vector2 pivot){
-        super(spellOwnerID, spawnPoint, rotation, velocity, new Vector2(texture.getWidth()*0.2f, texture.getHeight()*0.2f), texture,10, 60f, cooldown, 3, 1, SpellType.ICE);
+        super(spellOwnerID, spawnPoint, rotation, velocity, new Vector2(texture.getWidth()*0.2f, texture.getHeight()*0.2f), texture,10, 60f, "", cooldown, 1, SpellType.ICE);
         this.pivot = pivot;
     }
 
     public Ice(int spellOwnerID, Vector2 spawnPoint, float rotation, Vector2 velocity){
-        super(spellOwnerID, spawnPoint, rotation, velocity, new Vector2(texture.getWidth()*0.2f, texture.getHeight()*0.2f), texture,10, 60f, cooldown, 3, 1, SpellType.ICE);
+        super(spellOwnerID, spawnPoint, rotation, velocity, new Vector2(texture.getWidth()*0.2f, texture.getHeight()*0.2f), texture,10, 60f, "", cooldown,1, SpellType.ICE);
     }
 
     @Override
