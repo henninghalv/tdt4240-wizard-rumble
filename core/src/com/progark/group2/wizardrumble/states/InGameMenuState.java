@@ -13,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.progark.group2.wizardrumble.states.ingamestate.InGameState;
 import com.progark.group2.wizardrumble.states.resources.UIButton;
+import com.progark.group2.wizardrumble.tools.SoundManager;
 
 import java.io.IOException;
 
@@ -103,6 +104,11 @@ public class InGameMenuState extends State {
 
     @Override
     public void render(SpriteBatch spriteBatch) {
+        Gdx.input.setCatchBackKey(true);
+        if (Gdx.input.isKeyPressed(Input.Keys.BACK)){
+            onBackButtonPress();
+        }
+
         spriteBatch.begin();
         this.pauseOverlay.draw(spriteBatch);
         spriteBatch.end();
@@ -133,5 +139,6 @@ public class InGameMenuState extends State {
     private void exitToMainMenu() throws IOException {
         this.gameStateManager.pop();
         GameStateManager.getInstance().set(MainMenuState.getInstance());
+        SoundManager.getInstance().switchMusic("menu");
     }
 }

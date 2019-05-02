@@ -31,6 +31,8 @@ import com.progark.group2.wizardrumble.states.GameStateManager;
 import com.progark.group2.wizardrumble.states.InGameMenuState;
 import com.progark.group2.wizardrumble.states.State;
 import com.progark.group2.wizardrumble.tools.B2WorldCreator;
+import com.progark.group2.wizardrumble.tools.SoundManager;
+import com.progark.group2.wizardrumble.tools.SoundType;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,6 +46,7 @@ import static com.progark.group2.wizardrumble.Application.WIDTH;
 public class InGameState extends State {
 
     private NetworkController network;
+    private SoundManager soundManager;
 
     private WizardPlayer wizardPlayer;
     private HashMap<Integer, WizardEnemy> wizardEnemies;
@@ -55,7 +58,7 @@ public class InGameState extends State {
     private ArrayList<Long> lastattacks;
 
     // Spells that have been cast
-    private List<Spell> spells;
+    private ArrayList<Spell> spells;
 
     private OrthographicCamera camera;
     private Viewport gamePort;
@@ -88,6 +91,9 @@ public class InGameState extends State {
 
         // Get the Network Controller
         network = NetworkController.getInstance();
+        // Get the Sound Manager
+        soundManager = SoundManager.getInstance();
+        soundManager.switchMusic("battle");
 
         // Setting up the state
         setupCameraAndWorld();
@@ -248,24 +254,21 @@ public class InGameState extends State {
         // Logic for casting when FireBall has been selected
         if (spell.equals("FireBall")) {
             FireBall fb = new FireBall(network.getPlayerId(), spawnPoint, rotation, velocity);
-            spells.add(fb); // Add to list of casted spells
+            fb.cast(spells, network);
             inGameHud.getSpellSelector().disableButton("FireBall");
-
-            network.castSpell(fb);
-            System.out.println("Spell position: " + fb.getPosition());
-            System.out.println("Spell player id: " + fb.getSpellOwnerID());
+            fb.playSound(1.0f);
+            SoundManager.getInstance().playSound(SoundType.FIRECAST, 1.0f);
         }
 
         // Logic for casting when Ice has been selected
         if (spell.equals("Ice")) {
-            Ice ic = new Ice(network.getPlayerId(), spawnPoint, rotation,velocity);
-            spells.add(ic); // Add to list of casted spells
+            Vector2 pivot = new Vector2(wizardPlayer.getPosition().x + wizardPlayer.getSize().x/2f, wizardPlayer.getPosition().y + wizardPlayer.getSize().y/2f);
+            Ice icicles = new Ice(network.getPlayerId(), spawnPoint, rotation, velocity, pivot);
+            icicles.cast(spells, network);
             inGameHud.getSpellSelector().disableButton("Ice");
-
-
-            network.castSpell(ic);
+            icicles.playSound(1.0f);
+            SoundManager.getInstance().playSound(SoundType.ICECAST, 1.0f);
         }
-        System.out.println(wizardPlayer.getPosition());
 
     }
 
@@ -277,6 +280,7 @@ public class InGameState extends State {
     }
 
     public void addSpell(Spell spell){
+        spell.playSound(0.5f);
         spells.add(spell);
     }
 
@@ -387,6 +391,11 @@ public class InGameState extends State {
 
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        Gdx.input.setCatchBackKey(true);
+        if (Gdx.input.isKeyPressed(Input.Keys.BACK)){
+            onBackButtonPress();
+        }
 
         // Draw the ground
         mapHandler.renderGround();

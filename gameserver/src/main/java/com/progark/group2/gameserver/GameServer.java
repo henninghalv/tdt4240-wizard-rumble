@@ -101,7 +101,7 @@ public class GameServer extends Listener{
         }
         else if (object instanceof SpellFiredPacket){
             SpellFiredPacket packet = (SpellFiredPacket) object;
-            server.sendToAllExceptUDP(connection.getID(), packet);
+            server.sendToAllExceptTCP(connection.getID(), packet);
         }
         else if (object instanceof PlayerMovementPacket){
             PlayerMovementPacket packet = (PlayerMovementPacket) object;

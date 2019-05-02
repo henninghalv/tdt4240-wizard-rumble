@@ -3,6 +3,7 @@ package com.progark.group2.wizardrumble.network;
 import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
+import com.progark.group2.wizardrumble.entities.spells.SpellType;
 import com.progark.group2.wizardrumble.network.packets.GameStartPacket;
 import com.progark.group2.wizardrumble.network.packets.PlayerDeadPacket;
 import com.progark.group2.wizardrumble.network.packets.GameEndPacket;
@@ -37,6 +38,7 @@ public class KryoClientRegister {
         kryo.register(Vector2.class);
         kryo.register(ArrayList.class);
         kryo.register(Player.class);
+        kryo.register(SpellType.class);
 
         kryo.register(PlayerJoinRequest.class);
         kryo.register(PlayerJoinResponse.class);

@@ -13,7 +13,6 @@ public class GameStateManager {
 
     private static GameStateManager instance = null;
 
-    //TODO Change from stack to some sort of list to enable game render while the in-game pause is active
     private LinkedList<State> states;
 
     private GameStateManager(){
@@ -27,9 +26,13 @@ public class GameStateManager {
         return instance;
     }
 
+    // Deny pushing of states that are already at the top of the stack
     public void push(State state){
-        this.states.addFirst(state);
-        this.states.peek().activate();
+        if(this.states.peekFirst() == null || !(state.getClass() == this.states.peekFirst().getClass())){
+            System.out.println("Added " + state.getClass());
+            this.states.addFirst(state);
+            this.states.peek().activate();
+        }
     }
 
     /**

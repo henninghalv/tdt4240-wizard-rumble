@@ -2,10 +2,12 @@ package com.progark.group2.wizardrumble;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.progark.group2.wizardrumble.network.NetworkController;
 import com.progark.group2.wizardrumble.states.GameStateManager;
 import com.progark.group2.wizardrumble.states.MainMenuState;
+import com.progark.group2.wizardrumble.tools.SoundManager;
 
 import java.io.IOException;
 
@@ -36,7 +38,8 @@ public class Application extends Game {
 		// Used to test server connection.
 		// Not necessarily the right way to do it.
 		try {
-            NetworkController networkController = NetworkController.getInstance();
+            NetworkController.getInstance();
+			SoundManager.getInstance();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
