@@ -12,7 +12,7 @@ public class FireBall extends Spell {
     public final static Texture texture = new Texture("fireball_small.png");
 
     public FireBall(int spellOwnerID, Vector2 spawnPoint, float rotation, Vector2 velocity){
-        super(spellOwnerID, spawnPoint, rotation, velocity,  new Vector2(texture.getWidth()*0.8f,texture.getHeight()*0.8f), texture,100, 60, "", 5, 1, SpellType.FIREBALL);
+        super(spellOwnerID, spawnPoint, rotation, velocity,  new Vector2(texture.getWidth()*0.8f,texture.getHeight()*0.8f), texture,10, 60, "", 5, 1, SpellType.FIREBALL);
     }
 
     @Override

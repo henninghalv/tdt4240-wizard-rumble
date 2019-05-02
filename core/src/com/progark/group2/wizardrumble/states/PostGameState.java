@@ -107,7 +107,7 @@ public class PostGameState extends State {
             placement = new Label(i+1+".", textStyle);
             playerName = new Label(playerPlacements.get(i).getName(), textStyle);
             if(playerPlacements.get(i).getTimeAliveInMilliseconds() == 0){
-                timeAlive = new Label("NaN", textStyle);
+                timeAlive = new Label("Error", textStyle);
             } else {
                 timeAlive = new Label(playerPlacements.get(i).getTimeAliveInMilliseconds()/1000 + "s", textStyle);
             }

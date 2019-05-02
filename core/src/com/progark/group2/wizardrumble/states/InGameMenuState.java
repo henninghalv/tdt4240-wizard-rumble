@@ -2,6 +2,7 @@ package com.progark.group2.wizardrumble.states;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Net;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -11,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.progark.group2.wizardrumble.network.NetworkController;
 import com.progark.group2.wizardrumble.states.ingamestate.InGameState;
 import com.progark.group2.wizardrumble.states.resources.UIButton;
 import com.progark.group2.wizardrumble.tools.SoundManager;
@@ -137,8 +139,10 @@ public class InGameMenuState extends State {
     }
 
     private void exitToMainMenu() throws IOException {
+        NetworkController.getInstance().playerKilledBy(0);
         this.gameStateManager.pop();
         GameStateManager.getInstance().set(MainMenuState.getInstance());
         SoundManager.getInstance().switchMusic("menu");
+        NetworkController.getInstance().playerLeftGame();
     }
 }

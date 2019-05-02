@@ -2,11 +2,9 @@ package com.progark.group2.wizardrumble.network.responses;
 
 import com.badlogic.gdx.math.Vector2;
 
-import java.util.HashMap;
-
 public class PlayerJoinResponse extends Response {
     private int playerId;
-    private int connectionId;
+    private int playerSlotId;
     private Vector2 spawnPoint;
     private String playerName;
 
@@ -18,12 +16,12 @@ public class PlayerJoinResponse extends Response {
         this.playerId = playerId;
     }
 
-    public int getConnectionId() {
-        return connectionId;
+    public int getPlayerSlotId() {
+        return playerSlotId;
     }
 
-    public void setConnectionId(int connectionId) {
-        this.connectionId = connectionId;
+    public void setPlayerSlotId(int playerSlotId) {
+        this.playerSlotId = playerSlotId;
     }
 
     public Vector2 getSpawnPoint() {

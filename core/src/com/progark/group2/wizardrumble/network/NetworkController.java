@@ -20,6 +20,7 @@ import com.progark.group2.wizardrumble.network.requests.CreatePlayerRequest;
 
 import com.progark.group2.wizardrumble.network.packets.GameStartPacket;
 import com.progark.group2.wizardrumble.network.requests.PlayerJoinRequest;
+import com.progark.group2.wizardrumble.network.requests.PlayerLeaveRequest;
 import com.progark.group2.wizardrumble.network.resources.Player;
 import com.progark.group2.wizardrumble.network.responses.CreateGameResponse;
 import com.progark.group2.wizardrumble.network.responses.CreatePlayerResponse;
@@ -33,9 +34,8 @@ import com.progark.group2.wizardrumble.states.PostGameState;
 import com.progark.group2.wizardrumble.states.ingamestate.InGameState;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.HashMap;
-import java.util.Random;
-import java.util.Stack;
 
 public class NetworkController extends Listener{
 
@@ -46,6 +46,7 @@ public class NetworkController extends Listener{
     private static InGameState gameState;
 
     private static int playerId = 0;
+    private static int gameId = 0;
     private static Player player = null;
     private static HashMap<Integer, Player> players = new HashMap<Integer, Player>();
 
@@ -53,11 +54,11 @@ public class NetworkController extends Listener{
 
     // Master server configuration constants
     private final static int TIMEOUT = 5000;
-    private final static String MASTER_SERVER_HOST = "localhost";  // Set this to the local IP address of your computer when running the server
+    private final static String MASTER_SERVER_HOST = "10.0.0.52";  // Set this to the local IP address of your computer when running the server
     private final static int MASTER_SERVER_TCP_PORT = 54555;
     private final static int MASTER_SERVER_UDP_PORT = 54777;
 
-    private NetworkController() throws IOException{
+    private NetworkController() throws IOException {
         // Client for handling communication with master server
         Log.info("Creating connection to MasterServer...");
         masterServerClient = createAndConnectClient(
@@ -110,19 +111,21 @@ public class NetworkController extends Listener{
         Log.info("Sending PlayerJoinRequest to GameServer...\n");
         PlayerJoinRequest request = new PlayerJoinRequest();
         request.setPlayerId(playerId);
-        gameServerClient.sendTCP(request);
+        masterServerClient.sendTCP(request);
     }
 
     public void requestGameStart(){
         Log.info("Sending GameStartPacket to GameServer...\n");
         GameStartPacket request = new GameStartPacket();
-        gameServerClient.sendTCP(request);
+        request.setGameId(gameId);
+        masterServerClient.sendTCP(request);
     }
 
     // =====
 
     // LISTENERS
 
+    @Override
     public void received(Connection connection, Object object){
         if (object instanceof CreatePlayerResponse){
             Log.info("Received CreatePlayerResponse");
@@ -142,8 +145,7 @@ public class NetworkController extends Listener{
             handleGameStart();
         } else if (object instanceof GameJoinedResponse){
             GameJoinedResponse response = (GameJoinedResponse) object;
-            Log.info("Connection ID: " + connection.getID());
-            NetworkController.player = createPlayer(userPreferences.getString("username"), connection.getID(), response.getSpawnPoint());
+            NetworkController.player = createPlayer(userPreferences.getString("username"), response.getPlayerSlotId(), response.getSpawnPoint());
         } else if (object instanceof PlayerMovementPacket){
             PlayerMovementPacket packet = (PlayerMovementPacket) object;
             handlePlayerMovementResponse(packet);
@@ -151,9 +153,8 @@ public class NetworkController extends Listener{
             SpellFiredPacket packet = (SpellFiredPacket) object;
             handleSpellCastPacket(packet);
         } else if (object instanceof PlayerLeaveResponse){
-            // TODO: Remove the player from players
             PlayerLeaveResponse response = (PlayerLeaveResponse) object;
-            handlePlayerLeaveRequest(response);
+            handlePlayerLeaveResponse(response);
         } else if (object instanceof PlayerDeadPacket){
             PlayerDeadPacket packet = (PlayerDeadPacket) object;
             handlePlayerDeath(packet);
@@ -184,19 +185,21 @@ public class NetworkController extends Listener{
 
     private void handleCreateGameResponse(CreateGameResponse response){
         Log.info("Requesting Game Creation...");
+        gameId = response.getGameId();
         connectToGame(response);
         Log.info("Game created and connected! Waiting for players...\n");
     }
 
     private void handlePlayerJoinResponse(PlayerJoinResponse response) {
         Log.info("Player joined: " + response.getPlayerName());
-        Player player = createPlayer(response.getPlayerName(), response.getConnectionId(), response.getSpawnPoint());
+        Player player = createPlayer(response.getPlayerName(), response.getPlayerSlotId(), response.getSpawnPoint());
         players.put(response.getPlayerId(), player);
     }
 
-    private void handlePlayerLeaveRequest(PlayerLeaveResponse response){
-        Log.info("Player left: " + players.get(playerId).getName());
-        players.remove(response.getPlayerId());
+    private void handlePlayerLeaveResponse(PlayerLeaveResponse response){
+        Log.info("Player left: " + players.get(response.getPlayerId()).getName());
+        players.get(response.getPlayerId()).setAlive(false);
+        players.get(response.getPlayerId()).setTimeAliveInMilliseconds(System.currentTimeMillis() - gameStartTime);
     }
 
     private void handleGameStart() {
@@ -251,7 +254,7 @@ public class NetworkController extends Listener{
         Gdx.app.postRunnable(new Runnable() {
             @Override
             public void run() {
-                gameState.handleEnemyDead(players.get(packet.getVictimId()).getConnectionId());
+                gameState.handleEnemyDead(players.get(packet.getVictimId()).getPlayerSlotId());
             }
         });
     }
@@ -299,37 +302,40 @@ public class NetworkController extends Listener{
         }
     }
 
-    private Player createPlayer(String name, int id, Vector2 spawnpoint){
-        Player player = new Player(name, id, 0, 0, 0, spawnpoint, 0);
+    private Player createPlayer(String name, int playerSlotId, Vector2 spawnpoint){
+        Player player = new Player(name, playerSlotId, 0, 0, 0, spawnpoint, 0);
         return player;
     }
 
     private void connectToGame(CreateGameResponse response){
-        try {
-            // Client tries to connect to the given GameServer
-
-            Log.info("Creating connection to assigned GameServer...");
-            gameServerClient = createAndConnectClient(
-                    TIMEOUT,
-                    MASTER_SERVER_HOST,
-                    response.getTcpPort(),
-                    response.getUdpPort()
-            );
-            Log.info("Connection to GameServer established!\n");
-            // Add listeners to the connection
-
-            Log.info("Requesting to join game...");
-            requestJoinGame();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        PlayerJoinRequest request = new PlayerJoinRequest();
+        request.setPlayerId(playerId);
+        request.setGameId(gameId);
+        masterServerClient.sendTCP(request);
+//        try {
+//            // Client tries to connect to the given GameServer
+//
+//            Log.info("Creating connection to assigned GameServer...");
+//            Log.info("TCP: " + response.getTcpPort() + ", UDP: " + response.getUdpPort());
+//            gameServerClient = createAndConnectClient(
+//                    TIMEOUT,
+//                    MASTER_SERVER_HOST,
+//                    response.getTcpPort(),
+//                    response.getUdpPort()
+//            );
+//            Log.info("Connection to GameServer established!\n");
+//            Log.info("Requesting to join game...");
+//            requestJoinGame();
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     private Client createAndConnectClient(Integer timeout, String host, Integer tcp, Integer udp) throws IOException {
         Client client = new Client();
         client.start();
-        client.connect(timeout, host, tcp, udp);
+        client.connect(timeout, InetAddress.getByName(host), tcp, udp);
         KryoClientRegister.registerKryoClasses(client);  // Register classes for kryo serializer
         client.addListener(this);
         return client;
@@ -340,9 +346,10 @@ public class NetworkController extends Listener{
     public void updatePlayerPosition(Vector2 position, float rotation){
         PlayerMovementPacket packet = new PlayerMovementPacket();
         packet.setPlayerId(playerId);
+        packet.setGameId(gameId);
         packet.setPosition(position);
         packet.setRotation(rotation);
-        gameServerClient.sendUDP(packet);
+        masterServerClient.sendUDP(packet);
     }
 
     private void updateEnemyPosition(int playerId, Vector2 position, float rotation) {
@@ -352,12 +359,13 @@ public class NetworkController extends Listener{
 
     public void castSpell(Spell spell){
         SpellFiredPacket packet = new SpellFiredPacket();
+        packet.setGameId(gameId);
         packet.setSpellType(spell.getSpellType());
         packet.setSpawnPoint(spell.getPosition());
         packet.setRotation(spell.getRotation());
         packet.setVelocity(spell.getVelocity());
         packet.setSpellOwnerId(spell.getSpellOwnerID());
-        gameServerClient.sendTCP(packet);
+        masterServerClient.sendTCP(packet);
     }
 
     private void updateEnemyCastSpells(Spell spell){
@@ -372,12 +380,22 @@ public class NetworkController extends Listener{
             }
         });
         PlayerDeadPacket packet = new PlayerDeadPacket();
+        packet.setGameId(gameId);
         packet.setVictimId(playerId);
         packet.setKillerId(killerId);
         packet.setPlayerDeathTime(System.currentTimeMillis());
-        gameServerClient.sendTCP(packet);
+        masterServerClient.sendTCP(packet);
         player.setTimeAliveInMilliseconds(System.currentTimeMillis() - gameStartTime);
         player.setAlive(false);
+    }
+
+    public void playerLeftGame(){
+        PlayerLeaveRequest request = new PlayerLeaveRequest();
+        request.setGameId(gameId);
+        request.setPlayerId(playerId);
+        request.setPlayerSlotId(player.getPlayerSlotId());
+        masterServerClient.sendTCP(request);
+        players.clear();
     }
 
     // =====

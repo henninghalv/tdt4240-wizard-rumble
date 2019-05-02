@@ -7,6 +7,7 @@ import com.esotericsoftware.kryonet.Server;
 
 import com.esotericsoftware.minlog.Log;
 import com.progark.group2.gameserver.resources.GameStatus;
+import com.progark.group2.gameserver.resources.PlayerSlotStatus;
 import com.progark.group2.wizardrumble.network.packets.GameStartPacket;
 import com.progark.group2.wizardrumble.network.packets.PlayerDeadPacket;
 import com.progark.group2.wizardrumble.network.packets.GameEndPacket;
@@ -28,9 +29,10 @@ public class GameServer extends Listener{
     private static Server server;
     private static int TCP_PORT;
     private static int UDP_PORT;
-    private long gameStartTime;
+    private long gameStartTime = 0;
     // List of the six available starting positions on the map.
-    private static HashMap<Integer, Vector2> spawnPoints = new HashMap<Integer, Vector2>();
+    private HashMap<Integer, Vector2> spawnPoints = new HashMap<Integer, Vector2>();
+    private HashMap<Integer, PlayerSlotStatus> playerSlots = new HashMap<Integer, PlayerSlotStatus>();
     // List of all players that has joined the game with their stats for this game
     private HashMap<Integer, Player> players = new HashMap<Integer, Player>();
 
@@ -40,6 +42,7 @@ public class GameServer extends Listener{
         TCP_PORT = tcpPort;
         UDP_PORT = udpPort;
         createSpawnPoints();
+        createPlayerSlots();
     }
 
     // CREATION
@@ -67,6 +70,15 @@ public class GameServer extends Listener{
         spawnPoints.put(6, new Vector2(1000, 500));
     }
 
+    private void createPlayerSlots(){
+        playerSlots.put(1, PlayerSlotStatus.OPEN);
+        playerSlots.put(2, PlayerSlotStatus.OPEN);
+        playerSlots.put(3, PlayerSlotStatus.OPEN);
+        playerSlots.put(4, PlayerSlotStatus.OPEN);
+        playerSlots.put(5, PlayerSlotStatus.OPEN);
+        playerSlots.put(6, PlayerSlotStatus.OPEN);
+    }
+
     // =====
 
     // LISTENERS
@@ -82,34 +94,29 @@ public class GameServer extends Listener{
                 sendServerErrorResponse(connection, "Something is wrong with the server. Please try again later!");
                 e.printStackTrace();
             }
-        }
-        else if (object instanceof PlayerLeaveRequest){
+        } else if (object instanceof PlayerLeaveRequest){
             PlayerLeaveRequest request = (PlayerLeaveRequest) object;
             try {
                 handlePlayerLeaveRequest(connection, request);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-        else if (object instanceof GameStartPacket){
+        } else if (object instanceof GameStartPacket){
             GameStartPacket packet = (GameStartPacket) object;
             try {
                 startGame(packet);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-        else if (object instanceof SpellFiredPacket){
+        } else if (object instanceof SpellFiredPacket){
             SpellFiredPacket packet = (SpellFiredPacket) object;
             server.sendToAllExceptTCP(connection.getID(), packet);
-        }
-        else if (object instanceof PlayerMovementPacket){
+        } else if (object instanceof PlayerMovementPacket){
             PlayerMovementPacket packet = (PlayerMovementPacket) object;
             players.get(packet.getPlayerId()).setPosition(packet.getPosition());
             players.get(packet.getPlayerId()).setRotation(packet.getRotation());
             server.sendToAllExceptUDP(connection.getID(), packet);
-        }
-        else if (object instanceof PlayerDeadPacket){
+        } else if (object instanceof PlayerDeadPacket){
             PlayerDeadPacket packet = (PlayerDeadPacket) object;
             handlePlayerDeadPacket(connection, packet);
         }
@@ -131,23 +138,38 @@ public class GameServer extends Listener{
         PlayerJoinResponse response = new PlayerJoinResponse();
         response.setPlayerId(request.getPlayerId());
         response.setPlayerName(playerName);
-        response.setConnectionId(connection.getID());
-        response.setSpawnPoint(spawnPoints.get(connection.getID()));
+        response.setPlayerSlotId(getAvailablePlayerSlot());
+        response.setSpawnPoint(spawnPoints.get(response.getPlayerSlotId()));
         server.sendToAllExceptTCP(connection.getID(), response);
 
         for(Integer playerId : players.keySet()){
             sendPlayerJoinResponse(connection, playerId, players.get(playerId));
         }
 
-        addPlayer(request.getPlayerId(), playerName, connection.getID());
+        addPlayer(request.getPlayerId(), playerName, response.getPlayerSlotId());
         GameJoinedResponse response1 = new GameJoinedResponse();
-        response1.setSpawnPoint(spawnPoints.get(connection.getID()));
-        connection.sendTCP(response1);
+        response1.setPlayerSlotId(response.getPlayerSlotId());
+        response1.setSpawnPoint(spawnPoints.get(response.getPlayerSlotId()));
+        server.sendToTCP(connection.getID(), response1);
+        System.out.println("This gameserver has: " + server.getConnections().length + " connections!");
+    }
+
+    private int getAvailablePlayerSlot() {
+        for(int slot : playerSlots.keySet()){
+            if(playerSlots.get(slot).equals(PlayerSlotStatus.OPEN)){
+                playerSlots.put(slot, PlayerSlotStatus.TAKEN);
+                return slot;
+            }
+        }
+        return 0;
     }
 
     private void handlePlayerLeaveRequest(Connection connection, PlayerLeaveRequest request) throws IOException {
-        removePlayer(request.getPlayerId());
-        sendPlayerLeaveResponse(connection, request);
+        if(gameStartTime == 0){
+            removePlayerFromLobby(connection, request);
+        } else{
+            removePlayerFromGame(connection, request);
+        }
     }
 
     private void handlePlayerDeadPacket(Connection connection, PlayerDeadPacket packet){
@@ -188,7 +210,7 @@ public class GameServer extends Listener{
         PlayerJoinResponse response = new PlayerJoinResponse();
         response.setPlayerId(playerId);
         response.setPlayerName(player.getName());
-        response.setConnectionId(player.getConnectionId());
+        response.setPlayerSlotId(player.getPlayerSlotId());
         response.setSpawnPoint(player.getPosition());
         connection.sendTCP(response);
     }
@@ -196,7 +218,9 @@ public class GameServer extends Listener{
     private void sendPlayerLeaveResponse(Connection connection, PlayerLeaveRequest request){
         PlayerLeaveResponse response = new PlayerLeaveResponse();
         response.setPlayerId(request.getPlayerId());
+        response.setPlayerSlotId(request.getPlayerSlotId());
         server.sendToAllExceptTCP(connection.getID(), response);
+        connection.close();
     }
 
     private void sendGameEndResponse() {
@@ -214,14 +238,14 @@ public class GameServer extends Listener{
      * @return Player name
      * @param playerId  (int) player id
      */
-    private void addPlayer(int playerId, String playerName, int connectionId) throws IOException {
+    private void addPlayer(int playerId, String playerName, int playerSlotId) throws IOException {
         Player player = new Player(
                 playerName, // name
-                connectionId,
+                playerSlotId,
                 0, // Kills
                 0, // Position or rank according to time of death
                 0,// Time alive, milliseconds,
-                spawnPoints.get(connectionId),
+                spawnPoints.get(playerSlotId),
                 0
         );
 
@@ -229,14 +253,21 @@ public class GameServer extends Listener{
         System.out.println("Server has: " + players.keySet().size() + "/6 players!");
         if(players.keySet().size() == MasterServer.getMaximumPlayers()){
             Log.info("Server full! Updating status...");
-            MasterServer.getInstance().updateGameServerStatus(this, GameStatus.IN_PROGRESS);
+            MasterServer.getInstance().updateGameServerStatus(this, GameStatus.FULL);
             Log.info("Done!\n");
         }
     }
 
-    private void removePlayer(int playerId) throws IOException {
-        players.remove(playerId);
+    private void removePlayerFromLobby(Connection connection, PlayerLeaveRequest request) throws IOException {
+        players.remove(request.getPlayerId());
+        playerSlots.put(request.getPlayerSlotId(), PlayerSlotStatus.OPEN);
         MasterServer.getInstance().updateGameServerStatus(this, GameStatus.STAND_BY);
+        sendPlayerLeaveResponse(connection, request);
+    }
+
+    private void removePlayerFromGame(Connection connection, PlayerLeaveRequest request){
+        players.remove(request.getPlayerId());
+        sendPlayerLeaveResponse(connection, request);
     }
 
     // =====
@@ -304,6 +335,11 @@ public class GameServer extends Listener{
             e.printStackTrace();
         }
         server.close();
+        try {
+            server.dispose();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         Log.info("Done!");
     }
     // =====

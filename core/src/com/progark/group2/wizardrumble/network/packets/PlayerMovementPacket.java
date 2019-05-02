@@ -7,6 +7,7 @@ public class PlayerMovementPacket {
     private Vector2 position;
     private float rotation;
     private int playerId;
+    private int gameId;
 
     public int getPlayerId() {
         return playerId;
@@ -14,6 +15,14 @@ public class PlayerMovementPacket {
 
     public void setPlayerId(int playerId) {
         this.playerId = playerId;
+    }
+
+    public int getGameId() {
+        return gameId;
+    }
+
+    public void setGameId(int gameId) {
+        this.gameId = gameId;
     }
 
     public Vector2 getPosition() {

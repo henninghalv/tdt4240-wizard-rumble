@@ -7,14 +7,21 @@ import com.esotericsoftware.minlog.Log;
 import com.progark.group2.gameserver.misc.AsciiArtCreator;
 import com.progark.group2.gameserver.resources.GameStatus;
 import com.progark.group2.gameserver.resources.PortStatus;
+import com.progark.group2.wizardrumble.network.packets.GameStartPacket;
+import com.progark.group2.wizardrumble.network.packets.PlayerDeadPacket;
+import com.progark.group2.wizardrumble.network.packets.PlayerMovementPacket;
+import com.progark.group2.wizardrumble.network.packets.SpellFiredPacket;
 import com.progark.group2.wizardrumble.network.requests.CreateGameRequest;
 import com.progark.group2.wizardrumble.network.requests.CreatePlayerRequest;
+import com.progark.group2.wizardrumble.network.requests.PlayerJoinRequest;
+import com.progark.group2.wizardrumble.network.requests.PlayerLeaveRequest;
 import com.progark.group2.wizardrumble.network.responses.CreateGameResponse;
 import com.progark.group2.wizardrumble.network.responses.CreatePlayerResponse;
 import com.progark.group2.wizardrumble.network.responses.ServerErrorResponse;
 import com.progark.group2.gameserver.database.SQLiteDBConnector;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.sql.SQLException;
 import java.util.HashMap;
 
@@ -22,6 +29,12 @@ public class MasterServer extends Listener{
 
     private static MasterServer instance = null;
     private static SQLiteDBConnector connector;
+    private static int gameIdCounter;
+
+    private HashMap<Integer, Game> games = new HashMap<Integer, Game>();
+
+
+
 
     // List of all server instances. 1 server = 1 game
     private HashMap<GameServer, GameStatus> gameServers = new HashMap<GameServer, GameStatus>();
@@ -54,14 +67,15 @@ public class MasterServer extends Listener{
         Log.info("Adding listeners...");
         server.addListener(this);
         Log.info("Done!\n");
+        gameIdCounter = 1;
     }
 
+    @Override
     public void received(Connection connection, Object object){
         if (object instanceof CreateGameRequest) {
             Log.info("Received CreateGameRequest...");
             handleCreateGameRequest(connection);
-        }
-        else if (object instanceof CreatePlayerRequest){
+        } else if (object instanceof CreatePlayerRequest){
             Log.info("Received CreateNewPlayerRequest...");
             CreatePlayerRequest request = (CreatePlayerRequest) object;
             try {
@@ -69,6 +83,24 @@ public class MasterServer extends Listener{
             } catch (SQLException e) {
                 e.printStackTrace();
             }
+        } else if (object instanceof PlayerJoinRequest){
+            PlayerJoinRequest request = (PlayerJoinRequest) object;
+            handlePlayerJoinRequest(connection, request);
+        } else if (object instanceof GameStartPacket){
+            GameStartPacket packet = (GameStartPacket) object;
+            handleGameStartPacket(packet);
+        } else if (object instanceof PlayerMovementPacket){
+            PlayerMovementPacket packet = (PlayerMovementPacket) object;
+            handlePlayerMovementPacket(connection, packet);
+        } else if (object instanceof SpellFiredPacket){
+            SpellFiredPacket packet = (SpellFiredPacket) object;
+            handleSpellFiredPacket(connection, packet);
+        } else if (object instanceof PlayerDeadPacket){
+            PlayerDeadPacket packet = (PlayerDeadPacket) object;
+            handlePlayerDeadPacket(connection, packet);
+        } else if (object instanceof PlayerLeaveRequest){
+            PlayerLeaveRequest request = (PlayerLeaveRequest) object;
+            handlePlayerLeaveRequest(connection, request);
         }
     }
 
@@ -125,24 +157,31 @@ public class MasterServer extends Listener{
      * @param connection
      */
     private void handleCreateGameRequest(Connection connection){
-        GameServer gameServer = findAvailableGameServer();
-        if(gameServer != null){
-            sendCreateGameResponse(connection, gameServer);
-        }
-        else{
-            Log.info("No GameServer found!\n");
-            Log.info("Trying to create new GameServer...\n");
-            // If no server with status STAND_BY is found, try to create a new server
-            try {
-                gameServer = createNewGameServer();
-                addGameServer(gameServer);
-                // Send the ports to player with a response
-                sendCreateGameResponse(connection, gameServer);
-            } catch (IOException e) {
-                //TODO: Add server is full if there are maximum game servers
-                sendServerErrorResponse(connection, "Something is wrong with the server. Please try again later.");
-                e.printStackTrace();
-            }
+//        GameServer gameServer = findAvailableGameServer();
+//        if(gameServer != null){
+//            sendCreateGameResponse(connection, gameServer);
+//        }
+//        else{
+//            Log.info("No GameServer found!\n");
+//            Log.info("Trying to create new GameServer...\n");
+//            // If no server with status STAND_BY is found, try to create a new server
+//            try {
+//                gameServer = createNewGameServer();
+//                addGameServer(gameServer);
+//                sendCreateGameResponse(connection, gameServer);
+//            } catch (IOException e) {
+//                //TODO: Add server is full if there are maximum game servers
+//                sendServerErrorResponse(connection, "Something is wrong with the server. Please try again later.");
+//                e.printStackTrace();
+//            }
+//        }
+        Game game = findAvailableGame();
+        if(game != null){
+            sendCreateGameResponse(connection, game);
+        } else {
+            game = createNewGame();
+            addGame(game);
+            sendCreateGameResponse(connection, game);
         }
     }
 
@@ -154,6 +193,36 @@ public class MasterServer extends Listener{
         connector.createNewPlayer(id, username);
         Log.info("Done!\n");
         sendCreatePlayerResponse(connection, id, username);
+    }
+
+    private void handlePlayerJoinRequest(Connection connection, PlayerJoinRequest request){
+        Game game = games.get(request.getGameId());
+        game.addPlayer(getPlayerName(request.getPlayerId()), request.getPlayerId(), connection);
+    }
+
+    private void handleGameStartPacket(GameStartPacket packet){
+        Game game = games.get(packet.getGameId());
+        game.start();
+    }
+
+    private void handlePlayerMovementPacket(Connection connection, PlayerMovementPacket packet){
+        Game game = games.get(packet.getGameId());
+        game.updatePlayerPosition(connection, packet);
+    }
+
+    private void handleSpellFiredPacket(Connection connection, SpellFiredPacket packet){
+        Game game = games.get(packet.getGameId());
+        game.spellFired(connection, packet);
+    }
+
+    private void handlePlayerDeadPacket(Connection connection, PlayerDeadPacket packet){
+        Game game = games.get(packet.getGameId());
+        game.playerDied(connection, packet);
+    }
+
+    private void handlePlayerLeaveRequest(Connection connection, PlayerLeaveRequest request){
+        Game game = games.get(request.getGameId());
+        game.removePlayer(request.getPlayerId(), connection);
     }
 
     // =====
@@ -169,6 +238,12 @@ public class MasterServer extends Listener{
         CreateGameResponse response = new CreateGameResponse();
         response.setTcpPort(gameServer.getTCPPort());
         response.setUdpPort(gameServer.getUDPPort());
+        connection.sendTCP(response);
+    }
+
+    private void sendCreateGameResponse(Connection connection, Game game){
+        CreateGameResponse response = new CreateGameResponse();
+        response.setGameId(game.getGameId());
         connection.sendTCP(response);
     }
 
@@ -217,6 +292,10 @@ public class MasterServer extends Listener{
         return new GameServer(tcpPort, udpPort);
     }
 
+    private Game createNewGame(){
+        return new Game(gameIdCounter);
+    }
+
     // =====
 
     // ACTIONS
@@ -228,6 +307,15 @@ public class MasterServer extends Listener{
             if (GameStatus.STAND_BY.equals(gameServers.get(gs))) {
                 Log.info("Found one!\n");
                 return gs;
+            }
+        }
+        return null;
+    }
+
+    private Game findAvailableGame(){
+        for(Game game : games.values()){
+            if(game.getGameStatus().equals(GameStatus.STAND_BY)){
+                return game;
             }
         }
         return null;
@@ -266,7 +354,13 @@ public class MasterServer extends Listener{
      * @param server    GameServer object
      */
     private void addGameServer(GameServer server) {
-        this.gameServers.put(server, GameStatus.STAND_BY);
+        gameServers.put(server, GameStatus.STAND_BY);
+        System.out.println("Current list of game servers: " + gameServers);
+    }
+
+    private void addGame(Game game){
+        games.put(gameIdCounter, game);
+        gameIdCounter++;
     }
 
     /**
@@ -288,7 +382,7 @@ public class MasterServer extends Listener{
         // Open udpPort
         TCP_PORTS.put(udpPort, PortStatus.OPEN);
         // Remove GameServer from MasterServer
-        this.gameServers.remove(server);
+        gameServers.remove(server);
     }
     // =====
 

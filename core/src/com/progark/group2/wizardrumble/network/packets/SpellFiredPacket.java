@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.progark.group2.wizardrumble.entities.spells.SpellType;
 
 public class SpellFiredPacket{
+    private int gameId;
     private SpellType spellType;
     private Vector2 spawnPoint;
     private Vector2 velocity;
@@ -11,6 +12,14 @@ public class SpellFiredPacket{
     private int spellOwnerId;
 
     public SpellFiredPacket() {
+    }
+
+    public int getGameId() {
+        return gameId;
+    }
+
+    public void setGameId(int gameId) {
+        this.gameId = gameId;
     }
 
     public SpellType getSpellType() {
