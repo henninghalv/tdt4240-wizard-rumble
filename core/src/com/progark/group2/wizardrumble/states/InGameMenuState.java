@@ -93,21 +93,20 @@ public class InGameMenuState extends State {
         this.pauseOverlay = new Sprite(new Texture("black.png"));
         this.pauseOverlay.setSize(WIDTH, HEIGHT);
         this.pauseOverlay.setAlpha(0.5f);
+
+        Gdx.input.setInputProcessor(stage);
     }
 
 
     @Override
     public void update(float dt) {
-//        //TODO esc doesn't work, but not crucial for phone
-//        if (Gdx.input.isKeyJustPressed(Input.Keys.BACK)){
-//            this.gameStateManager.pop();
-//        }
+
     }
 
     @Override
     public void render(SpriteBatch spriteBatch) {
         Gdx.input.setCatchBackKey(true);
-        if (Gdx.input.isKeyPressed(Input.Keys.BACK)){
+        if (Gdx.input.isKeyPressed(Input.Keys.BACK) || Gdx.input.isKeyPressed(Input.Keys.ESCAPE)){
             onBackButtonPress();
         }
 
@@ -115,7 +114,9 @@ public class InGameMenuState extends State {
         this.pauseOverlay.draw(spriteBatch);
         spriteBatch.end();
 
+        Gdx.input.setInputProcessor(stage);
         stage.draw();
+
     }
 
     @Override
@@ -140,9 +141,9 @@ public class InGameMenuState extends State {
 
     private void exitToMainMenu() throws IOException {
         NetworkController.getInstance().playerKilledBy(0);
+        NetworkController.getInstance().playerLeftGame();
         this.gameStateManager.pop();
         GameStateManager.getInstance().set(MainMenuState.getInstance());
         SoundManager.getInstance().switchMusic("menu");
-        NetworkController.getInstance().playerLeftGame();
     }
 }

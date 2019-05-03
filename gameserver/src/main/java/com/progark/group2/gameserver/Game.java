@@ -2,7 +2,6 @@ package com.progark.group2.gameserver;
 
 import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryonet.Connection;
-import com.esotericsoftware.minlog.Log;
 import com.progark.group2.gameserver.resources.GameStatus;
 import com.progark.group2.gameserver.resources.PlayerSlotStatus;
 import com.progark.group2.wizardrumble.network.packets.GameEndPacket;
@@ -15,6 +14,7 @@ import com.progark.group2.wizardrumble.network.responses.GameJoinedResponse;
 import com.progark.group2.wizardrumble.network.responses.PlayerJoinResponse;
 import com.progark.group2.wizardrumble.network.responses.PlayerLeaveResponse;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -87,7 +87,7 @@ public class Game {
         response1.setSpawnPoint(player.getPosition());
         connection.sendTCP(response1);
 
-        if(playerConnections.size() >= MasterServer.getMaximumPlayers()){
+        if(playerConnections.size() >= GameServer.getMaximumPlayers()){
             gameStatus = GameStatus.FULL;
         }
     }
@@ -162,7 +162,7 @@ public class Game {
         gameStatus = GameStatus.IN_PROGRESS;
     }
 
-    public boolean isGameOver(){
+    private boolean isGameOver(){
         int playersAlive = 0;
         for (Player p: players.values()) {
             if (p.isAlive()) playersAlive++;
@@ -175,11 +175,16 @@ public class Game {
         return false;
     }
 
-    public void end(){
+    private void end(){
         GameEndPacket packet = new GameEndPacket();
         packet.setPlayers(players);
         for(Connection c : playerConnections){
             c.sendTCP(packet);
+        }
+        try {
+            GameServer.getInstance().removeGame(this);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -197,32 +202,8 @@ public class Game {
         return gameId;
     }
 
-    public void setGameId(int gameId) {
-        this.gameId = gameId;
-    }
-
     public GameStatus getGameStatus() {
         return gameStatus;
-    }
-
-    public void setGameStatus(GameStatus gameStatus) {
-        this.gameStatus = gameStatus;
-    }
-
-    public ArrayList<Connection> getPlayerConnections() {
-        return playerConnections;
-    }
-
-    public void setPlayerConnections(ArrayList<Connection> playerConnections) {
-        this.playerConnections = playerConnections;
-    }
-
-    public HashMap<Integer, Player> getPlayers() {
-        return players;
-    }
-
-    public void setPlayers(HashMap<Integer, Player> players) {
-        this.players = players;
     }
 
 }

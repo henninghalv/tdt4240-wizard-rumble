@@ -1,194 +1,182 @@
 package com.progark.group2.gameserver;
 
-import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
-
 import com.esotericsoftware.minlog.Log;
+import com.progark.group2.gameserver.misc.AsciiArtCreator;
 import com.progark.group2.gameserver.resources.GameStatus;
-import com.progark.group2.gameserver.resources.PlayerSlotStatus;
 import com.progark.group2.wizardrumble.network.packets.GameStartPacket;
 import com.progark.group2.wizardrumble.network.packets.PlayerDeadPacket;
-import com.progark.group2.wizardrumble.network.packets.GameEndPacket;
 import com.progark.group2.wizardrumble.network.packets.PlayerMovementPacket;
+import com.progark.group2.wizardrumble.network.packets.PlayersOnlinePacket;
 import com.progark.group2.wizardrumble.network.packets.SpellFiredPacket;
+import com.progark.group2.wizardrumble.network.requests.CreateGameRequest;
+import com.progark.group2.wizardrumble.network.requests.CreatePlayerRequest;
 import com.progark.group2.wizardrumble.network.requests.PlayerJoinRequest;
 import com.progark.group2.wizardrumble.network.requests.PlayerLeaveRequest;
-import com.progark.group2.wizardrumble.network.resources.Player;
-import com.progark.group2.wizardrumble.network.responses.GameJoinedResponse;
-import com.progark.group2.wizardrumble.network.responses.PlayerJoinResponse;
-import com.progark.group2.wizardrumble.network.responses.PlayerLeaveResponse;
-import com.progark.group2.wizardrumble.network.responses.ServerErrorResponse;
+import com.progark.group2.wizardrumble.network.responses.CreateGameResponse;
+import com.progark.group2.wizardrumble.network.responses.CreatePlayerResponse;
+import com.progark.group2.gameserver.database.SQLiteDBConnector;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashMap;
 
 public class GameServer extends Listener{
 
-    private static Server server;
-    private static int TCP_PORT;
-    private static int UDP_PORT;
-    private long gameStartTime = 0;
-    // List of the six available starting positions on the map.
-    private HashMap<Integer, Vector2> spawnPoints = new HashMap<Integer, Vector2>();
-    private HashMap<Integer, PlayerSlotStatus> playerSlots = new HashMap<Integer, PlayerSlotStatus>();
-    // List of all players that has joined the game with their stats for this game
-    private HashMap<Integer, Player> players = new HashMap<Integer, Player>();
+    private static GameServer instance = null;
+    private static SQLiteDBConnector connector;
+    private static int gameIdCounter;
 
+    private HashMap<Integer, Game> games = new HashMap<Integer, Game>();
+    private Server server;
 
-    GameServer(int tcpPort, int udpPort) throws IOException {
-        server = createNewServer(tcpPort, udpPort);
-        TCP_PORT = tcpPort;
-        UDP_PORT = udpPort;
-        createSpawnPoints();
-        createPlayerSlots();
-    }
+    private final static int MAXIMUM_PLAYERS_PER_GAME = 6;
 
-    // CREATION
+    private final static int DEFAULT_TCP_PORT = 54555;
+    private final static int DEFAULT_UDP_PORT = 54777;
 
-    /**
-     * Creates a new Kryo Server instance and registers request and
-     * response classes.
-     * @return      Kryo Server object
-     */
-    private Server createNewServer(int tcpPort, int udpPort) throws IOException {
-        Server server = new Server();
-        server.start();
-        server.bind(tcpPort, udpPort);
-        KryoServerRegister.registerKryoClasses(server);
+    private GameServer() throws IOException {
+        Log.info("Initializing master server...");
+        server = createAndConnectMasterServer();
+        Log.info("Done!\n");
+        // Add a receiver listener to server
+        Log.info("Adding listeners...");
         server.addListener(this);
-        return server;
+        Log.info("Done!\n");
+        gameIdCounter = 1;
     }
 
-    private void createSpawnPoints(){
-        spawnPoints.put(1, new Vector2(500, 500));
-        spawnPoints.put(2, new Vector2(500, 750));
-        spawnPoints.put(3, new Vector2(500, 1000));
-        spawnPoints.put(4, new Vector2(1000, 1000));
-        spawnPoints.put(5, new Vector2(1000, 750));
-        spawnPoints.put(6, new Vector2(1000, 500));
+    @Override
+    public void disconnected(Connection connection){
+        PlayersOnlinePacket packet = new PlayersOnlinePacket();
+        packet.setPlayersOnlineCount(server.getConnections().length);
+        for(Connection c : server.getConnections()){
+            c.sendTCP(packet);
+        }
     }
 
-    private void createPlayerSlots(){
-        playerSlots.put(1, PlayerSlotStatus.OPEN);
-        playerSlots.put(2, PlayerSlotStatus.OPEN);
-        playerSlots.put(3, PlayerSlotStatus.OPEN);
-        playerSlots.put(4, PlayerSlotStatus.OPEN);
-        playerSlots.put(5, PlayerSlotStatus.OPEN);
-        playerSlots.put(6, PlayerSlotStatus.OPEN);
-    }
-
-    // =====
-
-    // LISTENERS
-
+    @Override
     public void received(Connection connection, Object object){
-        if (object instanceof PlayerJoinRequest){
-            // If a player has joined
+        if (object instanceof CreateGameRequest) {
+            Log.info("Received CreateGameRequest...");
+            handleCreateGameRequest(connection);
+        } else if (object instanceof CreatePlayerRequest){
+            Log.info("Received CreateNewPlayerRequest...");
+            CreatePlayerRequest request = (CreatePlayerRequest) object;
+            try {
+                handleCreatePlayerRequest(connection, request.getPlayerName());
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } else if (object instanceof PlayerJoinRequest){
             PlayerJoinRequest request = (PlayerJoinRequest) object;
-            // Add player to list of joined players
-            try {
-                handlePlayerJoinRequest(connection, request);
-            } catch (IOException e) {
-                sendServerErrorResponse(connection, "Something is wrong with the server. Please try again later!");
-                e.printStackTrace();
-            }
-        } else if (object instanceof PlayerLeaveRequest){
-            PlayerLeaveRequest request = (PlayerLeaveRequest) object;
-            try {
-                handlePlayerLeaveRequest(connection, request);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            handlePlayerJoinRequest(connection, request);
         } else if (object instanceof GameStartPacket){
             GameStartPacket packet = (GameStartPacket) object;
-            try {
-                startGame(packet);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else if (object instanceof SpellFiredPacket){
-            SpellFiredPacket packet = (SpellFiredPacket) object;
-            server.sendToAllExceptTCP(connection.getID(), packet);
+            handleGameStartPacket(packet);
         } else if (object instanceof PlayerMovementPacket){
             PlayerMovementPacket packet = (PlayerMovementPacket) object;
-            players.get(packet.getPlayerId()).setPosition(packet.getPosition());
-            players.get(packet.getPlayerId()).setRotation(packet.getRotation());
-            server.sendToAllExceptUDP(connection.getID(), packet);
+            handlePlayerMovementPacket(connection, packet);
+        } else if (object instanceof SpellFiredPacket){
+            SpellFiredPacket packet = (SpellFiredPacket) object;
+            handleSpellFiredPacket(connection, packet);
         } else if (object instanceof PlayerDeadPacket){
             PlayerDeadPacket packet = (PlayerDeadPacket) object;
             handlePlayerDeadPacket(connection, packet);
+        } else if (object instanceof PlayerLeaveRequest){
+            PlayerLeaveRequest request = (PlayerLeaveRequest) object;
+            handlePlayerLeaveRequest(connection, request);
+        } else if (object instanceof PlayersOnlinePacket){
+            PlayersOnlinePacket packet = (PlayersOnlinePacket) object;
+            packet.setPlayersOnlineCount(server.getConnections().length);
+            for(Connection c : server.getConnections()){
+                c.sendTCP(packet);
+            }
         }
+    }
+
+    /**
+     * Singleton class - This will get GameServer instance unless it's defined
+     * @return  Returns the GameServer instance
+     * @throws IOException      Exception upon creation of master server
+     */
+    static GameServer getInstance() throws IOException {
+        if (instance == null) {
+            instance = new GameServer();
+        }
+        return instance;
+    }
+
+    // SETUP METHODS
+
+    /**
+     * Creates a new KryoNet Server and connects it
+     * @return A KryoNet server object
+     * @throws IOException
+     */
+    private Server createAndConnectMasterServer() throws IOException {
+        Server server = new Server();
+        server.start();
+        server.bind(DEFAULT_TCP_PORT, DEFAULT_UDP_PORT);
+        KryoServerRegister.registerKryoClasses(server);  // Register classes for kryo serializer
+        return server;
     }
 
     // =====
 
     // REQUEST HANDLING
 
-    /**
-     * Handles the PlayerJoinRequest
-     * @param connection
-     * @param request
-     * @throws IOException
-     */
-    private void handlePlayerJoinRequest(Connection connection, PlayerJoinRequest request) throws IOException {
-        String playerName = MasterServer.getPlayerName(request.getPlayerId());
-        // This does NOT use the "sendPlayerJoinResponse" method to prevent sending it to the player being added.
-        PlayerJoinResponse response = new PlayerJoinResponse();
-        response.setPlayerId(request.getPlayerId());
-        response.setPlayerName(playerName);
-        response.setPlayerSlotId(getAvailablePlayerSlot());
-        response.setSpawnPoint(spawnPoints.get(response.getPlayerSlotId()));
-        server.sendToAllExceptTCP(connection.getID(), response);
-
-        for(Integer playerId : players.keySet()){
-            sendPlayerJoinResponse(connection, playerId, players.get(playerId));
+    private void handleCreateGameRequest(Connection connection){
+        Game game = findAvailableGame();
+        if(game != null){
+            sendCreateGameResponse(connection, game);
+        } else {
+            game = createNewGame();
+            addGame(game);
+            sendCreateGameResponse(connection, game);
         }
-
-        addPlayer(request.getPlayerId(), playerName, response.getPlayerSlotId());
-        GameJoinedResponse response1 = new GameJoinedResponse();
-        response1.setPlayerSlotId(response.getPlayerSlotId());
-        response1.setSpawnPoint(spawnPoints.get(response.getPlayerSlotId()));
-        server.sendToTCP(connection.getID(), response1);
-        System.out.println("This gameserver has: " + server.getConnections().length + " connections!");
     }
 
-    private int getAvailablePlayerSlot() {
-        for(int slot : playerSlots.keySet()){
-            if(playerSlots.get(slot).equals(PlayerSlotStatus.OPEN)){
-                playerSlots.put(slot, PlayerSlotStatus.TAKEN);
-                return slot;
-            }
-        }
-        return 0;
+    private void handleCreatePlayerRequest(Connection connection, String username) throws SQLException {
+        Log.info("Getting highest id...");
+        int id = connector.getHighestId() + 1;
+        Log.info("Done!\n");
+        Log.info("Creating new player...");
+        connector.createNewPlayer(id, username);
+        Log.info("Done!\n");
+        sendCreatePlayerResponse(connection, id, username);
     }
 
-    private void handlePlayerLeaveRequest(Connection connection, PlayerLeaveRequest request) throws IOException {
-        if(gameStartTime == 0){
-            removePlayerFromLobby(connection, request);
-        } else{
-            removePlayerFromGame(connection, request);
-        }
+    private void handlePlayerJoinRequest(Connection connection, PlayerJoinRequest request){
+        Game game = games.get(request.getGameId());
+        game.addPlayer(getPlayerName(request.getPlayerId()), request.getPlayerId(), connection);
+    }
+
+    private void handleGameStartPacket(GameStartPacket packet){
+        Game game = games.get(packet.getGameId());
+        game.start();
+    }
+
+    private void handlePlayerMovementPacket(Connection connection, PlayerMovementPacket packet){
+        Game game = games.get(packet.getGameId());
+        game.updatePlayerPosition(connection, packet);
+    }
+
+    private void handleSpellFiredPacket(Connection connection, SpellFiredPacket packet){
+        Game game = games.get(packet.getGameId());
+        game.spellFired(connection, packet);
     }
 
     private void handlePlayerDeadPacket(Connection connection, PlayerDeadPacket packet){
-        players.get(packet.getKillerId()).incrementKills(); // Increase kills for killer
-        players.get(packet.getVictimId()).setAlive(false); // Set victim player as dead
-        players.get(packet.getVictimId()).setTimeAliveInMilliseconds(packet.getPlayerDeathTime() - gameStartTime); // Set time of death
-        Log.info("Player died: " + packet.getVictimId() + ", Killed by " + packet.getKillerId());
-        server.sendToAllExceptTCP(connection.getID(), packet);
+        Game game = games.get(packet.getGameId());
+        game.playerDied(connection, packet);
+    }
 
-        // Check if game has ended
-        if(checkIfGameOver()){
-            for(Player player : players.values()){
-                if(player.isAlive()){
-                    player.setTimeAliveInMilliseconds(packet.getPlayerDeathTime() - gameStartTime); // Same time as last death
-                }
-            }
-            sendGameEndResponse();
-            endGame();
-        }
+    private void handlePlayerLeaveRequest(Connection connection, PlayerLeaveRequest request){
+        Game game = games.get(request.getGameId());
+        game.removePlayer(request.getPlayerId(), connection);
     }
 
     // =====
@@ -196,37 +184,40 @@ public class GameServer extends Listener{
     // RESPONSES
 
     /**
-     * Sends a server error message to the client. Fire this where something can fail on the server side.
+     * Sends a reponse to the client when it wants to create a game
      * @param connection
-     * @param message
+     * @param game
      */
-    private void sendServerErrorResponse(Connection connection, String message){
-        ServerErrorResponse errorResponse = new ServerErrorResponse();
-        errorResponse.setErrorMsg(message);
-        connection.sendTCP(errorResponse);
-    }
-
-    private void sendPlayerJoinResponse(Connection connection, int playerId, Player player){
-        PlayerJoinResponse response = new PlayerJoinResponse();
-        response.setPlayerId(playerId);
-        response.setPlayerName(player.getName());
-        response.setPlayerSlotId(player.getPlayerSlotId());
-        response.setSpawnPoint(player.getPosition());
+    private void sendCreateGameResponse(Connection connection, Game game){
+        CreateGameResponse response = new CreateGameResponse();
+        response.setGameId(game.getGameId());
         connection.sendTCP(response);
     }
 
-    private void sendPlayerLeaveResponse(Connection connection, PlayerLeaveRequest request){
-        PlayerLeaveResponse response = new PlayerLeaveResponse();
-        response.setPlayerId(request.getPlayerId());
-        response.setPlayerSlotId(request.getPlayerSlotId());
-        server.sendToAllExceptTCP(connection.getID(), response);
-        connection.close();
+    /**
+     * Sends a response to the client when a player has been created in the DB
+     * @param connection
+     * @param id
+     * @param username
+     */
+    private void sendCreatePlayerResponse(Connection connection, int id, String username){
+        CreatePlayerResponse response = new CreatePlayerResponse();
+        response.setPlayerId(id);
+        response.setUsername(username);
+        connection.sendTCP(response);
     }
 
-    private void sendGameEndResponse() {
-        GameEndPacket packet = new GameEndPacket();
-        packet.setPlayers(players);
-        server.sendToAllTCP(packet);
+    // =====
+
+    // CREATION
+
+    /**
+     * Creates a new Game instance
+     * @return Game
+     */
+
+    private Game createNewGame(){
+        return new Game(gameIdCounter);
     }
 
     // =====
@@ -234,114 +225,86 @@ public class GameServer extends Listener{
     // ACTIONS
 
     /**
-     * Add a new player to list when joining or creating a new game.
-     * @return Player name
-     * @param playerId  (int) player id
+     * Finds an available Game object and returns it
+     * @return Game
      */
-    private void addPlayer(int playerId, String playerName, int playerSlotId) throws IOException {
-        Player player = new Player(
-                playerName, // name
-                playerSlotId,
-                0, // Kills
-                0, // Position or rank according to time of death
-                0,// Time alive, milliseconds,
-                spawnPoints.get(playerSlotId),
-                0
-        );
 
-        players.put(playerId, player);
-        System.out.println("Server has: " + players.keySet().size() + "/6 players!");
-        if(players.keySet().size() == MasterServer.getMaximumPlayers()){
-            Log.info("Server full! Updating status...");
-            MasterServer.getInstance().updateGameServerStatus(this, GameStatus.FULL);
-            Log.info("Done!\n");
+    private Game findAvailableGame(){
+        for(Game game : games.values()){
+            if(game.getGameStatus().equals(GameStatus.STAND_BY)){
+                return game;
+            }
         }
+        return null;
     }
 
-    private void removePlayerFromLobby(Connection connection, PlayerLeaveRequest request) throws IOException {
-        players.remove(request.getPlayerId());
-        playerSlots.put(request.getPlayerSlotId(), PlayerSlotStatus.OPEN);
-        MasterServer.getInstance().updateGameServerStatus(this, GameStatus.STAND_BY);
-        sendPlayerLeaveResponse(connection, request);
+    /**
+     * Add game to the list of all games on standby
+     * @param game
+     */
+    private void addGame(Game game){
+        games.put(gameIdCounter, game);
+        gameIdCounter++;
     }
 
-    private void removePlayerFromGame(Connection connection, PlayerLeaveRequest request){
-        players.remove(request.getPlayerId());
-        sendPlayerLeaveResponse(connection, request);
+    /**
+     * Remove game from the list of all games
+     * @param game
+     */
+    public void removeGame(Game game){
+        games.remove(game);
     }
 
     // =====
 
     // HELPER METHODS
 
-    Integer getTCPPort(){
-        return TCP_PORT;
+    /**
+     * Gets the constant Maximum players per game.
+     * @return
+     */
+    static int getMaximumPlayers() {
+        return MAXIMUM_PLAYERS_PER_GAME;
     }
 
-    Integer getUDPPort(){
-        return UDP_PORT;
+    /**
+     * Gameserver will request for playername from master server.
+     * The master server must then send a sql query to DB.
+     * @param playerID  The id of the player that name is requested
+     * @return  The name of the player with corresponding playerID
+     */
+     static String getPlayerName(int playerID)  {
+        // Default name if not registered in DB
+        String playerName = "Guest";
+        try {
+            // Connects to the database and tries to get the player name based on player id
+            playerName = connector.getPlayer(playerID).get(playerID);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return playerName;
     }
 
     // =====
 
-    // GAME LOGIC
     /**
-     * Tell the master server that this server no longer is on standby,
-     * but in progress. Start game after 30 seconds from when two players joined or
-     * when the game server is full.
+     * Main method that runs the server
+     * @param args
+     * @throws IOException
      */
-    private void startGame(GameStartPacket packet) throws IOException {
-        Log.info("Starting game...");
-        gameStartTime = System.currentTimeMillis();
-        MasterServer.getInstance().updateGameServerStatus(this, GameStatus.IN_PROGRESS);
-        packet.setGameStartTime(gameStartTime);
-        server.sendToAllTCP(packet);
-        Log.info("Done!\n");
-        // TODO: Consider adding a time delay before game starts.
-    }
-
-    private boolean checkIfGameOver(){
-        // Check if game has ended
-        // TODO: Consider finding a nice lambda for this
-        int playersAlive = 0;
-        for (Player p: players.values()) {
-            if (p.isAlive()) playersAlive++;
-        }
-
-        // If game has ended
-        if (playersAlive <= 1) {
-            // Send player stats to all players for scoreboard: kills and ranking
-            return true;
-        }
-
-        return false;
-    }
-//
-    /**
-     * When the game has ended and all joinedPlayerIDs has left the game,
-     * the server stops and removes itself from the MasterServer.
-     */
-    private void endGame() {
-        Log.info("Game is over! Closing game server...");
-        // Stop the server connection for all players
-        for(Connection connection : server.getConnections()){
-            connection.close();
-        }
+    public static void main(String[] args) throws IOException {
+        // Print ASCIIArt
+        AsciiArtCreator art = new AsciiArtCreator();
+        art.createArt("WIZARD RUMBLE SERVER", 300, 20);
+        // Init master server
+        GameServer.getInstance();
         try {
-            // Try removing this from the master server
-            // This should open the used ports in master server
-            MasterServer.getInstance().removeGameServer(TCP_PORT, UDP_PORT, this);
-        } catch (IOException e) {
+            // Init DB connection
+            connector = SQLiteDBConnector.getInstance();
+            connector.connect();
+        } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-        server.close();
-        try {
-            server.dispose();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        Log.info("Done!");
-    }
-    // =====
 
+    }
 }
