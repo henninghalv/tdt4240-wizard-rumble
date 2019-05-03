@@ -133,6 +133,7 @@ public class GameServer extends Listener{
         if(game != null){
             sendCreateGameResponse(connection, game);
         } else {
+            Log.info("Creating new game...");
             game = createNewGame();
             addGame(game);
             sendCreateGameResponse(connection, game);
@@ -230,11 +231,14 @@ public class GameServer extends Listener{
      */
 
     private Game findAvailableGame(){
+        Log.info("Looking for available game...");
         for(Game game : games.values()){
             if(game.getGameStatus().equals(GameStatus.STAND_BY)){
+                Log.info("Found one!");
                 return game;
             }
         }
+        Log.info("Did not find available game...");
         return null;
     }
 
@@ -252,7 +256,10 @@ public class GameServer extends Listener{
      * @param game
      */
     public void removeGame(Game game){
+        Log.info("Current list of games: " + games);
+        Log.info("Removing game: " + game);
         games.remove(game);
+        Log.info("List of games after removal");
     }
 
     // =====

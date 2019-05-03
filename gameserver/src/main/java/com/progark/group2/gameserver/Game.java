@@ -2,6 +2,7 @@ package com.progark.group2.gameserver;
 
 import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryonet.Connection;
+import com.esotericsoftware.minlog.Log;
 import com.progark.group2.gameserver.resources.GameStatus;
 import com.progark.group2.gameserver.resources.PlayerSlotStatus;
 import com.progark.group2.wizardrumble.network.packets.GameEndPacket;
@@ -53,6 +54,7 @@ public class Game {
     }
 
     public void addPlayer(String playerName, int playerId, Connection connection){
+        Log.info("Adding player to game: id:" + playerId + " , name:" + playerName);
         int playerSlot = getAvailablePlayerSlot();
         Player player = new Player(
                 playerName, playerSlot, 0, 0, 0, spawnPoints.get(playerSlot), 0
@@ -88,6 +90,7 @@ public class Game {
         connection.sendTCP(response1);
 
         if(playerConnections.size() >= GameServer.getMaximumPlayers()){
+            Log.info("Game is full!");
             gameStatus = GameStatus.FULL;
         }
     }
@@ -102,6 +105,7 @@ public class Game {
             }
         }
 
+        playerSlots.put(players.get(playerId).getPlayerSlotId(), PlayerSlotStatus.OPEN);
         playerConnections.remove(connection);
         players.remove(playerId);
 
