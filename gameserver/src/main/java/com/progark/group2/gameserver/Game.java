@@ -112,6 +112,14 @@ public class Game {
         if(gameStatus.equals(GameStatus.FULL)){
             gameStatus = GameStatus.STAND_BY;
         }
+
+        if(playerConnections.size() == 0){
+            try {
+                GameServer.getInstance().removeGame(this);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void updatePlayerPosition(Connection connection, PlayerMovementPacket packet){
