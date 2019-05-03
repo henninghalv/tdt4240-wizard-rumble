@@ -133,23 +133,6 @@ public class MainMenuState extends State {
         this.table.add(startButton).pad(10f);
         this.table.row();
 
-        // Settings
-        Stack settingsButton = new UIButton(new Texture("UI/blue_button00.png"), "Settings").getButton();
-        settingsButton.addListener(new InputListener(){
-            @Override
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                return true;
-            }
-
-            @Override
-            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                System.out.println("Settings");
-                openSettings();
-            }
-        });
-        this.table.add(settingsButton).pad(10f);
-        this.table.row();
-
         // exitButton
         Stack exitButton = new UIButton(new Texture("UI/blue_button00.png"), "Exit").getButton();
         exitButton.addListener(new InputListener(){

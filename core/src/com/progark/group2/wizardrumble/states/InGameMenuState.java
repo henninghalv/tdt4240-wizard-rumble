@@ -52,22 +52,6 @@ public class InGameMenuState extends State {
         this.table.add(resumeButton).pad(10f);
         this.table.row();
 
-        // settingsButton
-        Stack settingsButton = new UIButton(new Texture("UI/blue_button00.png"), "Settings").getButton();
-        settingsButton.addListener(new InputListener(){
-            @Override
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                return true;
-            }
-
-            @Override
-            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                openSettings();
-            }
-        });
-        this.table.add(settingsButton).pad(10f);
-        this.table.row();
-
         // exitButton
         Stack exitButton = new UIButton(new Texture("UI/blue_button00.png"), "Exit").getButton();
         exitButton.addListener(new InputListener(){
