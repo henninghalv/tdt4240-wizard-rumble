@@ -376,7 +376,7 @@ public class InGameState extends State {
         timer();
 
         Gdx.input.setCatchBackKey(true);
-        if (Gdx.input.isKeyJustPressed(Input.Keys.BACK)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.BACK) || (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE))) {
             this.onBackButtonPress();
         }
     }
@@ -392,7 +392,7 @@ public class InGameState extends State {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         Gdx.input.setCatchBackKey(true);
-        if (Gdx.input.isKeyPressed(Input.Keys.BACK)){
+        if (Gdx.input.isKeyPressed(Input.Keys.BACK) || Gdx.input.isKeyPressed(Input.Keys.ESCAPE)){
             onBackButtonPress();
         }
 
@@ -475,7 +475,6 @@ public class InGameState extends State {
     // EVENTS
 
     public void handlePlayerDead(){
-        // TODO: Tweak the zoom parameter to wanted amount. Should be bigger than 1.0 though
         camera.zoom = 2*SCALE;
         camera.position.set(
                 mapHandler.getMapSize().x/2,

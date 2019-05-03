@@ -14,6 +14,7 @@ import com.progark.group2.wizardrumble.entities.spells.SpellType;
 import com.progark.group2.wizardrumble.network.packets.PlayerDeadPacket;
 import com.progark.group2.wizardrumble.network.packets.GameEndPacket;
 import com.progark.group2.wizardrumble.network.packets.PlayerMovementPacket;
+import com.progark.group2.wizardrumble.network.packets.PlayersOnlinePacket;
 import com.progark.group2.wizardrumble.network.packets.SpellFiredPacket;
 import com.progark.group2.wizardrumble.network.requests.CreateGameRequest;
 import com.progark.group2.wizardrumble.network.requests.CreatePlayerRequest;
@@ -40,8 +41,7 @@ import java.util.HashMap;
 public class NetworkController extends Listener{
 
     private static NetworkController instance;
-    private static Client masterServerClient;
-    private static Client gameServerClient;
+    private static Client client;
     private static Preferences userPreferences = Gdx.app.getPreferences("user");
     private static InGameState gameState;
 
@@ -49,28 +49,30 @@ public class NetworkController extends Listener{
     private static int gameId = 0;
     private static Player player = null;
     private static HashMap<Integer, Player> players = new HashMap<Integer, Player>();
+    private static int playersOnlineCount;
 
     private long gameStartTime;
 
     // Master server configuration constants
     private final static int TIMEOUT = 5000;
-    private final static String MASTER_SERVER_HOST = "10.0.0.52";  // Set this to the local IP address of your computer when running the server
-    private final static int MASTER_SERVER_TCP_PORT = 54555;
-    private final static int MASTER_SERVER_UDP_PORT = 54777;
+    private final static String SERVER_HOST = "localhost";  // Set this to the local IP address of your computer when running the server
+    private final static int SERVER_TCP_PORT = 54555;
+    private final static int SERVER_UDP_PORT = 54777;
 
     private NetworkController() throws IOException {
         // Client for handling communication with master server
         Log.info("Creating connection to MasterServer...");
-        masterServerClient = createAndConnectClient(
+        client = createAndConnectClient(
                 TIMEOUT,
-                MASTER_SERVER_HOST,
-                MASTER_SERVER_TCP_PORT,
-                MASTER_SERVER_UDP_PORT
+                SERVER_HOST,
+                SERVER_TCP_PORT,
+                SERVER_UDP_PORT
         );
         Log.info("Creating connection to MasterServer: Done!\n");
         Log.info("Getting local data...");
         getLocalData();
         Log.info("Getting local data: Done!\n");
+        client.sendTCP(new PlayersOnlinePacket());
     }
 
     /**
@@ -94,7 +96,7 @@ public class NetworkController extends Listener{
     void requestPlayerCreation(String username){
         CreatePlayerRequest request = new CreatePlayerRequest();
         request.setPlayerName(username);
-        masterServerClient.sendTCP(request);
+        client.sendTCP(request);
     }
 
     /**
@@ -104,21 +106,14 @@ public class NetworkController extends Listener{
         Log.info("Sending CreateGameRequest to MasterServer...\n");
         CreateGameRequest request = new CreateGameRequest();
         request.setPlayerId(playerId);
-        masterServerClient.sendTCP(request);
-    }
-
-    private void requestJoinGame(){
-        Log.info("Sending PlayerJoinRequest to GameServer...\n");
-        PlayerJoinRequest request = new PlayerJoinRequest();
-        request.setPlayerId(playerId);
-        masterServerClient.sendTCP(request);
+        client.sendTCP(request);
     }
 
     public void requestGameStart(){
         Log.info("Sending GameStartPacket to GameServer...\n");
         GameStartPacket request = new GameStartPacket();
         request.setGameId(gameId);
-        masterServerClient.sendTCP(request);
+        client.sendTCP(request);
     }
 
     // =====
@@ -159,13 +154,17 @@ public class NetworkController extends Listener{
             PlayerDeadPacket packet = (PlayerDeadPacket) object;
             handlePlayerDeath(packet);
         } else if (object instanceof GameEndPacket) {
-            // Game has ended. Show scorescreen
             GameEndPacket packet = (GameEndPacket) object;
-            handleGameEnd(packet);
+            if(!players.isEmpty()){
+                handleGameEnd(packet);
+            }
         } else if (object instanceof ServerErrorResponse) {
-            // If there is a server error
             ServerErrorResponse response = (ServerErrorResponse) object;
             Log.error("Client got this error message: " + response.getErrorMsg());
+        } else if (object instanceof PlayersOnlinePacket){
+            PlayersOnlinePacket packet = (PlayersOnlinePacket) object;
+            playersOnlineCount = packet.getPlayersOnlineCount();
+            Log.info("Players online: " + playersOnlineCount);
         }
     }
 
@@ -224,20 +223,17 @@ public class NetworkController extends Listener{
         Gdx.app.postRunnable(new Runnable() {
             @Override
             public void run() {
-                // TODO: Update for real spelltypes
                 if(packet.getSpellType().equals(SpellType.FIREBALL)){
                     updateEnemyCastSpells(
                             new FireBall(packet.getSpellOwnerId(), packet.getSpawnPoint(), packet.getRotation(), packet.getVelocity())
                     );
                 } else if (packet.getSpellType().equals(SpellType.ICE)){
                     updateEnemyCastSpells(
-                            new Ice(packet.getSpellOwnerId(), packet.getSpawnPoint(), packet.getRotation(), packet.getVelocity()
-                            )
+                            new Ice(packet.getSpellOwnerId(), packet.getSpawnPoint(), packet.getRotation(), packet.getVelocity())
                     );
                 } else {
                     updateEnemyCastSpells(
-                            new FireBall(packet.getSpellOwnerId(), packet.getSpawnPoint(), packet.getRotation(), packet.getVelocity()
-                            )
+                            new FireBall(packet.getSpellOwnerId(), packet.getSpawnPoint(), packet.getRotation(), packet.getVelocity())
                     );
                 }
             }
@@ -272,9 +268,7 @@ public class NetworkController extends Listener{
             @Override
             public void run(){
                 try {
-                    // Delete the game instance to be able to play again.
                     GameStateManager.getInstance().set(new PostGameState(GameStateManager.getInstance()));
-
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -311,25 +305,7 @@ public class NetworkController extends Listener{
         PlayerJoinRequest request = new PlayerJoinRequest();
         request.setPlayerId(playerId);
         request.setGameId(gameId);
-        masterServerClient.sendTCP(request);
-//        try {
-//            // Client tries to connect to the given GameServer
-//
-//            Log.info("Creating connection to assigned GameServer...");
-//            Log.info("TCP: " + response.getTcpPort() + ", UDP: " + response.getUdpPort());
-//            gameServerClient = createAndConnectClient(
-//                    TIMEOUT,
-//                    MASTER_SERVER_HOST,
-//                    response.getTcpPort(),
-//                    response.getUdpPort()
-//            );
-//            Log.info("Connection to GameServer established!\n");
-//            Log.info("Requesting to join game...");
-//            requestJoinGame();
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+        client.sendTCP(request);
     }
 
     private Client createAndConnectClient(Integer timeout, String host, Integer tcp, Integer udp) throws IOException {
@@ -349,7 +325,7 @@ public class NetworkController extends Listener{
         packet.setGameId(gameId);
         packet.setPosition(position);
         packet.setRotation(rotation);
-        masterServerClient.sendUDP(packet);
+        client.sendUDP(packet);
     }
 
     private void updateEnemyPosition(int playerId, Vector2 position, float rotation) {
@@ -365,7 +341,7 @@ public class NetworkController extends Listener{
         packet.setRotation(spell.getRotation());
         packet.setVelocity(spell.getVelocity());
         packet.setSpellOwnerId(spell.getSpellOwnerID());
-        masterServerClient.sendTCP(packet);
+        client.sendTCP(packet);
     }
 
     private void updateEnemyCastSpells(Spell spell){
@@ -384,18 +360,18 @@ public class NetworkController extends Listener{
         packet.setVictimId(playerId);
         packet.setKillerId(killerId);
         packet.setPlayerDeathTime(System.currentTimeMillis());
-        masterServerClient.sendTCP(packet);
+        client.sendTCP(packet);
         player.setTimeAliveInMilliseconds(System.currentTimeMillis() - gameStartTime);
         player.setAlive(false);
     }
 
     public void playerLeftGame(){
+        players.clear();
         PlayerLeaveRequest request = new PlayerLeaveRequest();
         request.setGameId(gameId);
         request.setPlayerId(playerId);
         request.setPlayerSlotId(player.getPlayerSlotId());
-        masterServerClient.sendTCP(request);
-        players.clear();
+        client.sendTCP(request);
     }
 
     // =====
@@ -414,6 +390,10 @@ public class NetworkController extends Listener{
 
     public InGameState getGameState(){
         return gameState;
+    }
+
+    public int getPlayersOnlineCount() {
+        return playersOnlineCount;
     }
 
     // =====

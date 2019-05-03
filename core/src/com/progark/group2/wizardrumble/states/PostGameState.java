@@ -37,6 +37,7 @@ public class PostGameState extends State {
     private static PostGameState instance = null;
     private NetworkController network;
     private Label.LabelStyle textStyle;
+    private Texture backgroundImage;
 
     private Table table;
     private ArrayList<Player> playerPlacements;
@@ -45,6 +46,7 @@ public class PostGameState extends State {
         super(gameStateManager);
 
         network = NetworkController.getInstance();
+        backgroundImage = new Texture("background.png");
 
         table = new Table();
         table.setFillParent(true);
@@ -153,10 +155,11 @@ public class PostGameState extends State {
 
     @Override
     public void render(SpriteBatch spriteBatch) {
-        spriteBatch.setProjectionMatrix(camera.combined);
-
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        spriteBatch.begin();
+        spriteBatch.draw(backgroundImage, 0, 0);
+        spriteBatch.end();
 
         stage.draw();
     }

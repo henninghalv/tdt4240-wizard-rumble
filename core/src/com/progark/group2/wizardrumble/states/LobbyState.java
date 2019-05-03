@@ -30,6 +30,7 @@ public class LobbyState extends State {
 
     private Table table = new Table();
     private Label.LabelStyle titleStyle;
+    private Texture backgroundImage;
     private HashMap<Integer, Player> players = new HashMap<Integer, Player>();
 
     private final String title = "Lobby - waiting for players...";
@@ -68,7 +69,7 @@ public class LobbyState extends State {
             }
         });
 
-        table.add(backButton).pad(100f);
+        table.add(backButton).pad(50f);
     }
 
     private void createStartButton() {
@@ -108,6 +109,7 @@ public class LobbyState extends State {
     public void update(float dt) {
 
         table.clear();
+        renderLobbyTitle();
         if(network.getPlayer() != null){
             players.clear();
             players.putAll(network.getPlayers());
@@ -125,6 +127,9 @@ public class LobbyState extends State {
     public void render(SpriteBatch spriteBatch) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        spriteBatch.begin();
+        spriteBatch.draw(backgroundImage, 0, 0);
+        spriteBatch.end();
         stage.draw();
     }
 
@@ -148,6 +153,7 @@ public class LobbyState extends State {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        backgroundImage = new Texture("background.png");
         stage = new Stage(new FitViewport(WIDTH, HEIGHT));
         Gdx.input.setInputProcessor(stage);
 
@@ -166,8 +172,8 @@ public class LobbyState extends State {
 
         Label label = new Label(this.title, titleStyle);
         label.setAlignment(Align.center);
-        label.setSize((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/4);
-        table.add(label).size((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/4);
+        label.setSize((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/12);
+        table.add(label).size((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/12);
         table.row();
 
 //        table.debug();
