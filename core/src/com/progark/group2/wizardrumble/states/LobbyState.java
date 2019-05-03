@@ -14,10 +14,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.progark.group2.wizardrumble.network.NetworkController;
 import com.progark.group2.wizardrumble.network.resources.Player;
-import com.progark.group2.wizardrumble.states.ingamestate.InGameState;
 import com.progark.group2.wizardrumble.states.resources.UIButton;
 
 import java.io.IOException;
@@ -30,11 +28,10 @@ public class LobbyState extends State {
 
     private NetworkController network;
 
-    private Table table;
+    private Table table = new Table();
     private Label.LabelStyle titleStyle;
+    private Texture backgroundImage;
     private HashMap<Integer, Player> players = new HashMap<Integer, Player>();
-
-//    private static LobbyState instance = null;
 
     private final String title = "Lobby - waiting for players...";
 
@@ -42,13 +39,6 @@ public class LobbyState extends State {
         super(gameStateManager);
         initialize();
     }
-
-//    public static LobbyState getInstance() throws IOException {
-//        if (instance == null) {
-//            instance = new LobbyState(GameStateManager.getInstance());
-//        }
-//        return instance;
-//    }
 
     private void createPanels() {
         table.add(new UIButton(new Texture("UI/blue_button01.png"), network.getPlayer().getName()).getButton()).spaceBottom(10f).pad(0F);
@@ -79,7 +69,7 @@ public class LobbyState extends State {
             }
         });
 
-        table.add(backButton).pad(100f);
+        table.add(backButton).pad(50f);
     }
 
     private void createStartButton() {
@@ -103,6 +93,7 @@ public class LobbyState extends State {
 
     private void backToMainMenu() throws IOException {
         this.gameStateManager.set(MainMenuState.getInstance());
+        network.playerLeftGame();
     }
 
     private void requestGameStart() {
@@ -116,21 +107,29 @@ public class LobbyState extends State {
 
     @Override
     public void update(float dt) {
-        if(!network.getPlayers().isEmpty()){
-            table.clear();
+
+        table.clear();
+        renderLobbyTitle();
+        if(network.getPlayer() != null){
+            players.clear();
             players.putAll(network.getPlayers());
             createPanels();
-            players.clear();
-            createBackButton();
-            createStartButton();  // TODO: Remove. No manual starting. Meant for testing.
-            stage.addActor(table);
         }
+        createBackButton();
+        if(!players.isEmpty()){
+            createStartButton();  // TODO: Remove. No manual starting. Meant for testing.
+        }
+        stage.addActor(table);
+
     }
 
     @Override
     public void render(SpriteBatch spriteBatch) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        spriteBatch.begin();
+        spriteBatch.draw(backgroundImage, 0, 0);
+        spriteBatch.end();
         stage.draw();
     }
 
@@ -154,13 +153,17 @@ public class LobbyState extends State {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        backgroundImage = new Texture("background.png");
         stage = new Stage(new FitViewport(WIDTH, HEIGHT));
         Gdx.input.setInputProcessor(stage);
 
         // Layout styling
-        table = new Table();
         table.setFillParent(true);
         table.center();
+
+    }
+
+    private void renderLobbyTitle(){
 
         // Title
         BitmapFont font = new BitmapFont();
@@ -169,8 +172,8 @@ public class LobbyState extends State {
 
         Label label = new Label(this.title, titleStyle);
         label.setAlignment(Align.center);
-        label.setSize((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/4);
-        table.add(label).size((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/4);
+        label.setSize((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/12);
+        table.add(label).size((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/12);
         table.row();
 
 //        table.debug();

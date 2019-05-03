@@ -37,7 +37,6 @@ import com.progark.group2.wizardrumble.tools.SoundType;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import static com.progark.group2.wizardrumble.Application.HEIGHT;
 import static com.progark.group2.wizardrumble.Application.SCALE;
@@ -161,7 +160,7 @@ public class InGameState extends State {
 
     private void setupPlayer(){
         // Creating a WizardPlayer object
-        wizardPlayer = new WizardPlayer(network.getPlayer().getPosition(), network.getPlayer().getConnectionId());
+        wizardPlayer = new WizardPlayer(network.getPlayer().getPosition(), network.getPlayer().getPlayerSlotId());
         // Add a new wizardPlayerRegion around Wizard
         wizardPlayerRegion = new TextureRegion(wizardPlayer.getPlayerSprite());
         addPlayerToMapLayers(wizardPlayer);
@@ -170,10 +169,10 @@ public class InGameState extends State {
     private void setupEnemies(){
         // Creating all enemy players
         for (Player player : network.getPlayers().values()){
-            WizardEnemy enemy = new WizardEnemy(player.getPosition(), player.getConnectionId());
-            wizardEnemies.put(player.getConnectionId(), enemy);
+            WizardEnemy enemy = new WizardEnemy(player.getPosition(), player.getPlayerSlotId());
+            wizardEnemies.put(player.getPlayerSlotId(), enemy);
             TextureRegion enemyRegion = new TextureRegion(enemy.getPlayerSprite());
-            wizardEnemyRegions.put(player.getConnectionId(), enemyRegion);
+            wizardEnemyRegions.put(player.getPlayerSlotId(), enemyRegion);
             addPlayerToMapLayers(enemy);
         }
     }
@@ -368,16 +367,16 @@ public class InGameState extends State {
         // Keep the Wizard object in sync with Player object for the other players
         for (Player player : network.getPlayers().values()) {
             if(player.isAlive()){
-                wizardEnemies.get(player.getConnectionId()).setPosition(player.getPosition());
-                wizardEnemies.get(player.getConnectionId()).setRotation(player.getRotation());
-                wizardEnemies.get(player.getConnectionId()).updateBodyPosition(player.getPosition());
+                wizardEnemies.get(player.getPlayerSlotId()).setPosition(player.getPosition());
+                wizardEnemies.get(player.getPlayerSlotId()).setRotation(player.getRotation());
+                wizardEnemies.get(player.getPlayerSlotId()).updateBodyPosition(player.getPosition());
             }
         }
 
         timer();
 
         Gdx.input.setCatchBackKey(true);
-        if (Gdx.input.isKeyJustPressed(Input.Keys.BACK)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.BACK) || (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE))) {
             this.onBackButtonPress();
         }
     }
@@ -393,7 +392,7 @@ public class InGameState extends State {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         Gdx.input.setCatchBackKey(true);
-        if (Gdx.input.isKeyPressed(Input.Keys.BACK)){
+        if (Gdx.input.isKeyPressed(Input.Keys.BACK) || Gdx.input.isKeyPressed(Input.Keys.ESCAPE)){
             onBackButtonPress();
         }
 
@@ -437,7 +436,7 @@ public class InGameState extends State {
             TextureRegion enemyRegion = wizardEnemyRegions.get(wizardId);
 
             for (Player player : network.getPlayers().values()){
-                if(player.getConnectionId() == wizardId){
+                if(player.getPlayerSlotId() == wizardId){
                     if(player.isAlive()){
                         enemyRegion.setTexture(enemy.getPlayerSprite());
                     } else{
@@ -476,7 +475,6 @@ public class InGameState extends State {
     // EVENTS
 
     public void handlePlayerDead(){
-        // TODO: Tweak the zoom parameter to wanted amount. Should be bigger than 1.0 though
         camera.zoom = 2*SCALE;
         camera.position.set(
                 mapHandler.getMapSize().x/2,
@@ -487,9 +485,8 @@ public class InGameState extends State {
         wizardPlayer.getB2body().setActive(false);
     }
 
-    public void handleEnemyDead(int connectionId){
-        WizardEnemy enemy = wizardEnemies.get(connectionId);
-        TextureRegion enemyRegion = wizardEnemyRegions.get(connectionId);
+    public void handleEnemyDead(int playerSlotId){
+        WizardEnemy enemy = wizardEnemies.get(playerSlotId);
         enemy.getB2body().setActive(false);
     }
 

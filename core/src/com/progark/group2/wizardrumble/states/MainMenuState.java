@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -34,16 +35,81 @@ public class MainMenuState extends State {
 
     private Table table;
     private Label.LabelStyle titleStyle;
+    private Texture backgroundImage;
 
     private static MainMenuState instance = null;
 
     private final String title = "Wizard Rumble";
+    private int playersOnline = 0;
 
 
     //TODO Remove sout and uncomment method calls in the button listeners
     MainMenuState() throws IOException {
         super(GameStateManager.getInstance());
         initialize();
+
+    }
+
+    public static MainMenuState getInstance() throws IOException {
+        if (instance == null) {
+            instance = new MainMenuState();
+        }
+        return instance;
+    }
+
+    private void startGame() throws IOException {
+        GameStateManager.getInstance().set(new LobbyState(gameStateManager));
+    }
+
+    private void openSettings(){
+        GameStateManager.getInstance().push(MainMenuSettings.getInstance());
+    }
+
+    @Override
+    public void handleInput() {
+
+    }
+
+    @Override
+    public void update(float dt) {
+
+        try {
+            playersOnline = NetworkController.getInstance().getPlayersOnlineCount();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+
+
+    }
+
+    @Override
+
+    public void render(SpriteBatch spriteBatch) {
+        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        spriteBatch.begin();
+        spriteBatch.draw(backgroundImage, 0, 0);
+        spriteBatch.end();
+
+        table.clear();
+        // Title
+        BitmapFont font = new BitmapFont();
+        font.setColor(Color.WHITE);
+        this.titleStyle = new Label.LabelStyle(font, font.getColor());
+
+        Label label = new Label(this.title, titleStyle);
+        label.setAlignment(Align.center);
+        label.setSize((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/8);
+        table.add(label).size((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/8);
+        table.row();
+        label = new Label("Players online: " + playersOnline, titleStyle);
+        label.setAlignment(Align.center);
+        label.setSize((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/12);
+        table.add(label).size((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/12);
+        table.row();
 
         // startButton
         Stack startButton = new UIButton(new Texture("UI/blue_button00.png"), "Start").getButton();
@@ -101,38 +167,6 @@ public class MainMenuState extends State {
         this.table.row();
 
         stage.addActor(table);
-    }
-
-    public static MainMenuState getInstance() throws IOException {
-        if (instance == null) {
-            instance = new MainMenuState();
-        }
-        return instance;
-    }
-
-    private void startGame() throws IOException {
-        GameStateManager.getInstance().set(new LobbyState(gameStateManager));
-    }
-
-    private void openSettings(){
-        GameStateManager.getInstance().push(MainMenuSettings.getInstance());
-    }
-
-    @Override
-    public void handleInput() {
-
-    }
-
-    @Override
-    public void update(float dt) {
-
-    }
-
-    @Override
-
-    public void render(SpriteBatch spriteBatch) {
-        Gdx.gl.glClearColor(0, 0, 0, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         stage.draw();
     }
@@ -145,6 +179,7 @@ public class MainMenuState extends State {
     @Override
     public void onBackButtonPress() {
         Gdx.app.exit();
+        System.exit(0);
     }
 
     /**
@@ -153,6 +188,7 @@ public class MainMenuState extends State {
     private void initialize() throws IOException {
         // Getting NetworkController
         network = NetworkController.getInstance();
+        backgroundImage = new Texture("background.png");
 
         this.stage = new Stage(new FitViewport(WIDTH, HEIGHT));
         Gdx.input.setInputProcessor(stage);
@@ -163,15 +199,6 @@ public class MainMenuState extends State {
         //table.setDebug(true);
         table.center();
 
-        // Title
-        BitmapFont font = new BitmapFont();
-        font.setColor(Color.WHITE);
-        this.titleStyle = new Label.LabelStyle(font, font.getColor());
 
-        Label label = new Label(this.title, titleStyle);
-        label.setAlignment(Align.center);
-        label.setSize((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/4);
-        table.add(label).size((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/4);
-        table.row();
     }
 }

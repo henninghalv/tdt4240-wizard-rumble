@@ -5,7 +5,7 @@ import com.badlogic.gdx.math.Vector2;
 public class Player {
 
     private String name;
-    private int connectionId;
+    private int playerSlotId;
     private int kills;
     private int rank;
     private long timeAliveInMilliseconds;
@@ -16,9 +16,9 @@ public class Player {
     public Player() {
     }
 
-    public Player(String name, int connectionId, int kills, int rank, long timeAliveInMilliseconds, Vector2 position, float rotation) {
+    public Player(String name, int playerSlotId, int kills, int rank, long timeAliveInMilliseconds, Vector2 position, float rotation) {
         this.name = name;
-        this.connectionId = connectionId;
+        this.playerSlotId = playerSlotId;
         this.kills = kills;
         this.rank = rank;
         this.timeAliveInMilliseconds = timeAliveInMilliseconds;
@@ -32,8 +32,8 @@ public class Player {
         return name;
     }
 
-    public int getConnectionId() {
-        return connectionId;
+    public int getPlayerSlotId() {
+        return playerSlotId;
     }
 
     public int getKills() {
@@ -56,8 +56,8 @@ public class Player {
         this.name = name;
     }
 
-    public void setConnectionId(int connectionId) {
-        this.connectionId = connectionId;
+    public void setPlayerSlotId(int playerSlotId) {
+        this.playerSlotId = playerSlotId;
     }
 
     public void incrementKills() {

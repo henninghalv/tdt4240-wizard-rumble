@@ -1,6 +1,6 @@
 package com.progark.group2.gameserver.resources;
 
-public enum PortStatus {
+public enum PlayerSlotStatus {
     OPEN,
-    CLOSED
+    TAKEN
 }
