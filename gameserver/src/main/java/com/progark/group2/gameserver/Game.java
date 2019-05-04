@@ -16,13 +16,12 @@ import com.progark.group2.wizardrumble.network.responses.PlayerJoinResponse;
 import com.progark.group2.wizardrumble.network.responses.PlayerLeaveResponse;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Game {
     private int gameId;
     private GameStatus gameStatus;
-    private ArrayList<Connection> playerConnections = new ArrayList<Connection>();
+    private HashMap<Integer, Connection> playerConnections = new HashMap<Integer, Connection>();
     private HashMap<Integer, Player> players = new HashMap<Integer, Player>();
     private HashMap<Integer, Vector2> spawnPoints = new HashMap<Integer, Vector2>();
     private HashMap<Integer, PlayerSlotStatus> playerSlots = new HashMap<Integer, PlayerSlotStatus>();
@@ -66,7 +65,7 @@ public class Game {
         response.setPlayerSlotId(player.getPlayerSlotId());
         response.setSpawnPoint(player.getPosition());
 
-        for(Connection c: playerConnections){
+        for(Connection c: playerConnections.values()){
             if(c.getID() != connection.getID()){
                 c.sendTCP(response);
             }
@@ -81,7 +80,7 @@ public class Game {
             connection.sendTCP(response);
         }
 
-        playerConnections.add(connection);
+        playerConnections.put(playerId, connection);
         players.put(playerId, player);
 
         GameJoinedResponse response1 = new GameJoinedResponse();
@@ -99,7 +98,7 @@ public class Game {
         PlayerLeaveResponse response = new PlayerLeaveResponse();
         response.setPlayerSlotId(players.get(playerId).getPlayerSlotId());
         response.setPlayerId(playerId);
-        for(Connection c : playerConnections){
+        for(Connection c : playerConnections.values()){
             if(c.getID() != connection.getID()){
                 c.sendTCP(response);
             }
@@ -120,12 +119,22 @@ public class Game {
                 e.printStackTrace();
             }
         }
+
+        // Check if game has ended
+        if(isGameOver()){
+            for(Player player : players.values()){
+                if(player.isAlive()){
+                    player.setTimeAliveInMilliseconds(System.currentTimeMillis() - gameStartTime); // Same time as last death
+                }
+            }
+            end();
+        }
     }
 
     public void updatePlayerPosition(Connection connection, PlayerMovementPacket packet){
         players.get(packet.getPlayerId()).setPosition(packet.getPosition());
         players.get(packet.getPlayerId()).setRotation(packet.getRotation());
-        for(Connection c : playerConnections){
+        for(Connection c : playerConnections.values()){
             if(c.getID() != connection.getID()){
                 c.sendUDP(packet);
             }
@@ -133,7 +142,7 @@ public class Game {
     }
 
     public void spellFired(Connection connection, SpellFiredPacket packet){
-        for(Connection c : playerConnections){
+        for(Connection c : playerConnections.values()){
             if(c.getID() != connection.getID()){
                 c.sendTCP(packet);
             }
@@ -147,7 +156,7 @@ public class Game {
         players.get(packet.getVictimId()).setAlive(false); // Set victim player as dead
         players.get(packet.getVictimId()).setTimeAliveInMilliseconds(packet.getPlayerDeathTime() - gameStartTime); // Set time of death
 
-        for(Connection c: playerConnections){
+        for(Connection c: playerConnections.values()){
             if(c.getID() != connection.getID()){
                 c.sendTCP(packet);
             }
@@ -168,7 +177,7 @@ public class Game {
         gameStartTime = System.currentTimeMillis();
         GameStartPacket packet = new GameStartPacket();
         packet.setGameStartTime(gameStartTime);
-        for(Connection c : playerConnections){
+        for(Connection c : playerConnections.values()){
             c.sendTCP(packet);
         }
         gameStatus = GameStatus.IN_PROGRESS;
@@ -190,7 +199,7 @@ public class Game {
     private void end(){
         GameEndPacket packet = new GameEndPacket();
         packet.setPlayers(players);
-        for(Connection c : playerConnections){
+        for(Connection c : playerConnections.values()){
             c.sendTCP(packet);
         }
     }
@@ -213,4 +222,16 @@ public class Game {
         return gameStatus;
     }
 
+    public HashMap<Integer, Connection> getPlayerConnections() {
+        return playerConnections;
+    }
+
+    public Integer getPlayerIdFromConnection(Connection connection){
+        for(Integer key : playerConnections.keySet()){
+            if(playerConnections.get(key).equals(connection)){
+                return key;
+            }
+        }
+        return 0;
+    }
 }

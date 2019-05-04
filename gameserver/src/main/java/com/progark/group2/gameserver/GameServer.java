@@ -56,6 +56,11 @@ public class GameServer extends Listener{
         for(Connection c : server.getConnections()){
             c.sendTCP(packet);
         }
+        for(Game game : games.values()){
+            if(game.getPlayerConnections().values().contains(connection)){
+                game.removePlayer(game.getPlayerIdFromConnection(connection), connection);
+            }
+        }
     }
 
     @Override
@@ -262,10 +267,8 @@ public class GameServer extends Listener{
      * @param game
      */
     public void removeGame(Game game){
-        Log.info("Current list of games: " + games);
-        Log.info("Removing game: " + game);
+        Log.info("Removing game...");
         games.remove(game.getGameId());
-        Log.info("List of games after removal");
     }
 
     // =====
