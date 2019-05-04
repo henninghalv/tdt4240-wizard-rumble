@@ -113,7 +113,6 @@ public class Game {
         }
 
         if(playerConnections.isEmpty()){
-            Log.info("No players in current game... Removing game...");
             try {
                 GameServer.getInstance().removeGame(this);
             } catch (IOException e) {
@@ -133,9 +132,12 @@ public class Game {
         }
 
         playerConnections.remove(playerId);
-        players.get(playerId).setTimeAliveInMilliseconds(System.currentTimeMillis() - gameStartTime);
-        players.get(playerId).setAlive(false);
+        if(players.get(playerId).isAlive()){
+            players.get(playerId).setTimeAliveInMilliseconds(System.currentTimeMillis() - gameStartTime);
+            players.get(playerId).setAlive(false);
+        }
 
+        // Check if game has ended
         if(isGameOver()){
             for(Player player : players.values()){
                 if(player.isAlive()){
@@ -144,7 +146,6 @@ public class Game {
             }
             end();
         }
-
     }
 
     public void updatePlayerPosition(Connection connection, PlayerMovementPacket packet){

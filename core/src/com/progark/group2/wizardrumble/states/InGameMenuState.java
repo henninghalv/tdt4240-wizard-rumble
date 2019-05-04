@@ -112,13 +112,8 @@ public class InGameMenuState extends State {
         this.gameStateManager.pop();
     }
 
-    private void openSettings(){
-        System.out.println("Settings");
-        //this.gameStateManager.push(new InGameSettings(this.gameStateManager));
-    }
-
     private void exitToMainMenu() throws IOException {
-        NetworkController.getInstance().playerKilledBy(0);
+//        NetworkController.getInstance().playerKilledBy(0);
         NetworkController.getInstance().playerLeftGame();
         this.gameStateManager.pop();
         GameStateManager.getInstance().set(MainMenuState.getInstance());
