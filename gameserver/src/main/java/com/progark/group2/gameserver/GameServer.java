@@ -58,7 +58,11 @@ public class GameServer extends Listener{
         }
         for(Game game : games.values()){
             if(game.getPlayerConnections().values().contains(connection)){
-                game.removePlayer(game.getPlayerIdFromConnection(connection), connection);
+                if(game.isStarted()){
+                    game.removePlayerFromGame(game.getPlayerIdFromConnection(connection), connection);
+                } else {
+                    game.removePlayerFromLobby(game.getPlayerIdFromConnection(connection), connection);
+                }
             }
         }
     }
@@ -188,7 +192,11 @@ public class GameServer extends Listener{
 
     private void handlePlayerLeaveRequest(Connection connection, PlayerLeaveRequest request){
         Game game = games.get(request.getGameId());
-        game.removePlayer(request.getPlayerId(), connection);
+        if(game.isStarted()){
+            game.removePlayerFromGame(request.getPlayerId(), connection);
+        } else{
+            game.removePlayerFromLobby(request.getPlayerId(), connection);
+        }
     }
 
     // =====

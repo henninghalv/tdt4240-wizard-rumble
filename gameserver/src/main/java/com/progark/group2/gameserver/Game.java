@@ -88,13 +88,13 @@ public class Game {
         response1.setSpawnPoint(player.getPosition());
         connection.sendTCP(response1);
 
-        if(playerConnections.size() >= GameServer.getMaximumPlayers()){
+        if(playerConnections.keySet().size() >= GameServer.getMaximumPlayers()){
             Log.info("Game is full!");
             gameStatus = GameStatus.FULL;
         }
     }
 
-    public void removePlayer(int playerId, Connection connection){
+    public void removePlayerFromLobby(int playerId, Connection connection){
         PlayerLeaveResponse response = new PlayerLeaveResponse();
         response.setPlayerSlotId(players.get(playerId).getPlayerSlotId());
         response.setPlayerId(playerId);
@@ -105,22 +105,37 @@ public class Game {
         }
 
         playerSlots.put(players.get(playerId).getPlayerSlotId(), PlayerSlotStatus.OPEN);
-        playerConnections.remove(connection);
+        playerConnections.remove(playerId);
         players.remove(playerId);
 
         if(gameStatus.equals(GameStatus.FULL)){
             gameStatus = GameStatus.STAND_BY;
         }
 
-        if(playerConnections.size() == 0){
+        if(playerConnections.isEmpty()){
+            Log.info("No players in current game... Removing game...");
             try {
                 GameServer.getInstance().removeGame(this);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+    }
 
-        // Check if game has ended
+    public void removePlayerFromGame(int playerId, Connection connection){
+        PlayerLeaveResponse response = new PlayerLeaveResponse();
+        response.setPlayerSlotId(players.get(playerId).getPlayerSlotId());
+        response.setPlayerId(playerId);
+        for(Connection c : playerConnections.values()){
+            if(c.getID() != connection.getID()){
+                c.sendTCP(response);
+            }
+        }
+
+        playerConnections.remove(playerId);
+        players.get(playerId).setTimeAliveInMilliseconds(System.currentTimeMillis() - gameStartTime);
+        players.get(playerId).setAlive(false);
+
         if(isGameOver()){
             for(Player player : players.values()){
                 if(player.isAlive()){
@@ -129,6 +144,7 @@ public class Game {
             }
             end();
         }
+
     }
 
     public void updatePlayerPosition(Connection connection, PlayerMovementPacket packet){
@@ -188,12 +204,7 @@ public class Game {
         for (Player p: players.values()) {
             if (p.isAlive()) playersAlive++;
         }
-
-        if (playersAlive <= 1) {
-            return true;
-        }
-
-        return false;
+        return playersAlive <= 1;
     }
 
     private void end(){
@@ -233,5 +244,9 @@ public class Game {
             }
         }
         return 0;
+    }
+
+    public boolean isStarted(){
+        return gameStartTime > 0;
     }
 }
