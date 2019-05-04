@@ -55,7 +55,7 @@ public class NetworkController extends Listener{
 
     // Master server configuration constants
     private final static int TIMEOUT = 5000;
-    private final static String SERVER_HOST = "178.128.243.226";  // Set this to the local IP address of your computer when running the server
+    private final static String SERVER_HOST = "193.35.55.71";  // Set this to the local IP address of your computer when running the server
     private final static int SERVER_TCP_PORT = 54555;
     private final static int SERVER_UDP_PORT = 54777;
 
@@ -158,6 +158,10 @@ public class NetworkController extends Listener{
             if(!players.isEmpty()){
                 handleGameEnd(packet);
             }
+            if(client.isConnected()){
+                packet.setGameId(gameId);
+                client.sendTCP(packet);
+            }
         } else if (object instanceof ServerErrorResponse) {
             ServerErrorResponse response = (ServerErrorResponse) object;
             Log.error("Client got this error message: " + response.getErrorMsg());
@@ -197,8 +201,12 @@ public class NetworkController extends Listener{
 
     private void handlePlayerLeaveResponse(PlayerLeaveResponse response){
         Log.info("Player left: " + players.get(response.getPlayerId()).getName());
-        players.get(response.getPlayerId()).setAlive(false);
-        players.get(response.getPlayerId()).setTimeAliveInMilliseconds(System.currentTimeMillis() - gameStartTime);
+        if(gameStartTime > 0){
+            players.get(response.getPlayerId()).setAlive(false);
+            players.get(response.getPlayerId()).setTimeAliveInMilliseconds(System.currentTimeMillis() - gameStartTime);
+        } else {
+            players.remove(response.getPlayerId());
+        }
     }
 
     private void handleGameStart() {

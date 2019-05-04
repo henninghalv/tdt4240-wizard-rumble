@@ -391,11 +391,6 @@ public class InGameState extends State {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        Gdx.input.setCatchBackKey(true);
-        if (Gdx.input.isKeyPressed(Input.Keys.BACK) || Gdx.input.isKeyPressed(Input.Keys.ESCAPE)){
-            onBackButtonPress();
-        }
-
         // Draw the ground
         mapHandler.renderGround();
 

@@ -110,8 +110,8 @@ public class LobbyState extends State {
 
         table.clear();
         renderLobbyTitle();
+        players.clear();
         if(network.getPlayer() != null){
-            players.clear();
             players.putAll(network.getPlayers());
             createPanels();
         }

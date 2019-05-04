@@ -6,6 +6,7 @@ import com.esotericsoftware.kryonet.Server;
 import com.esotericsoftware.minlog.Log;
 import com.progark.group2.gameserver.misc.AsciiArtCreator;
 import com.progark.group2.gameserver.resources.GameStatus;
+import com.progark.group2.wizardrumble.network.packets.GameEndPacket;
 import com.progark.group2.wizardrumble.network.packets.GameStartPacket;
 import com.progark.group2.wizardrumble.network.packets.PlayerDeadPacket;
 import com.progark.group2.wizardrumble.network.packets.PlayerMovementPacket;
@@ -93,6 +94,11 @@ public class GameServer extends Listener{
             packet.setPlayersOnlineCount(server.getConnections().length);
             for(Connection c : server.getConnections()){
                 c.sendTCP(packet);
+            }
+        } else if (object instanceof GameEndPacket){
+            GameEndPacket packet = (GameEndPacket) object;
+            if(games.containsKey(packet.getGameId())){
+                removeGame(games.get(packet.getGameId()));
             }
         }
     }
@@ -258,7 +264,7 @@ public class GameServer extends Listener{
     public void removeGame(Game game){
         Log.info("Current list of games: " + games);
         Log.info("Removing game: " + game);
-        games.remove(game);
+        games.remove(game.getGameId());
         Log.info("List of games after removal");
     }
 
