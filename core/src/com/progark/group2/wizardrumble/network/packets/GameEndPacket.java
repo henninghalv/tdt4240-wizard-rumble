@@ -7,6 +7,7 @@ import java.util.HashMap;
 public class GameEndPacket {
 
     private HashMap<Integer, Player> players;
+    private int gameId;
 
     public GameEndPacket() {
     }
@@ -17,5 +18,13 @@ public class GameEndPacket {
 
     public void setPlayers(HashMap<Integer, Player> players) {
         this.players = players;
+    }
+
+    public int getGameId() {
+        return gameId;
+    }
+
+    public void setGameId(int gameId) {
+        this.gameId = gameId;
     }
 }

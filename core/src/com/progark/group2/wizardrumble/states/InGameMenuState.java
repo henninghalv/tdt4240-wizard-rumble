@@ -89,18 +89,12 @@ public class InGameMenuState extends State {
 
     @Override
     public void render(SpriteBatch spriteBatch) {
-        Gdx.input.setCatchBackKey(true);
-        if (Gdx.input.isKeyPressed(Input.Keys.BACK) || Gdx.input.isKeyPressed(Input.Keys.ESCAPE)){
-            onBackButtonPress();
-        }
-
         spriteBatch.begin();
         this.pauseOverlay.draw(spriteBatch);
         spriteBatch.end();
 
         Gdx.input.setInputProcessor(stage);
         stage.draw();
-
     }
 
     @Override

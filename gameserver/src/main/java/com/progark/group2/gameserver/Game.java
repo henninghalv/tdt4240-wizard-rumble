@@ -193,11 +193,6 @@ public class Game {
         for(Connection c : playerConnections){
             c.sendTCP(packet);
         }
-        try {
-            GameServer.getInstance().removeGame(this);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     private int getAvailablePlayerSlot() {
