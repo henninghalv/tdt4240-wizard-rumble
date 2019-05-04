@@ -121,6 +121,12 @@ public class NetworkController extends Listener{
     // LISTENERS
 
     @Override
+    public void disconnected(Connection connection){
+        connection.close();
+        System.exit(0);
+    }
+
+    @Override
     public void received(Connection connection, Object object){
         if (object instanceof CreatePlayerResponse){
             Log.info("Received CreatePlayerResponse");
@@ -189,7 +195,7 @@ public class NetworkController extends Listener{
     private void handleCreateGameResponse(CreateGameResponse response){
         Log.info("Requesting Game Creation...");
         gameId = response.getGameId();
-        connectToGame(response);
+        connectToGame();
         Log.info("Game created and connected! Waiting for players...\n");
     }
 
@@ -203,7 +209,7 @@ public class NetworkController extends Listener{
         Log.info("Player left: " + players.get(response.getPlayerId()).getName());
         if(gameStartTime > 0){
             players.get(response.getPlayerId()).setAlive(false);
-            players.get(response.getPlayerId()).setTimeAliveInMilliseconds(System.currentTimeMillis() - gameStartTime);
+            players.get(response.getPlayerId()).setTimeAliveInMilliseconds((System.currentTimeMillis() - gameStartTime)/1000);
         } else {
             players.remove(response.getPlayerId());
         }
@@ -309,7 +315,7 @@ public class NetworkController extends Listener{
         return player;
     }
 
-    private void connectToGame(CreateGameResponse response){
+    private void connectToGame(){
         PlayerJoinRequest request = new PlayerJoinRequest();
         request.setPlayerId(playerId);
         request.setGameId(gameId);
