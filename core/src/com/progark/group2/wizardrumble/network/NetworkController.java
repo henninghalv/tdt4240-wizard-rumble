@@ -256,11 +256,11 @@ public class NetworkController extends Listener{
     }
 
     private void handlePlayerDeath(final PlayerDeadPacket packet){
+        players.get(packet.getVictimId()).setTimeAliveInMilliseconds(packet.getPlayerDeathTime() - gameStartTime);
         players.get(packet.getVictimId()).setAlive(false);
         if(packet.getKillerId() == playerId){
             player.incrementKills();
         }
-        System.out.println("Player " + packet.getVictimId() + " has died! Time alive: " + (packet.getPlayerDeathTime()-gameStartTime)/1000 + "s");
         Gdx.app.postRunnable(new Runnable() {
             @Override
             public void run() {
@@ -277,6 +277,8 @@ public class NetworkController extends Listener{
                 player.setTimeAliveInMilliseconds(packet.getPlayers().get(id).getTimeAliveInMilliseconds());
             }
         }
+
+        gameStartTime = 0;
 
         Gdx.app.postRunnable(new Runnable() {
             @Override
