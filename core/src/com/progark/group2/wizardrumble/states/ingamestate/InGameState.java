@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapObject;
@@ -17,6 +16,8 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.esotericsoftware.minlog.Log;
+import com.progark.group2.wizardrumble.controllers.TouchPadAimInput1;
+import com.progark.group2.wizardrumble.controllers.TouchPadMovementInput1;
 import com.progark.group2.wizardrumble.entities.Wizard;
 import com.progark.group2.wizardrumble.entities.WizardEnemy;
 import com.progark.group2.wizardrumble.entities.WizardPlayer;
@@ -76,8 +77,7 @@ public class InGameState extends State {
     // Last touch boolean for when rightJoyStick was touched last frame.
     // For when you release the right joystick, the spell should fire, instead of on justTouched().
     private boolean lastTouch;
-    private float lastAimX;
-    private float lastAimY;
+    private Vector2 lastAim;
 
 
     public InGameState(GameStateManager gameStateManager) throws IOException {
@@ -204,7 +204,7 @@ public class InGameState extends State {
         }
 
         if (inGameHud.getRightJoyStick().isTouched()){
-            wizardPlayer.updateRotation(new Vector2(inGameHud.getRightJoyStick().getKnobPercentX(), inGameHud.getRightJoyStick().getKnobPercentY()));
+            wizardPlayer.updateRotation(TouchPadAimInput1.getInstance().getAimDirection());
             // Sends the updated position to the server
             network.updatePlayerPosition(wizardPlayer.getPosition(), wizardPlayer.getRotation());
         }
@@ -213,15 +213,13 @@ public class InGameState extends State {
     private void updateWizardRotation(){
         wizardPlayer.updateRotation(
                 inGameHud.getRightJoyStick().isTouched() ?
-                        new Vector2(inGameHud.getRightJoyStick().getKnobPercentX(), inGameHud.getRightJoyStick().getKnobPercentY()) :
-                        new Vector2(inGameHud.getLeftJoyStick().getKnobPercentX(), inGameHud.getLeftJoyStick().getKnobPercentY())
+                        TouchPadAimInput1.getInstance().getAimDirection() :
+                        TouchPadMovementInput1.getInstance().getMovementDirection()
         );
     }
 
     private void updateWizardPosition() {
-        //GetKnobPercentX and -Y returns cos and sin values of the touchpad in question
-        Vector2 leftJoyPosition = new Vector2(inGameHud.getLeftJoyStick().getKnobPercentX(), inGameHud.getLeftJoyStick().getKnobPercentY());
-        wizardPlayer.updatePosition(leftJoyPosition);
+        wizardPlayer.updatePosition(TouchPadMovementInput1.getInstance().getMovementDirection());
     }
 
     private void updateCamera() {
@@ -237,8 +235,8 @@ public class InGameState extends State {
     private void castSpell(String spell) {
         // Computes x and y from right joystick input making the speed the same regardless of
         // where on the joystick you touch.
-        float x1 = lastAimX;
-        float y1 = lastAimY;
+        float x1 = lastAim.x;
+        float y1 = lastAim.y;
         float hypotenuse = (float) Math.sqrt(x1 * x1 + y1 * y1);
         float ratio = (float) Math.sqrt(2) / hypotenuse;
         float x = x1 * ratio;
@@ -356,8 +354,7 @@ public class InGameState extends State {
         }
 
         lastTouch = inGameHud.getRightJoyStick().isTouched();
-        lastAimX = inGameHud.getRightJoyStick().getKnobPercentX();
-        lastAimY = inGameHud.getRightJoyStick().getKnobPercentY();
+        lastAim = TouchPadAimInput1.getInstance().getAimDirection();
 
         // Iterate spells to update
         for (Spell spell : spells) {
