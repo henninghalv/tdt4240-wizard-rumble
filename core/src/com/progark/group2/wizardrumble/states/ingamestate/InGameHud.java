@@ -4,11 +4,9 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.progark.group2.wizardrumble.controllers.AimInput1;
-import com.progark.group2.wizardrumble.controllers.MovementInput1;
+import com.progark.group2.wizardrumble.controllers.TouchPadAimInput1;
+import com.progark.group2.wizardrumble.controllers.TouchPadMovementInput1;
 import com.progark.group2.wizardrumble.controllers.SpellSelector1;
-import com.progark.group2.wizardrumble.controllers.SpellSelector;
-import com.progark.group2.wizardrumble.states.ingamestate.HealthBar;
 
 
 import java.util.ArrayList;
@@ -22,8 +20,8 @@ public class InGameHud {
     private FitViewport stageViewport;
     private HealthBar healthBar;
 
-    private MovementInput1 leftJoyStick;
-    private AimInput1 rightJoyStick;
+    private TouchPadMovementInput1 leftJoyStick;
+    private TouchPadAimInput1 rightJoyStick;
 
     private SpellSelector1 spellSelector;
     private ArrayList<String> spellNames;
@@ -32,8 +30,8 @@ public class InGameHud {
         stageViewport = new FitViewport(WIDTH, HEIGHT, new OrthographicCamera());
         stage = new Stage(stageViewport, spriteBatch); //create stage with the stageViewport and the SpriteBatch given in Constructor
 
-        leftJoyStick = new MovementInput1(15, 15);
-        rightJoyStick = new AimInput1(WIDTH-15- AimInput1.diameter, 15);
+        leftJoyStick = TouchPadMovementInput1.getInstance();
+        rightJoyStick = TouchPadAimInput1.getInstance();
 
         stage.addActor(leftJoyStick);
         stage.addActor(rightJoyStick);
@@ -60,11 +58,11 @@ public class InGameHud {
         return healthBar;
     }
 
-    public MovementInput1 getLeftJoyStick() {
+    public TouchPadMovementInput1 getLeftJoyStick() {
         return leftJoyStick;
     }
 
-    public AimInput1 getRightJoyStick() {
+    public TouchPadAimInput1 getRightJoyStick() {
         return rightJoyStick;
     }
 
