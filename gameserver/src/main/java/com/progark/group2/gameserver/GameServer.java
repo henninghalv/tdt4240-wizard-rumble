@@ -59,12 +59,6 @@ public class GameServer extends Listener{
         for(Game game : games.values()){
             if(game.getPlayerConnections().values().contains(connection)){
                 if(game.isStarted()){
-//                    PlayerDeadPacket pdp = new PlayerDeadPacket();
-//                    pdp.setKillerId(0);
-//                    pdp.setVictimId(game.getPlayerIdFromConnection(connection));
-//                    pdp.setGameId(game.getGameId());
-//                    pdp.setPlayerDeathTime(System.currentTimeMillis());
-//                    game.playerDied(connection, pdp);
                     game.removePlayerFromGame(game.getPlayerIdFromConnection(connection), connection);
                 } else {
                     game.removePlayerFromLobby(game.getPlayerIdFromConnection(connection), connection);
@@ -182,8 +176,10 @@ public class GameServer extends Listener{
     }
 
     private void handlePlayerMovementPacket(Connection connection, PlayerMovementPacket packet){
-        Game game = games.get(packet.getGameId());
-        game.updatePlayerPosition(connection, packet);
+        if(games.keySet().contains(packet.getGameId())){
+            Game game = games.get(packet.getGameId());
+            game.updatePlayerPosition(connection, packet);
+        }
     }
 
     private void handleSpellFiredPacket(Connection connection, SpellFiredPacket packet){
