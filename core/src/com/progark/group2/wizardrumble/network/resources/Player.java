@@ -5,22 +5,24 @@ import com.badlogic.gdx.math.Vector2;
 public class Player {
 
     private String name;
-    private int connectionId;
+    private int playerSlotId;
     private int kills;
     private int rank;
-    private int timeAliveInMilliseconds;
+    private long timeAliveInMilliseconds;
+    private boolean isAlive;
     private Vector2 position;
     private float rotation;
 
     public Player() {
     }
 
-    public Player(String name, int connectionId, int kills, int rank, int timeAliveInMilliseconds, Vector2 position, float rotation) {
+    public Player(String name, int playerSlotId, int kills, int rank, long timeAliveInMilliseconds, Vector2 position, float rotation) {
         this.name = name;
-        this.connectionId = connectionId;
+        this.playerSlotId = playerSlotId;
         this.kills = kills;
         this.rank = rank;
         this.timeAliveInMilliseconds = timeAliveInMilliseconds;
+        this.isAlive = true;
         this.position = position;
         this.rotation = rotation;
 
@@ -30,8 +32,8 @@ public class Player {
         return name;
     }
 
-    public int getConnectionId() {
-        return connectionId;
+    public int getPlayerSlotId() {
+        return playerSlotId;
     }
 
     public int getKills() {
@@ -42,28 +44,36 @@ public class Player {
         return rank;
     }
 
-    public int getTimeAliveInMilliseconds() {
+    public long getTimeAliveInMilliseconds() {
         return timeAliveInMilliseconds;
+    }
+
+    public boolean isAlive() {
+        return isAlive;
     }
 
     public void setName(String name) {
         this.name = name;
     }
 
-    public void setConnectionId(int connectionId) {
-        this.connectionId = connectionId;
+    public void setPlayerSlotId(int playerSlotId) {
+        this.playerSlotId = playerSlotId;
     }
 
-    public void setKills(int kills) {
-        this.kills = kills;
+    public void incrementKills() {
+        this.kills++;
     }
 
     public void setRank(int rank) {
         this.rank = rank;
     }
 
-    public void setTimeAliveInMilliseconds(int timeAliveInMilliseconds) {
+    public void setTimeAliveInMilliseconds(long timeAliveInMilliseconds) {
         this.timeAliveInMilliseconds = timeAliveInMilliseconds;
+    }
+
+    public void setAlive(boolean alive) {
+        isAlive = alive;
     }
 
     public Vector2 getPosition() {

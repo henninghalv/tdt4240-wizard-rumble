@@ -1,19 +1,16 @@
 package com.progark.group2.wizardrumble;
 
-import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.progark.group2.wizardrumble.entities.Spell;
 import com.progark.group2.wizardrumble.network.NetworkController;
 import com.progark.group2.wizardrumble.states.GameStateManager;
-import com.progark.group2.wizardrumble.states.InGameState;
 import com.progark.group2.wizardrumble.states.MainMenuState;
+import com.progark.group2.wizardrumble.tools.SoundManager;
 
 import java.io.IOException;
-import java.util.List;
+
 
 /**
  * Keeps the main render loop Initialize the game, network controller and the gameManager, then
@@ -24,7 +21,7 @@ public class Application extends Game {
 	// Window parameters
 	public static final int WIDTH = 800;
 	public static final int HEIGHT = 480;
-	public static final float SCALE = 0.5f;
+	public static final float SCALE = 0.125f;
 	public static final String TITLE = "WizardRumble";
 
 
@@ -41,7 +38,8 @@ public class Application extends Game {
 		// Used to test server connection.
 		// Not necessarily the right way to do it.
 		try {
-            NetworkController networkController = NetworkController.getInstance();
+            NetworkController.getInstance();
+			SoundManager.getInstance();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

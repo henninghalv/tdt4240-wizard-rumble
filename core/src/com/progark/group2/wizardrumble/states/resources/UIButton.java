@@ -16,7 +16,7 @@ public class UIButton {
     public UIButton(Texture texture, String buttonText) {
         // Button text styling
         BitmapFont font = new BitmapFont();
-        font.setColor(Color.BLACK);
+        font.setColor(Color.DARK_GRAY);
         Label label = new Label(buttonText, new LabelStyle(font, font.getColor()));
         label.setAlignment(Align.center);
 

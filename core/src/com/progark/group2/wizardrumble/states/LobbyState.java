@@ -3,6 +3,7 @@ package com.progark.group2.wizardrumble.states;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -12,46 +13,46 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.progark.group2.wizardrumble.network.NetworkController;
-import java.io.IOException;
+import com.progark.group2.wizardrumble.network.resources.Player;
+import com.progark.group2.wizardrumble.states.resources.UIButton;
 
-public class LobbyState extends MenuState {
+import java.io.IOException;
+import java.util.HashMap;
+
+import static com.progark.group2.wizardrumble.Application.HEIGHT;
+import static com.progark.group2.wizardrumble.Application.WIDTH;
+
+public class LobbyState extends State {
 
     private NetworkController network;
 
-    private Stage stage;
-    private Table table;
+    private Table table = new Table();
     private Label.LabelStyle titleStyle;
-
-    private static LobbyState instance = null;
+    private Texture backgroundImage;
+    private HashMap<Integer, Player> players = new HashMap<Integer, Player>();
 
     private final String title = "Lobby - waiting for players...";
 
-    private LobbyState(GameStateManager gameStateManager) throws IOException {
+    protected LobbyState(GameStateManager gameStateManager) throws IOException {
         super(gameStateManager);
         initialize();
     }
 
-    public static LobbyState getInstance() throws IOException {
-        if (instance == null) {
-            instance = new LobbyState(GameStateManager.getInstance());
-        }
-        return instance;
-    }
-
     private void createPanels() {
-        for (Integer playerId : network.getPlayers().keySet()) {
-            table.add(menuButton(network.getPlayers().get(playerId).getName())).pad(0F);
+        table.add(new UIButton(new Texture("UI/blue_button01.png"), network.getPlayer().getName()).getButton()).spaceBottom(10f).pad(0F);
+        table.row();
+
+        for (Integer playerId : players.keySet()) {
+            table.add(new UIButton(new Texture("UI/blue_button01.png"), players.get(playerId).getName()).getButton()).pad(0F);
             table.row();
         }
-        table.add(menuButton(network.getPlayer().getName())).pad(0F);
-        table.row();
     }
 
     private void createBackButton() {
         // back button
-        Stack backButton = this.menuButton("Back");
+        Stack backButton = new UIButton(new Texture("UI/blue_button00.png"), "Back").getButton();
         backButton.addListener(new InputListener(){
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -68,12 +69,12 @@ public class LobbyState extends MenuState {
             }
         });
 
-        table.add(backButton).pad(100f);
+        table.add(backButton).pad(50f);
     }
 
     private void createStartButton() {
         // back button
-        Stack startButton = this.menuButton("Start Game");
+        Stack startButton = new UIButton(new Texture("UI/blue_button00.png"), "Start game").getButton();
         startButton.addListener(new InputListener(){
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -92,14 +93,11 @@ public class LobbyState extends MenuState {
 
     private void backToMainMenu() throws IOException {
         this.gameStateManager.set(MainMenuState.getInstance());
+        network.playerLeftGame();
     }
 
     private void requestGameStart() {
         network.requestGameStart();
-    }
-
-    public void startGame(InGameState state) {
-        this.gameStateManager.set(state);
     }
 
     @Override
@@ -109,19 +107,29 @@ public class LobbyState extends MenuState {
 
     @Override
     public void update(float dt) {
-        if(!network.getPlayers().isEmpty()){
-            table.clear();
+
+        table.clear();
+        renderLobbyTitle();
+        players.clear();
+        if(network.getPlayer() != null){
+            players.putAll(network.getPlayers());
             createPanels();
-            createBackButton();
-            createStartButton();  // TODO: Remove. No manual starting. Meant for testing.
-            stage.addActor(table);
         }
+        createBackButton();
+        if(!players.isEmpty()){
+            createStartButton();  // TODO: Remove. No manual starting. Meant for testing.
+        }
+        stage.addActor(table);
+
     }
 
     @Override
     public void render(SpriteBatch spriteBatch) {
-        Gdx.gl.glClearColor(0, 1, 0, 1);
+        Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        spriteBatch.begin();
+        spriteBatch.draw(backgroundImage, 0, 0);
+        spriteBatch.end();
         stage.draw();
     }
 
@@ -145,26 +153,30 @@ public class LobbyState extends MenuState {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        stage = new Stage(new ScreenViewport());
+        backgroundImage = new Texture("background.png");
+        stage = new Stage(new FitViewport(WIDTH, HEIGHT));
         Gdx.input.setInputProcessor(stage);
 
         // Layout styling
-        table = new Table();
         table.setFillParent(true);
         table.center();
 
+    }
+
+    private void renderLobbyTitle(){
+
         // Title
         BitmapFont font = new BitmapFont();
-        font.setColor(Color.BLACK);
+        font.setColor(Color.WHITE);
         this.titleStyle = new Label.LabelStyle(font, font.getColor());
 
         Label label = new Label(this.title, titleStyle);
         label.setAlignment(Align.center);
-        label.setSize((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/4);
-        table.add(label).size((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/4);
+        label.setSize((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/12);
+        table.add(label).size((float)Gdx.graphics.getWidth()/4, (float)Gdx.graphics.getHeight()/12);
         table.row();
 
-        table.debug();
+//        table.debug();
         stage.addActor(table);
     }
 }

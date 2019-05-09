@@ -1,64 +1,66 @@
 package com.progark.group2.wizardrumble.entities.spells;
 
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
-import com.progark.group2.wizardrumble.entities.Spell;
+import com.progark.group2.wizardrumble.network.NetworkController;
+import com.progark.group2.wizardrumble.tools.SoundManager;
+import com.progark.group2.wizardrumble.tools.SoundType;
+
+import java.util.ArrayList;
+
 
 public class Ice extends Spell {
 
-    private Texture fireBallSprite;
-    private TextureRegion region;
-    private float scale;
-    // velocity
-    // rotation
-    // position
+    public final static Texture texture = new Texture("ice.png");
+    private final float ANGLE_OFFSET = 25;
+    private Vector2 pivot;
+    public final static long cooldown = 1500;
 
 
-
-    public Ice(Vector2 spawnPoint, float rotation, Vector2 velocity){
-        this.velocity = velocity; // Use speed in spell abstract class in addition to this.
-        this.rotation = rotation;
-        this.position = spawnPoint;  // Need to offset this by size of wizard sprite
-        fireBallSprite = new Texture("fireball.png");
-        region = new TextureRegion(fireBallSprite);
-        scale = 0.02f;
-        name="Ice";
+    public Ice(int spellOwnerID, Vector2 spawnPoint, float rotation, Vector2 velocity, Vector2 pivot){
+        super(spellOwnerID, spawnPoint, rotation, velocity, new Vector2(texture.getWidth()*0.2f, texture.getHeight()*0.2f), texture, 7, 60f, "", cooldown, 1, SpellType.ICE);
+        this.pivot = pivot;
     }
 
-    // There's a difference in screen coordinates and global coordinates. Where you draw each sprite
-    // needs to be "local" while the global coordinates is useful for
-    public Vector2 getGlobalPosition(){
-        // TODO return global position, if that's even needed
-        return null;
-    }
-
-    private void updatePosition(){
-        position.x += velocity.x;
-        position.y += velocity.y;
+    public Ice(int spellOwnerID, Vector2 spawnPoint, float rotation, Vector2 velocity){
+        super(spellOwnerID, spawnPoint, rotation, velocity, new Vector2(texture.getWidth()*0.2f, texture.getHeight()*0.2f), texture, 7, 60f, "", cooldown,1, SpellType.ICE);
     }
 
     @Override
-    public void onCollision() {
+    public void cast(ArrayList<Spell> spells, NetworkController network) {
+        //Vector2 posTransposed = new Vector2(position.x - pivot.x, position.y - pivot.y);
+        Vector2 posTransposed = new Vector2(position.x - pivot.x, position.y - pivot.y).rotate(ANGLE_OFFSET);
+        // Right Ice rotation calculation
+        Ice rightIce = new Ice(
+                spellOwnerID,
+                new Vector2(pivot.x + posTransposed.x, pivot.y + posTransposed.y),
+                rotation + ANGLE_OFFSET,
+                new Vector2(velocity).rotate(ANGLE_OFFSET),
+                pivot
+        );
+
+        // Left Ice rotation calculation
+        posTransposed = new Vector2(position.x - pivot.x, position.y - pivot.y).rotate(-ANGLE_OFFSET);
+        Ice leftIce = new Ice(
+                spellOwnerID,
+                new Vector2(pivot.x + posTransposed.x, pivot.y + posTransposed.y),
+                rotation - ANGLE_OFFSET,
+                new Vector2(velocity).rotate(-ANGLE_OFFSET),
+                pivot
+        );
+
+        spells.add(leftIce);
+        spells.add(this);
+        spells.add(rightIce);
+        network.castSpell(rightIce);
+        network.castSpell(this);
+        network.castSpell(leftIce);
 
     }
 
     @Override
-    public void update() {
-        updatePosition();
+    public void playSound(float volume) {
+        SoundManager.getInstance().playSound(SoundType.ICE, volume);
     }
 
-    @Override
-    public void render(SpriteBatch sb) {
-        sb.draw(region, getPosition().x, getPosition().y,
-                fireBallSprite.getWidth()/2f,
-                fireBallSprite.getHeight()/2f,
-                fireBallSprite.getWidth(),fireBallSprite.getHeight(),scale,scale,rotation); // 0.2 is a random number. Tweak as necessary
-    }
-
-    @Override
-    public void dispose() {
-
-    }
 }

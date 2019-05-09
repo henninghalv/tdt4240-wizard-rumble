@@ -72,32 +72,8 @@ public class SQLiteDBConnector {
         Log.info("DATABASE: Done!");
     }
 
-    // TODO: Update when players get more fields than id and username
-    /**
-     * Queries the DB to get all registered players and their metadata.
-     * @return Returns an ArrayList of all the players in the DB
-     * @throws SQLException
-     */
-    public ArrayList<HashMap<Integer, String>> getAllPlayers() throws SQLException {
-        String query = "SELECT * FROM players";
-
-        Statement stmt = conn.createStatement();
-        ResultSet resultSet = stmt.executeQuery(query);
-
-        ArrayList<HashMap<Integer, String>> players = new ArrayList<HashMap<Integer, String>>();
-
-        while(resultSet.next()){
-            HashMap<Integer, String> player = new HashMap<Integer, String>();
-            player.put(resultSet.getInt("id"), resultSet.getString("username"));
-            players.add(player);
-        }
-
-        return players;
-    }
-
     /**
      * Queries the database with the unique id and gets the player that corresponds to the id.
-     * TODO: This should be extended to return a custom Player object instead of a simple hashmap.
      * @param id
      * @return A Hashmap with id as the key and username as the value.
      * @throws SQLException
